@@ -96,7 +96,7 @@ ClientBin/
 *~
 *.dbmdl
 *.[Pp]ublish.xml
-*.[Ii]idea
+.[Ii]dea/
 
 *.publishsettings
 
