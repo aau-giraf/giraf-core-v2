@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/bruun/Documents/github/giraf-core-v2/core/core.csproj": {}
+    "/home/bruun/Documents/github/giraf-core-v2/core.csproj": {}
   },
   "projects": {
-    "/home/bruun/Documents/github/giraf-core-v2/core/core.csproj": {
+    "/home/bruun/Documents/github/giraf-core-v2/core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/bruun/Documents/github/giraf-core-v2/core/core.csproj",
+        "projectUniqueName": "/home/bruun/Documents/github/giraf-core-v2/core.csproj",
         "projectName": "core",
-        "projectPath": "/home/bruun/Documents/github/giraf-core-v2/core/core.csproj",
+        "projectPath": "/home/bruun/Documents/github/giraf-core-v2/core.csproj",
         "packagesPath": "/home/bruun/.nuget/packages/",
-        "outputPath": "/home/bruun/Documents/github/giraf-core-v2/core/obj/",
+        "outputPath": "/home/bruun/Documents/github/giraf-core-v2/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/bruun/.nuget/NuGet/NuGet.Config"
@@ -48,6 +48,10 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.11, )"
+            },
+            "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[10.0.12, )"
             }
           },
           "imports": [
