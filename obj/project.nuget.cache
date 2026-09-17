@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "7XBfxqin+ac=",
+  "success": true,
+  "projectFilePath": "/home/bruun/Documents/github/giraf-core-v2/core/core.csproj",
+  "expectedPackageFiles": [
+    "/home/bruun/.nuget/packages/microsoft.aspnetcore.openapi/10.0.11/microsoft.aspnetcore.openapi.10.0.11.nupkg.sha512",
+    "/home/bruun/.nuget/packages/microsoft.openapi/2.7.5/microsoft.openapi.2.7.5.nupkg.sha512"
+  ],
+  "logs": []
+}
