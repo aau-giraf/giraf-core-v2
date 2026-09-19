@@ -1,8 +1,21 @@
-using Microsoft.AspNetCore.Authorization;
+using core.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
+namespace core.controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CitizensController : ControllerBase
+    {
+        private readonly CoreDbContext _context;
 
-public class CitizensController(CoreDbContext context, ICitizensService iCitizensService ) : ControllerBase {
-    [HttpGet({"citizen_id"})]
+        public CitizensController(CoreDbContext context)
+        {
+            _context = context;
+        }
+
+        /* CRUD OPERATIONS */
+
+    }
 }
