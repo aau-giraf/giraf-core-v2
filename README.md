@@ -1,31 +1,23 @@
-Directory structure:
-└── aau-giraf-giraf-core-v2/
-    ├── appsettings.Development.json
-    ├── appsettings.json
-    ├── core.csproj
-    ├── core.http
-    ├── LICENSE
-    ├── Program.cs
-    ├── WeatherForecast.cs
-    ├── Data/
-    │   ├── Placeholder.txt
-    │   └── Migrations/
-    │       └── Placeholder.txt
-    ├── Endpoints/
-    │   └── Placeholder.txt
-    ├── Entities/
-    │   ├── Placeholder.txt
-    │   └── DTOs/
-    │       └── Placeholder.txt
-    ├── Mappings/
-    │   ├── Placeholder
-    │   ├── ToDTO/
-    │   │   └── Placeholder.txt
-    │   └── ToEntity/
-    │       └── Placeholder.txt
-    ├── Properties/
-    │   └── launchSettings.json
-    ├── Services/
-    │   └── Placeholder.txt
-    └── Utilities/
-        └── Placeholder.txt
+## Project Structure
+
+```text
+giraf-core-v2/
+├── Data/                  # Database context
+│   └── Migrations/        # EF Core migrations
+├── Endpoints/             # API endpoints
+├── Entities/              
+│   └── DTOs/              
+├── Mappings/              # Mapping between entities and DTOs
+│   ├── ToDTO/
+│   └── ToEntity/
+├── Properties/
+│   └── launchSettings.json
+├── Services/              # Business logic
+├── Utilities/             
+├── appsettings.json
+├── appsettings.Development.json
+├── core.csproj
+├── core.http
+├── Program.cs             
+└── LICENSE
+```
