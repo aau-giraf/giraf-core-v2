@@ -21,5 +21,7 @@ app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 app.MapColorEndpoints();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
