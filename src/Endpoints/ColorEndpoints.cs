@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.StaticFiles;
 
+namespace giraf_core_v2.Endpoints;
+
 public static class ColorEndpoints
 {
     public static void MapColorEndpoints(this WebApplication app)
