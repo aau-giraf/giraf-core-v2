@@ -6,4 +6,6 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public DbSet<Color> Colors => Set<Color>();
+    public DbSet<Class> Classes => Set<Class>();
+    public DbSet<Organization> Organizations => Set<Organization>();
 }
