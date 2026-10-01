@@ -5,22 +5,25 @@ public static class OrganizationEndpoints
     {
         var group = application.MapGroup("/organizations");
 
-        group.MapGet("/{org_id}/classes", GetClassesInOrginization);
+        group.MapGet("/{org_id:int}/classes", GetClassesInOrginization);
 
-        group.MapGet("/{org_id}", GetOrginizationById);
+        group.MapGet("/{org_id:int}", GetOrginizationById);
         
     }
 
-    private static async Task<IResult> GetClassesInOrginization(OrganizationService service)
+
+    private static async Task<IResult> GetClassesInOrginization(int org_id, OrganizationService organizationservice)
     {
-        var result = await service.GetClassesInOrganizationAsync();
+        var classes = await organizationservice.GetClassesInOrganizationAsync(org_id);
+        
         return Results.Ok(classes);
     }
 
-    private static async Task<IResult> GetOrginizationById(OrganizationService service)
+
+    private static async Task<IResult> GetOrginizationById(int org_id, OrganizationService organizationService)
     {   
-        var result = await service.GetOrganizationByIdAsync(id, token, ct);
-        return result.ToHttpResult(v => TypedResults.Ok(v));
+        var organization = await organizationService.GetOrganizationByIdAsync(org_id);
+        return Results.Ok(organization);
     }
 
 }

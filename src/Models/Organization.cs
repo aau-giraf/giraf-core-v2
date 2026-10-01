@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 public class Organization
 {
+    [NotNull]
     public required int Id { get; set; }
 
     [MaxLength(200)]

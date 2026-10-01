@@ -5,33 +5,37 @@ public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<ServiceResult<List<ClassDTO>>> GetClassesInOrganizationAsync(Organization organization)
+    public async Task<List<Class>> GetClassesInOrganizationAsync(int org_id)
     {   
-        // Fetch orginization
-        var foundOrganization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == organization.Id);
+        // Fetch the organization first, here we use the org_id from the request header   
+        var foundOrganization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
 
-        if (organization is null) {
-            return ServiceResult<List<ClassDTO>>.Fail(
-            new ServiceError(ServiceErrorKind.NotFound, "Organization not found."));
+        if (foundOrganization is null) {
+            // Throw error
         }
         
+        // Fetch all classes tuples, where the columns org_id corresponding to the one we got from the request header
         var classes = await _db.Classes
-            .Where(o => o.Id == organization.Id).AsNoTracking().ToListAsync();
+            .Where(o => o.Id == foundOrganization.Id).AsNoTracking().ToListAsync();
         
-        var dtos = classes.Select(c => c.ToDTO()).ToList();
-        return ServiceResult<List<ClassDTO>>.Success(dtos);
-        
+          if (classes is null) {
+            // Throw error
+        }
+
+        return classes;
     }
 
-    public async Task<ServiceResult<OrganizationDTO>> GetOrganizationById(int id)
+
+    // Fetch the organization by org_id in request header
+    public async Task<Organization> GetOrganizationByIdAsync(int org_id)
     {   
-      var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == id);
+      var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
 
       if (organization is null) {
-            return ServiceResult<OrganizationDTO>.Fail(
-            new ServiceError(ServiceErrorKind.NotFound, "Organization not found."));
+            // Throw error
         }
-        return ServiceResult<OrganizationDTO>.Success(organization.ToDTO());
+    
+        return organization;
     }
 
 }
