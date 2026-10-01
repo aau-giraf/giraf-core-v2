@@ -21,15 +21,15 @@ Might require the following package a separate 'docker buildx' package depending
 
 ## Migrations & New Database Tables
 ### Once, if dotnet-ef isn't installed
-dotnet tool install --global dotnet-ef --version 10.0.12
+`dotnet tool install --global dotnet-ef --version 10.0.12`
 
 ### After adding your model and DbSet
-dotnet ef migrations add AddProducts --project src/giraf-core-v2.csproj --startup-project src/giraf-core-v2.csproj
+`dotnet ef migrations add MIGRATION_NAME`
 
 ### Build and run; startup applies the migration
-docker compose up --build
+`docker compose up --build`
 
 ### Optional: discard the local database volume to fix the existing EnsureCreated/migration mismatch
 ### WARNING: deletes database data
-docker compose down -v
-docker compose up --build
+`docker compose down -v`
+`docker compose up --build`
