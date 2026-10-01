@@ -8,6 +8,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection")));
 
 builder.Services.AddScoped<ColorService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
@@ -21,5 +22,6 @@ app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 app.MapColorEndpoints();
+app.MapUserEndpoints();
 
 app.Run();

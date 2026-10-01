@@ -12,6 +12,7 @@ public static class ColorEndpoints
     private static async Task<IResult> GetColors(ColorService colorService)
     {
         var colors = await colorService.GetColorsAsync();
+
         return Results.Ok(colors);
     }
 }
