@@ -6,6 +6,7 @@ public static class UserEndpoints
 
         group.MapGet("/me", GetCurrentUser);
         group.MapDelete("/me", DeleteCurrentUser);
+        group.MapPatch("/me", UpdateCurrentUser);
     }
 
     private static async Task<IResult> GetCurrentUser(UserService userService)
@@ -20,5 +21,11 @@ public static class UserEndpoints
         // TODO: Get ID when authentication is enabled.
         var result = await userService.DeleteCurrentUserAsync(1);
         return result ? Results.NoContent() : Results.NotFound();
+    }
+
+    private static async Task<IResult> UpdateCurrenUser(UserService userService)
+    {
+        var user = await userService.UpdateCurrentUserAsync(UserService userService);
+        return user == null ? Results.NotFound() : Results.Ok(user);
     }
 }
