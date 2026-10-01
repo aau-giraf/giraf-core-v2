@@ -15,15 +15,14 @@ public static class OrganizationEndpoints
     private static async Task<IResult> GetClassesInOrginization(int org_id, OrganizationService organizationservice)
     {
         var classes = await organizationservice.GetClassesInOrganizationAsync(org_id);
-        
-        return Results.Ok(classes);
+        return classes == null ? Results.NotFound() : Results.Ok(classes);
     }
 
 
     private static async Task<IResult> GetOrginizationById(int org_id, OrganizationService organizationService)
     {   
         var organization = await organizationService.GetOrganizationByIdAsync(org_id);
-        return Results.Ok(organization);
+        return organization == null? Results.NotFound() : Results.Ok(organization);
     }
 
 }

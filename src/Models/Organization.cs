@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 public class Organization
 {
     [NotNull]
+    [Key]
     public required int Id { get; set; }
 
     [MaxLength(200)]
