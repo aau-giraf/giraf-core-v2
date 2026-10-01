@@ -19,26 +19,17 @@ For above guide on Linux run the following commands before `docker compose up --
 Might require the following package a separate 'docker buildx' package depending on your distro:
 `sudo pacman -S docker-buildx`
 
-## Project Structure (outdated)
+## Migrations & New Database Tables
+### Once, if dotnet-ef isn't installed
+dotnet tool install --global dotnet-ef --version 10.0.12
 
-```text
-giraf-core-v2/
-├── Data/                  # Database context
-│   └── Migrations/        # EF Core migrations
-├── Endpoints/             # API endpoints
-├── Entities/
-│   └── DTOs/
-├── Mappings/              # Mapping between entities and DTOs
-│   ├── ToDTO/
-│   └── ToEntity/
-├── Properties/
-│   └── launchSettings.json
-├── Services/              # Business logic
-├── Utilities/
-├── appsettings.json
-├── appsettings.Development.json
-├── core.csproj
-├── core.http
-├── Program.cs
-└── LICENSE
-```
+### After adding your model and DbSet
+dotnet ef migrations add AddProducts --project src/giraf-core-v2.csproj --startup-project src/giraf-core-v2.csproj
+
+### Build and run; startup applies the migration
+docker compose up --build
+
+### Optional: discard the local database volume to fix the existing EnsureCreated/migration mismatch
+### WARNING: deletes database data
+docker compose down -v
+docker compose up --build

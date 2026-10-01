@@ -6,4 +6,5 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public DbSet<Color> Colors => Set<Color>();
+    public DbSet<User> Users => Set<User>();
 }
