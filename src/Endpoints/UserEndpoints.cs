@@ -1,3 +1,6 @@
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
+
 public static class UserEndpoints
 {
     public static void MapUserEndpoints(this WebApplication app)
@@ -23,9 +26,14 @@ public static class UserEndpoints
         return result ? Results.NoContent() : Results.NotFound();
     }
 
-    private static async Task<IResult> UpdateCurrenUser(UserService userService)
+    private static async Task<IResult> UpdateCurrentUser(
+        UserService userService, [FromBody] UpdateUserDTO? inputUser)
     {
-        var user = await userService.UpdateCurrentUserAsync(UserService userService);
+        if (inputUser is null)
+        {
+            return Results.BadRequest();
+        }
+        var user = await userService.UpdateCurrentUserAsync(1, inputUser);
         return user == null ? Results.NotFound() : Results.Ok(user);
     }
 }

@@ -19,4 +19,41 @@ public class UserService(AppDbContext db)
 
         return false;
     }
+
+    public async Task<User?> UpdateCurrentUserAsync(int Id, UpdateUserDTO inputUser)
+    {
+        var user = await _db.Users.FindAsync(Id);
+
+        // Return null if user does not exist.
+        if (user is null)
+        {
+            return null;
+        }
+
+        // Update supplied fields.
+        if (inputUser.FirstName is not null)
+        {
+            user.FirstName = inputUser.FirstName;
+        }
+
+        if (inputUser.LastName is not null)
+        {
+            user.LastName = inputUser.LastName;
+        }
+
+        if (inputUser.Email is not null)
+        {
+            user.Email = inputUser.Email;
+        }
+
+        if (inputUser.Username is not null)
+        {
+            user.Username = inputUser.Username;
+        }
+
+        // Save changes.
+        await _db.SaveChangesAsync();
+
+        return user;
+    }
 }
