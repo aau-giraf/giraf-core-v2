@@ -1,8 +1,8 @@
-namespace giraf_core_v2.Endpoints;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
+namespace giraf_core_v2.Endpoints;
 
-public static class CitizenEnpoints
+public static class CitizenEndpoints
 {
     public static void MapCitizenEndpoints(this WebApplication app)
     {
@@ -15,27 +15,27 @@ public static class CitizenEnpoints
         groupOrg.MapPost("/{orgId}/citizens", CreateCitizen);
     }
 
-    private static async Task<IResult> GetCitizen(int citizenId, CitizenService citizenService)
+    private static async Task<Results<Ok<Citizen>, NotFound>> GetCitizen(int citizenId, CitizenService citizenService)
     {
         var citizen = await citizenService.GetCitizenAsync(citizenId);
-        return citizen is null ? Results.NotFound() : Results.Ok(citizen);
+        return citizen is null ? TypedResults.NotFound() : TypedResults.Ok(citizen);
     }
 
-    private static async Task<IResult> CreateCitizen(int orgId, CitizenService citizenService)
+    private static async Task<Created<Citizen>> CreateCitizen(int orgId, CitizenService citizenService)
     {
         var citizen = await citizenService.CreateCitizenAsync(orgId);
-        return Results.Created($"/citizens/{citizen.CitizenId}", citizen);
+        return TypedResults.Created($"/citizens/{citizen.CitizenId}", citizen);
     }
 
-    private static async Task<IResult> UpdateCitizen(int citizenId, CitizenService citizenService)
+    private static async Task<Results<Ok<Citizen>, NotFound>> UpdateCitizen(int citizenId, CitizenService citizenService)
     {
         var citizen = await citizenService.UpdateCitizenAsync(citizenId);
-        return citizen is null ? Results.NotFound() : Results.Ok(citizen);
+        return citizen is null ? TypedResults.NotFound() : TypedResults.Ok(citizen);
     }
 
-    private static async Task<IResult> DeleteCitizen(int citizenId, CitizenService citizenService)
+    private static async Task<Results<NoContent, NotFound>> DeleteCitizen(int citizenId, CitizenService citizenService)
     {
         var deleted = await citizenService.DeleteCitizenAsync(citizenId);
-        return deleted ? Results.NoContent() : Results.NotFound();
+        return deleted ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 }
