@@ -1,10 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 
-public class Organization
+namespace giraf_core_v2.Models
 {
-    [Key]
-    public int Id { get; init; }
-    public required string Name {get; set;}
+    public class Organization
+    {
+        [Key]
+        public int Id { get; init; }
+        public required string Name {get; set;}
 
-    public ICollection<UserOrganization> Users { get; } = [];
+        public ICollection<UserOrganization> Users { get; } = [];
+    }
 }

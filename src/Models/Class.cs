@@ -1,11 +1,14 @@
-public class Class
+namespace giraf_core_v2.Models
 {
-    public int Id { get; init; }
-    public required string Name { get; set; }
+    public class Class
+    {
+        public int Id { get; init; }
+        public required string Name { get; set; }
 
-    public int OrganizationId { get; init; }
-    public required Organization Organization { get; init; }
+        public int OrganizationId { get; init; }
+        public required Organization Organization { get; init; }
 
-    //Navigational property for citizens belonging to a class
-    public ICollection<Citizen> Citizens { get; } = [];
+        //Navigational property for citizens belonging to a class
+        public ICollection<Citizen> Citizens { get; } = [];
+    }
 }

@@ -1,11 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 
-[PrimaryKey(nameof(UserId), nameof(OrganizationId))] //Congigure a composite key of the two IDs in order
-public class UserOrganization
+namespace giraf_core_v2.Models
 {
-    public int UserId {get; init; }
-    public required User User { get; init; } //make the foreigh key for UserId
+    //Configure a composite key of the two Ids in order
+    [PrimaryKey(nameof(UserId), nameof(OrganizationId))]
+    public class UserOrganization
+    {
+        //Foreign key to User
+        public int UserId {get; init; }
+        public required User User { get; init; }
 
-    public required int OrganizationId {get; init;}
-    public required Organization Organization { get; init; } //make the foreigh key for OrginizationId
+        //Foreign key to Organization
+        public required int OrganizationId {get; init;}
+        public required Organization Organization { get; init; }
+    }
 }
