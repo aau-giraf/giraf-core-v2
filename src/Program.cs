@@ -9,6 +9,9 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 
 builder.Services.AddScoped<ColorService>();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -17,9 +20,13 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 app.MapColorEndpoints();
+
 
 app.Run();
