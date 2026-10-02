@@ -7,6 +7,6 @@ public class UnitTest1
 
     [Fact]
     public void Good() =>
-        Assert.Equal(4, Add(2, 2));
+        Assert.Equal(5, Add(2, 2));
 
 }
