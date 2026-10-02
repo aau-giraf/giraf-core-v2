@@ -8,6 +8,7 @@ namespace giraf_core_v2.Models
         public int Id { get; init; }
         public required string Name {get; set;}
 
+        //Navigational property for users belonging to an organization
         public ICollection<UserOrganization> Users { get; } = [];
     }
 }
