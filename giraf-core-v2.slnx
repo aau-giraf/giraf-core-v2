@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/giraf-core-v2.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/giraf-core-v2.Tests.csproj" />
+  </Folder>
+</Solution>
