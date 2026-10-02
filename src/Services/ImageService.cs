@@ -10,4 +10,13 @@ public class ImageService(AppDbContext db)
             .FirstOrDefaultAsync(c=> c.Id == image_id);
         return image;
     }
+
+    public async Task<List<Image>> CreateImagesAsync()
+    {
+        var image = new Image();
+        _db.Images.Add(image);
+        await _db.SaveChangesAsync();
+        return image;
+    }
+
 }
