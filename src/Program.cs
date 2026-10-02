@@ -10,6 +10,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 builder.Services.AddScoped<ColorService>();
 builder.Services.AddScoped<UserService>();
 
+builder.Services.AddValidation();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
