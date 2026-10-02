@@ -15,4 +15,9 @@ public static class ImageEndpoints
         var classes = await ImageService.GetIDInImagesAsync(image_id);
         return classes == null ? Results.NotFound() : Results.Ok(classes);
     }
+
+    private static async Task<IResult> PostImage(int image_id, )
+    {
+        
+    } 
 }
