@@ -13,4 +13,5 @@ public class User
     
     //Navigational property, organizations the user is linked to
     public ICollection<UserOrganization> Organizations { get; } = [];
+    public Citizen Citizen { get; init; }
 }
