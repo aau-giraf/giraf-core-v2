@@ -8,4 +8,5 @@ public class AppDbContext : DbContext
     public DbSet<Color> Colors => Set<Color>();
     public DbSet<Class> Classes => Set<Class>();
     public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<User> Users => Set<User>();
 }
