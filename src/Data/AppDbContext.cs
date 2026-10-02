@@ -9,4 +9,5 @@ public class AppDbContext : DbContext
 
     public DbSet<Color> Colors => Set<Color>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Citizen> Citizens => Set<Citizen>();
 }
