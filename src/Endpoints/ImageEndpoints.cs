@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc; 
+namespace giraf_core_v2.Endpoints;
+
 public static class ImageEndpoints
 {
     public static void MapImageEndpoints(this WebApplication application)
@@ -10,10 +14,10 @@ public static class ImageEndpoints
 
         } 
         
-    private static async Task<IResult> GetIDInImages(int image_id, ImageService ImageService)
+    private static async Task<Results<Ok<Image>, NotFound>> GetIDInImages(int image_id, ImageService ImageService)
     {
         var classes = await ImageService.GetIDInImagesAsync(image_id);
-        return classes == null ? Results.NotFound() : Results.Ok(classes);
+        return classes == null ? TypedResults.NotFound() : TypedResults.Ok(classes);
     }
 
     private static async Task<IResult> PostImage(int image_id, )
