@@ -6,16 +6,13 @@ public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<List<Class>> GetClassesInOrganizationAsync(int org_id)
+     // Fetch the organizations
+    public async Task<List<Organization>> GetOrganizationsAsync()
     {   
+        var organizations = await _db.Organizations.ToListAsync();;
         
-        // Fetch all class tuples, where the column OrganizationId equals org_id
-        var classes = await _db.Classes
-            .Where(c => c.OrganizationId == org_id).AsNoTracking().ToListAsync();
-
-        return classes;
+        return organizations;
     }
-
 
     // Fetch the organization by org_id from request header
     public async Task<Organization> GetOrganizationByIdAsync(int org_id)
@@ -23,6 +20,58 @@ public class OrganizationService(AppDbContext db)
         var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
         
         return organization;
+    }
+
+    // Delete organization by org_id from request header
+    public async Task<bool> DeleteOrganizationAsync(int org_id)
+    {   
+        
+        // Fetch organization and delete it
+        var organization = await _db.Organizations
+            .FirstOrDefaultAsync(o => o.Id == org_id);
+        
+        if (organization.Id == org_id)
+        {
+            _db.Organizations.Remove(organization);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<Class> GetClassInOrganizationAsync(int org_id, int class_id)
+    {   
+        
+        // Fetch the classes tuples, where the column OrganizationId equals org_id and
+        // find the class where the columns Id equals class_id from request header
+        var oneClass = await _db.Classes
+            .Where(c => c.OrganizationId == org_id).FirstOrDefaultAsync(c => c.Id == class_id);
+
+        return oneClass;
+    }
+
+    public async Task<List<Class>> GetClassesInOrganizationAsync(int org_id)
+    {   
+        // Fetch all class tuples, where the column OrganizationId equals org_id
+        var classes = await _db.Classes
+            .Where(c => c.OrganizationId == org_id).AsNoTracking().ToListAsync();
+
+        return classes;
+    }
+
+    public async Task<bool> DeleteClassInOrganizationAsync(int org_id, int class_id)
+    {   
+        // Fetch the specific class like before and delete it.
+        var oneClass = await _db.Classes
+            .Where(c => c.OrganizationId == org_id).FirstOrDefaultAsync(c => c.Id == class_id);
+        
+        if (oneClass.Id == class_id)
+        {
+            _db.Classes.Remove(oneClass);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        return false;
     }
 
 }
