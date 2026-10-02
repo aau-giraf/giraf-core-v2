@@ -12,12 +12,13 @@ public enum UserRole
 public class User
 {
     [Key]
-    public int Id {get; set;}
-    public required string FirstName {get; set;}
-    public required string LastName {get; set;}
-    public required string Email {get; set;}
+    public int Id { get; set; }
+    public required string FirstName { get; set; }
+    public required string LastName { get; set; }
+    public required string Email { get; set; }
 
-    public required string Username {get; set;}
-    public required string Password {get; set;}
-    public required UserRole Role {get; set;}
+    public required string Username { get; set; }
+    // TODO: hash password, so it can't be read by anyone with DB access.
+    public required string Password { get; set; }
+    public required UserRole Role { get; set; }
 }
