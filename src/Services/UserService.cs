@@ -56,4 +56,29 @@ public class UserService(AppDbContext db)
 
         return user;
     }
+
+    public async Task<int> UpdateUserPasswordAsync(int Id, UpdatePasswordDTO updatePassword)
+    {
+        var user = await _db.Users.FindAsync(Id);
+
+        // Return 0 if user does not exist.
+        if (user is null)
+        {
+            return 0;
+        }
+
+        // Verify the supplied current password against the stored hash.
+        if (!BCrypt.Net.BCrypt.Verify(updatePassword.OldPassword, user.Password))
+        {
+            return 1;
+        }
+
+        // Update the user's password.
+        user.Password = BCrypt.Net.BCrypt.HashPassword(updatePassword.NewPassword, 12);
+
+        await _db.SaveChangesAsync();
+
+        // Return 2 on successful password change.
+        return 2;
+    }
 }
