@@ -1,4 +1,4 @@
-using System.Net;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 public static class UserEndpoints
@@ -13,52 +13,52 @@ public static class UserEndpoints
         group.MapPut("/me/password", UpdateUserPassword);
     }
 
-    private static async Task<IResult> GetCurrentUser(UserService userService)
+    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService)
     {
         // TODO: Get ID from authentication.
 
         var user = await userService.GetCurrentUserAsync(1);
-        return user == null ? Results.NotFound() : Results.Ok(user);
+        return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<IResult> DeleteCurrentUser(UserService userService, [FromBody] int? id)
+    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUser(UserService userService)
     {
         // TODO: Get ID when authentication is enabled.
-        if (id is null)
-        {
-            return Results.BadRequest();
-        }
-        var result = await userService.DeleteCurrentUserAsync(id.Value);
-        return result ? Results.NoContent() : Results.NotFound();
+        // if (id is null)
+        // {
+        //     return TypedResults.BadRequest();
+        // }
+        var result = await userService.DeleteCurrentUserAsync(1);
+        return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<IResult> UpdateCurrentUser(
+    private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUser(
         UserService userService, [FromBody] UpdateUserDTO? inputUser)
     {
         // TODO: get ID from authentication
         if (inputUser is null)
         {
-            return Results.BadRequest();
+            return TypedResults.BadRequest();
         }
 
         var user = await userService.UpdateCurrentUserAsync(1, inputUser);
-        return user == null ? Results.NotFound() : Results.Ok(user);
+        return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<IResult> UpdateUserPassword(UserService userService, [FromBody] UpdatePasswordDTO? updatePassword)
+    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPassword(UserService userService, [FromBody] UpdatePasswordDTO? updatePassword)
     {
         if (updatePassword is null)
         {
-            return Results.BadRequest();
+            return TypedResults.BadRequest();
         }
         var status = await userService.UpdateUserPasswordAsync(2, updatePassword);
 
         return status switch
         {
-            0 => Results.NotFound(),
-            1 => Results.Unauthorized(),
-            2 => Results.NoContent(),
-            _ => Results.BadRequest(),
+            0 => TypedResults.NotFound(),
+            1 => TypedResults.Unauthorized(),
+            2 => TypedResults.NoContent(),
+            _ => TypedResults.BadRequest(),
         };
     }
 }
