@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-[PrimaryKey(nameof(UserId), nameof(OrganizationId))] //make a composite key of the two IDs
+
+[PrimaryKey(nameof(UserId), nameof(OrganizationId))] //Congigure a composite key of the two IDs in order
 public class UserOrganization
 {
-    public int UserId {get; set;}
-    public required User User { get; set; } //make the foreigh key for UserId
-    public required string OrganizationId {get; set;}
-    public required Organization Organization { get; set; } //make the foreigh key for OrginizationId
+    public int UserId {get; init; }
+    public required User User { get; init; } //make the foreigh key for UserId
+    public required string OrganizationId {get; init;}
+    public required Organization Organization { get; init; } //make the foreigh key for OrginizationId
 }
