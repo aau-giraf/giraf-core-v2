@@ -11,6 +11,8 @@ The `/colors` endpoint should return an empty array. To add entries to the color
 
 Now you can run `INSERT INTO "Colors" ("Id", "ColorName") VALUES (1, 'Red');`
 
+Or `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
+
 ### Linux
 For above guide on Linux run the following commands before `docker compose up --build`, to ensure a valid build platform is available.
 
