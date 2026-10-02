@@ -24,7 +24,7 @@ public class AppDbContext : DbContext
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
-        //Singular table names from model class, instead of plural from DbSet variables below 
+        //Singular table names from model class, instead of plural from DbSet variables 
         configurationBuilder.Conventions.Remove(typeof(TableNameFromDbSetConvention));
     }
 }
