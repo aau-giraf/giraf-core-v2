@@ -4,7 +4,7 @@ public class Organization
 {
     [NotNull]
     [Key]
-    public required int Id { get; set; }
+    public required Guid Id { get; set; }
 
     [MaxLength(200)]
     public required string? Name { get; set; }
