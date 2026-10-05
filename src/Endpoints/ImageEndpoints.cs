@@ -9,6 +9,7 @@ public static class ImageEndpoints
             var group = application.MapGroup("/images");
 
             group.MapGet("/{image_id}", GetIDInImages);
+            group.MapGet("/", GetAllImages);
             //group.MapPost("/", PostImage);
             //group.MapPost("/{image_id}/sound");
             //group.MapDelete("/{image_id}/");
@@ -19,6 +20,12 @@ public static class ImageEndpoints
     {
         var classes = await ImageService.GetIDInImagesAsync(image_id);
         return classes == null ? TypedResults.NotFound() : TypedResults.Ok(classes);
+    }
+
+    private static async Task<Ok<List<Image>>> GetAllImages(ImageService imageService)
+    {
+        var images = await imageService.GetAllImagesAsync();
+        return TypedResults.Ok(images);
     }
 
     //private static async Task<Created<Image>> PostImage(ImageService ImageService)

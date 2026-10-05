@@ -11,6 +11,13 @@ public class ImageService(AppDbContext db)
         return image;
     }
 
+    public async Task<List<Image>> GetAllImagesAsync()
+    {
+        return await _db.Images.ToListAsync();
+    }
+
+
+
     /*public async Task<List<Image>> CreateImagesAsync()
     {
         var image = new Image();
