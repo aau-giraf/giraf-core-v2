@@ -6,12 +6,11 @@ public class Class
 {
     [Key]
     [NotNull]
-    public required Guid Id { get; set; }
+    public int Id { get; set; }
 
     [MaxLength(200)]
     public required string? Name { get; set; }
     
     [ForeignKey("OrganizationId")]
-    public required Guid OrganizationId { get; set; }
-
+    public required int OrganizationId { get; set; }
 }

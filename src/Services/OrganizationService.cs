@@ -15,7 +15,7 @@ public class OrganizationService(AppDbContext db)
     }
 
     // Fetch the organization by org_id from route
-    public async Task<Organization> GetOrganizationByIdAsync(Guid org_id)
+    public async Task<Organization> GetOrganizationByIdAsync(int org_id)
     {   
         var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
         
@@ -23,7 +23,7 @@ public class OrganizationService(AppDbContext db)
     }
 
     // Delete organization by org_id from route
-    public async Task<bool> DeleteOrganizationAsync(Guid org_id)
+    public async Task<bool> DeleteOrganizationAsync(int org_id)
     {   
         
         // Fetch organization and delete it
@@ -39,7 +39,7 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<Class> GetClassInOrganizationAsync(Guid org_id, Guid class_id)
+    public async Task<Class> GetClassInOrganizationAsync(int org_id, int class_id)
     {   
         
         // Fetch the classes tuples, where the column OrganizationId equals org_id and
@@ -50,7 +50,7 @@ public class OrganizationService(AppDbContext db)
         return oneClass;
     }
 
-    public async Task<List<Class>> GetClassesInOrganizationAsync(Guid org_id)
+    public async Task<List<Class>> GetClassesInOrganizationAsync(int org_id)
     {   
         // Fetch all class tuples, where the column OrganizationId equals org_id
         var classes = await _db.Classes
@@ -59,7 +59,7 @@ public class OrganizationService(AppDbContext db)
         return classes;
     }
 
-    public async Task<bool> DeleteClassInOrganizationAsync(Guid org_id, Guid class_id)
+    public async Task<bool> DeleteClassInOrganizationAsync(int org_id, int class_id)
     {   
         // Fetch the specific class like before and delete it.
         var oneClass = await _db.Classes
@@ -74,13 +74,14 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<Class> CreateClassInOrganizationAsync(string className, Guid org_id)
+    public async Task<Class> CreateClassInOrganizationAsync(string className, int org_id)
     {
         // Create new class in organization
-        Class createdClass = new Class() {Id = Guid.NewGuid(), Name = className, OrganizationId = org_id};
+        Class createdClass = new Class() {Name = className, OrganizationId = org_id};
         
         if (createdClass.Name is not null)
-        {
+        {   
+            _db.Classes.Add(createdClass);
             await _db.SaveChangesAsync();
         }
         return createdClass;
@@ -88,4 +89,3 @@ public class OrganizationService(AppDbContext db)
     }
 
 }
-
