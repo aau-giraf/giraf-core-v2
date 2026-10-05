@@ -8,6 +8,6 @@ public class ColorService(AppDbContext db)
 
     public async Task<List<Color>> GetColorsAsync()
     {
-        return await _db.Colors.AsNoTracking().ToListAsync();        
+        return await _db.Colors.AsNoTracking().ToListAsync();
     }
 }
