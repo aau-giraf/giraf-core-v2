@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using giraf_core_v2.Data;
 
 #nullable disable
 
@@ -98,7 +97,6 @@ namespace giraf_core_v2.Migrations
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.User", b =>
-            modelBuilder.Entity("User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -242,36 +240,6 @@ namespace giraf_core_v2.Migrations
                     b.Navigation("Citizen");
 
                     b.Navigation("Organizations");
-                });
-
-            modelBuilder.Entity("giraf_core_v2.Models.Citizen", b =>
-                {
-                    b.Property<int>("CitizenId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CitizenId"));
-
-                    b.HasKey("CitizenId");
-
-                    b.ToTable("Citizens");
-                });
-
-            modelBuilder.Entity("giraf_core_v2.Models.Color", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ColorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Colors");
                 });
 #pragma warning restore 612, 618
         }

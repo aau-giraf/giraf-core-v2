@@ -8,13 +8,13 @@ public class Citizen
 {
     [Key]
     public int UserId { get; set; }
-    public required User User { get; set; }
+    public User User { get; set; } = null!;
 
     public int GuardianId { get; set; }
-    public required User Guardian {get; set; }
+    public User Guardian {get; set; } = null!;
 
     public int ClassId { get; set; }
-    public required Class Class { get; set; }
+    public Class Class { get; set; } = null!;
 }
 
 // Explicitly configures database mapping of Citizen model - conventions were insufficient to determine mapping (shadow properties were created)
