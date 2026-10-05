@@ -1,6 +1,10 @@
 using System.Reflection.Metadata.Ecma335;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
+
+namespace giraf_core_v2.Services;
 
 public class OrganizationService(AppDbContext db)
 {
@@ -74,18 +78,44 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<Class> CreateClassInOrganizationAsync(string className, int org_id)
+    public async Task<ResponseCreateClassDTO> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass)
     {
-        // Create new class in organization
-        Class createdClass = new Class() {Name = className, OrganizationId = org_id};
-        
-        if (createdClass.Name is not null)
-        {   
-            _db.Classes.Add(createdClass);
-            await _db.SaveChangesAsync();
+       
+       
+       // Fetch organization instance from db (Required in Class model)
+       var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == createClass.OrganizationId);
+
+       // Create new instance of class
+       Class createdClass = new Class
+		{
+			Name = createClass.Name,
+            OrganizationId = createClass.OrganizationId,
+            Organization = organization,
+		};
+
+
+        // Insert the new instance tuple into the db.
+        if (createdClass.Name is not null && createdClass.Organization is not null) {
+        _db.Classes.Add(createdClass);
+        await _db.SaveChangesAsync();
         }
-        return createdClass;
+
+        // Fetch the new class in the DB. 
+        // The DB makes the class Id on entry, which is required in the Response
+        // It is therefore we insert it in the DB, and then fetches that same entry now containing id. 
+        Class newClass = _db.Classes.FirstOrDefault(c => c.Name == createdClass.Name && c.OrganizationId == createClass.OrganizationId);
         
+
+        // Return correctly formatted response
+        ResponseCreateClassDTO responseClass = new ResponseCreateClassDTO
+		{
+			Id = newClass.Id,
+            Name = newClass.Name,
+            OrganizationId = newClass.OrganizationId,
+		};
+
+        return responseClass;
+    
     }
 
 }

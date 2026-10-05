@@ -55,13 +55,13 @@ public static class OrganizationEndpoints
 
     private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(int org_id, int class_id, OrganizationService organizationservice)
     {
-        var oneClass = await organizationservice.DeleteClassInOrganizationAsync(org_id, class_id);
-        return oneClass ? TypedResults.NoContent() : TypedResults.NotFound();
+        var selectedClass = await organizationservice.DeleteClassInOrganizationAsync(org_id, class_id);
+        return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<Class>, NotFound>> CreateClassInOrganization([FromForm] string className , [FromForm] int org_id, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, OrganizationService organizationservice)
     {   
-        var createdClass = await organizationservice.CreateClassInOrganizationAsync(className, org_id);
+        var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClassDTO);
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
