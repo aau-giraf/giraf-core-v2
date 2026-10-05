@@ -9,9 +9,9 @@ public static class ImageEndpoints
             var group = application.MapGroup("/images");
 
             group.MapGet("/{image_id}", GetIDInImages);
-            group.MapPost("/", PostImage);
-            group.MapPost("/{image_id}/sound");
-            group.MapDelete("/{image_id}/");
+            //group.MapPost("/", PostImage);
+            //group.MapPost("/{image_id}/sound");
+            //group.MapDelete("/{image_id}/");
 
         } 
         
@@ -21,9 +21,9 @@ public static class ImageEndpoints
         return classes == null ? TypedResults.NotFound() : TypedResults.Ok(classes);
     }
 
-    private static async Task<Created<Image>> PostImage(ImageService ImageService)
-    {
-        var image = await ImageService.CreateImagesAsync();
-        return TypedResults.Created($"/images/{image.Id}", image);  
-    } 
+    //private static async Task<Created<Image>> PostImage(ImageService ImageService)
+    //{
+        //var image = await ImageService.CreateImagesAsync();
+        //return TypedResults.Created($"/images/{image.Id}", image);  
+    //} 
 }
