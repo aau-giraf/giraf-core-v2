@@ -1,11 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using giraf_core_v2.Data.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register health checks
 builder.Services.AddHealthChecks();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection"))
+        .UseSeeding((context, _) => {
+            var dbContext = (AppDbContext)context;
+            OrganizationConfiguration.Seed(dbContext);
+            UserConfiguration.Seed(dbContext);
+        })
+);
+
 
 builder.Services.AddScoped<ColorService>();
 builder.Services.AddScoped<UserService>();
