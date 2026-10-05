@@ -11,7 +11,6 @@ public class AuthService(AppDbContext db)
             Email = registerUser.Email,
             Username = registerUser.Username,
             Password = BCrypt.Net.BCrypt.HashPassword(registerUser.Password, 12),
-            Role = registerUser.Role
         };
 
         _db.Users.Add(user);
