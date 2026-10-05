@@ -17,6 +17,7 @@ public class AppDbContext : DbContext
     public DbSet<Citizen> Citizens => Set<Citizen>();
     public DbSet<Class> Classes => Set<Class>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<Image> Images => Set<Image>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
