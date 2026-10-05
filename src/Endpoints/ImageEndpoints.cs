@@ -12,7 +12,7 @@ public static class ImageEndpoints
             group.MapGet("/", GetAllImages);
             //group.MapPost("/", PostImage);
             //group.MapPost("/{image_id}/sound");
-            //group.MapDelete("/{image_id}/");
+            group.MapDelete("/{image_id}/", DeleteImage);
 
         } 
         
@@ -26,6 +26,12 @@ public static class ImageEndpoints
     {
         var images = await imageService.GetAllImagesAsync();
         return TypedResults.Ok(images);
+    }
+
+    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteImage(Image image)
+    {
+        var result = await ImageService.DeleteImageAsync(image);
+        return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
     //private static async Task<Created<Image>> PostImage(ImageService ImageService)
