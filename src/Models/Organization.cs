@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
+
+namespace giraf_core_v2.Models;
+
 public class Organization
 {
-    [NotNull]
     [Key]
+    public int Id { get; init; }
+    public required string Name {get; set;}
 
-    public int Id { get; set; }
-
-    [MaxLength(200)]
-    public required string? Name { get; set; }
-
+    //Navigational property for users belonging to an organization
+    public ICollection<UserOrganization> Users { get; } = [];
 }

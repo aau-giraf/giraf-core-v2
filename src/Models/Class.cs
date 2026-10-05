@@ -1,16 +1,13 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
+namespace giraf_core_v2.Models;
+
 public class Class
 {
-    [Key]
-    [NotNull]
-    public int Id { get; set; }
+    public int Id { get; init; }
+    public required string Name { get; set; }
 
-    [MaxLength(200)]
-    public required string? Name { get; set; }
-    
-    [ForeignKey("OrganizationId")]
-    public required int OrganizationId { get; set; }
+    public int OrganizationId { get; init; }
+    public required Organization Organization { get; init; }
+
+    //Navigational property for citizens belonging to a class
+    public ICollection<Citizen> Citizens { get; } = [];
 }
