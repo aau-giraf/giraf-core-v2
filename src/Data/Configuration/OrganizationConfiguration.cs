@@ -6,9 +6,9 @@ public class OrganizationConfiguration {
         
         if (!context.Set<Organization>().Any()) {
             var organizations = new[] { 
-                new Organization{ Id = 1, Name = "Egebakken" }, 
-                new Organization{ Id = 2, Name = "Birkehøjen" }, 
-                new Organization{ Id = 3, Name = "Fyrdalen" } 
+                new Organization{ Name = "Egebakken" }, 
+                new Organization{ Name = "Birkehøjen" }, 
+                new Organization{ Name = "TestSkole" } 
             };
 
             context.Set<Organization>().AddRange(organizations);

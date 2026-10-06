@@ -7,10 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection"))
-        .UseSeeding((context, _) => {
-            var dbContext = (AppDbContext)context;
+        .UseSeeding((context, _) => { // Runs when Databse.Migrate() 
+            var dbContext = (AppDbContext)context; // Models must be seeded in the correct order to account for foreign key linking. (hvordan garantere det med discvoery??)
             OrganizationConfiguration.Seed(dbContext);
             UserConfiguration.Seed(dbContext);
+            ClassConfiguration.Seed(dbContext);
+            CitizenConfiguration.Seed(dbContext);
+            UserOrganizationConfiguration.Seed(dbContext);
+            UserRoleConfiguration.Seed(dbContext);
         })
 );
 

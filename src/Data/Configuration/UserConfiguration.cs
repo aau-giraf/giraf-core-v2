@@ -7,7 +7,6 @@ public class UserConfiguration {
         if (!context.Set<User>().Any()) {
             var users = new[] {
                 new User {
-                    Id = 1,
                     FirstName = "Hans",
                     LastName = "Phillip",
                     Email = "hans.phillip@email.com",
@@ -15,21 +14,41 @@ public class UserConfiguration {
                     Password = "1234" // skal hashes (med hvad end algoritme der ender med at blive brugt)
                 },
                 new User {
-                    Id = 2,
                     FirstName = "Mark",
                     LastName = "Vad",
                     Email = "mark_vad123@gmail.com",
                     Username = "markvad",
-                    Password = "5678" // skal hases
+                    Password = "5678"
                 },
                 new User {
-                    Id = 3,
                     FirstName = "Lars",
                     LastName = "Lars",
                     Email = "lars@hotmail.com",
                     Username = "larslars",
-                    Password = "123lars" // skal hashes
+                    Password = "123lars"
+                },
+                new User {
+                    FirstName = "Lone",
+                    LastName = "Hamm",
+                    Email = "lonehamm@hotmail.com",
+                    Username = "lone123",
+                    Password = "lonekode"
+                },
+                new User {
+                    FirstName = "kurt",
+                    LastName = "hansen",
+                    Email = "kh@mail.dk",
+                    Username = "kurthansen",
+                    Password = "kurtskode"
+                },
+                new User {
+                    FirstName = "ille",
+                    LastName = "soren",
+                    Email = "islroen@email.dk",
+                    Username = "brugernavn",
+                    Password = "kodeord"
                 }
+
             };
 
             context.Set<User>().AddRange(users);
