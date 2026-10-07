@@ -35,3 +35,7 @@ Might require the following package a separate 'docker buildx' package depending
 ### WARNING: deletes database data
 `docker compose down -v`
 `docker compose up --build`
+
+## Run Tests
+Run: `dotnet test --logger "console;verbosity=detailed"`
+The test seed will then be visible in the terminal.
