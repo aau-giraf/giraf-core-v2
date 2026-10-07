@@ -1,0 +1,14 @@
+# syntax=docker/dockerfile:1
+
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS test
+
+WORKDIR /source
+
+COPY . .
+
+WORKDIR /source/test
+
+RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
+    dotnet restore
+
+ENTRYPOINT ["dotnet", "test", "--no-restore", "--logger:console;verbosity=normal"]

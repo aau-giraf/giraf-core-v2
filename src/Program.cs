@@ -2,16 +2,20 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register health checks
+// Register health checks.
 builder.Services.AddHealthChecks();
 
+// Configure database connection.
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection")));
 
+// Add services to the app.
 builder.Services.AddScoped<ColorService>();
 builder.Services.AddScoped<UserService>();
 
+// Add service for DTO validation.
 builder.Services.AddValidation();
 
+// Make the API interactable through Swagger.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -23,14 +27,13 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
+// Add endpoints.
 app.MapHealthChecks("/health");
 app.MapColorEndpoints();
 app.MapUserEndpoints();
-
 
 app.Run();
