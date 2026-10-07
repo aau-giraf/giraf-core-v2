@@ -14,7 +14,7 @@ jobs:
         name: build-output
 
     - name: Build test image
-    - run: docker build -f Dockerfile.test -t test .
+      run: docker build -f Dockerfile.test -t test .
 
     - name: Run tests
       run: docker run --rm test
