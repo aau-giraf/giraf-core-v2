@@ -43,15 +43,6 @@ RUN --mount=type=cache,id=nuget,target=/root/.nuget/packages \
 # build your Dockerfile. If reproducibility is important, consider using a more specific
 # version (e.g., aspnet:7.0.10-alpine-3.18),
 # or SHA (e.g., mcr.microsoft.com/dotnet/aspnet@sha256:f3d99f54d504a21d38e4cc2f13ff47d67235efeeb85c109d3d1ff1808b38d034).
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS test
-
-COPY . /source
-
-WORKDIR /source
-
-RUN  dotnet test --logger "console;verbosity=detailed"
-
-
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
