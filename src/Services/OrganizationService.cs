@@ -119,17 +119,17 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseCreateClassDTO> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass)
+    public async Task<ResponseCreateClassDTO> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass, int org_id)
     {
        
        // Fetch organization instance from db (Required in Class model)
-       var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == createClass.OrganizationId);
+       var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
 
        // Create new instance of class
        Class createdClass = new Class
 		{
 			Name = createClass.Name,
-            OrganizationId = createClass.OrganizationId,
+            OrganizationId = org_id,
             Organization = organization,
 		};
 
@@ -145,7 +145,7 @@ public class OrganizationService(AppDbContext db)
         // Fetch the new class in the DB. 
         // The DB makes the class Id on insert, which is required in the Response
         // It is therefore we insert it in the DB, and then fetches that same entry now containing id. 
-        Class newClass = _db.Classes.FirstOrDefault(c => c.Name == createdClass.Name && c.OrganizationId == createClass.OrganizationId);
+        Class newClass = _db.Classes.FirstOrDefault(c => c.Name == createdClass.Name && c.Id == createdClass.Id);
         
 
         // Return correctly formatted response

@@ -8,8 +8,4 @@ public class RequestCreateClassDTO
     [Required]
     [Length(3, 255)]
     public required string Name {get; set;}
-    
-    [Required]
-    public int OrganizationId { get; init; }
- 
 }
