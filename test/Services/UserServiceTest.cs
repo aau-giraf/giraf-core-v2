@@ -73,4 +73,5 @@ public class UserServiceTest : TestBase
         Assert.NotEqual(ogUsername, user!.Username);
 
     }
+    // TODO: brug bogus i den nye user data i stedet for hestevisker etc.
 }
