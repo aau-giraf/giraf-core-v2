@@ -20,6 +20,13 @@ public class UserServiceTest : TestBase
                 FirstName = "New"
             });
 
+        Assert.Equal(user.Id, updated!.Id);
         Assert.Equal("New", updated!.FirstName);
+        Assert.NotEqual(user.FirstName, updated!.FirstName); //fejl
+        Assert.Equal(user.LastName, updated!.LastName);
+        Assert.Equal(user.Email, updated!.Email);
+        Assert.Equal(user.Username, updated!.Username);
+        Assert.Equal(user.Password, updated!.Password);
+
     }
 }
