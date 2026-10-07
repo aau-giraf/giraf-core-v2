@@ -28,9 +28,9 @@ public static class ImageEndpoints
         return TypedResults.Ok(images);
     }
 
-    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteImage(Image image)
+    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteImage(int image_id, ImageService imageService)
     {
-        var result = await ImageService.DeleteImageAsync(image);
+        var result = await imageService.DeleteImageAsync(image_id);
         return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 

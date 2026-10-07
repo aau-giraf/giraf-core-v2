@@ -18,9 +18,10 @@ public class ImageService(AppDbContext db)
 
     public async Task<bool> DeleteImageAsync(int image_id)
     {
-        if (await _db.Images.FindAsync(image_id) is Image image)
+        var removedimage = await _db.Images.FindAsync(image_id);
+        if (removedimage.Id == image_id)
         {
-            _db.Images.Remove(image);
+            _db.Images.Remove(removedimage);
             await _db.SaveChangesAsync();
             return true;
         }
