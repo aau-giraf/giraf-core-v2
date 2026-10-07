@@ -11,22 +11,30 @@ public class UserServiceTest : TestBase
 
         var user = await UserSeeder.SeedAsync(db, Seed);
 
+        // save origianl data, because user cannot be a constant entity.
+        int ogId = user.Id;
+        string ogFirstname = user.FirstName;
+        string ogLastname = user.LastName;
+        string ogEmail = user.Email;
+        string ogUsername = user.Username;
+        string ogPassword = user.Password;
+
         var service = new UserService(db);
 
-        var updated = await service.UpdateCurrentUserAsync(
+        user = await service.UpdateCurrentUserAsync(
             user.Id,
             new UpdateUserDTO
             {
                 FirstName = "New"
             });
 
-        Assert.Equal(user.Id, updated!.Id);
-        Assert.Equal("New", updated!.FirstName);
-        Assert.NotEqual(user.FirstName, updated!.FirstName); //fejl
-        Assert.Equal(user.LastName, updated!.LastName);
-        Assert.Equal(user.Email, updated!.Email);
-        Assert.Equal(user.Username, updated!.Username);
-        Assert.Equal(user.Password, updated!.Password);
+        Assert.Equal(ogId, user!.Id);
+        Assert.Equal("New", user!.FirstName);
+        Assert.NotEqual(ogFirstname, user!.FirstName);
+        Assert.Equal(ogLastname, user!.LastName);
+        Assert.Equal(ogEmail, user!.Email);
+        Assert.Equal(ogUsername, user!.Username);
+        Assert.Equal(ogPassword, user!.Password);
 
     }
 }
