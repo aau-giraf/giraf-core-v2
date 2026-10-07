@@ -2,6 +2,7 @@ using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 
@@ -133,7 +134,7 @@ public class OrganizationService(AppDbContext db)
             Organization = organization,
 		};
 
-        // Check if the name specified by the user is already taken
+        // Check if the name specified in the requestbody is already taken
         bool checkNameAlreadyExist = _db.Classes.Any(o => o.Name  == createClass.Name);
 
         // Insert the new instance tuple into the db.
@@ -163,7 +164,7 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<ResponseGetOrganizationDTO> CreateOrganizationAsync(RequestCreateOrganizationDTO createOrganization)
     { 
-       // Check if the name specified by the user is already taken
+       // Check if the name specified in the requestbody is already taken
        bool checkNameAlreadyExist = _db.Organizations.Any(o => o.Name  == createOrganization.Name);
 
        // Create new instance of Organization
@@ -184,14 +185,45 @@ public class OrganizationService(AppDbContext db)
         Organization newOrganization = _db.Organizations.FirstOrDefault(c => c.Name == createdOrganization.Name);
         
         // Return correctly formatted response
-        ResponseGetOrganizationDTO responseClass = new ResponseGetOrganizationDTO
+        ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
 		{
 			Id = newOrganization.Id,
             Name = newOrganization.Name,
 		};
 
-        return responseClass;
+        return responseOrganization;
     
+    }
+
+    public async Task<ResponseGetOrganizationDTO> UpdateOrganizationAsync(RequestCreateOrganizationDTO createOrganization, int org_id)
+    {
+        // Find the organization in db
+        var organization = await _db.Organizations.FindAsync(org_id);
+
+        if (organization is null)
+        {
+            return null;
+        }
+
+        // Check if the name specified in the request is already taken, including if the name is not changed it is taken. 
+        bool checkNameAlreadyExist = _db.Organizations.Any(o => o.Name  == organization.Name);
+        
+        if (organization.Name is not null)
+        {
+            organization.Name = createOrganization.Name;
+        }
+
+        // Save the updated organization in DB. 
+        await _db.SaveChangesAsync();
+
+        // Return correctly formatted response
+        ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
+		{
+			Id = org_id,
+            Name = organization.Name,
+		};
+        
+        return responseOrganization;
     }
 
 }

@@ -22,6 +22,8 @@ public static class OrganizationEndpoints
         group.MapPost("/{org_id:int}/classes", CreateClassInOrganization);
 
         group.MapPost("/", CreateOrganization);
+        
+        group.MapPost("/{org_id:int}", UpdateOrganization);
 
     }
 
@@ -67,10 +69,14 @@ public static class OrganizationEndpoints
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
-     private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationservice)
     {   
         var createdOrganization = await organizationservice.CreateOrganizationAsync(requestCreateOrganizationDTO);
         return createdOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdOrganization);
     }
 
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int org_id, OrganizationService organizationservice) {
+        var updatedOrganization = await organizationservice.UpdateOrganizationAsync(requestCreateOrganizationDTO, org_id);
+        return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
+    }
 }
