@@ -3,21 +3,22 @@ namespace giraf_core_v2.Data.Seeding;
 public class ClassSeeding : ISeeding {
 
     public int SeedingPosition { get; init; } = 2;  
-    public void Seed(AppDbContext context) {        
-        if (!context.Set<Class>().Any()) {
+    public void Seed(AppDbContext context) {  
 
-            Organization egeBakken = context.Set<Organization>().First(org => org.Name == "Egebakken"); // put navn i variabel / fetch dynamisk 
-            Organization birkehøjen = context.Set<Organization>().First(org => org.Name == "Birkehøjen");
+        if (context.Set<Class>().Any()) return;
 
-            var classes = new[] { 
-                new Class{ Name = "3.Y", OrganizationId = egeBakken!.Id, Organization = egeBakken }, 
-                new Class{ Name = "4.B", OrganizationId = egeBakken.Id, Organization = egeBakken }, 
-                new Class{ Name = "1.A", OrganizationId= birkehøjen!.Id, Organization = birkehøjen } 
-            };
+        Organization egeBakken = context.Set<Organization>().First(org => org.Name == "Egebakken"); // put navn i variabel / fetch dynamisk 
+        Organization birkehøjen = context.Set<Organization>().First(org => org.Name == "Birkehøjen");
 
-            context.Set<Class>().AddRange(classes);
-            context.SaveChanges();
-        }
+        Class[] classes = [ 
+            new() { Name = "3.Y", OrganizationId = egeBakken.Id,  Organization = egeBakken  }, 
+            new() { Name = "4.B", OrganizationId = egeBakken.Id,  Organization = egeBakken  }, 
+            new() { Name = "1.A", OrganizationId = birkehøjen.Id, Organization = birkehøjen } 
+        ];
+
+        context.Set<Class>().AddRange(classes);
+        context.SaveChanges();
+        
     }
 
 }
