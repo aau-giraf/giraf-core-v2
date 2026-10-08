@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+namespace giraf_core_v2.Services;
 
 public class ImageService(AppDbContext db)
 {
@@ -31,15 +32,33 @@ public class ImageService(AppDbContext db)
         return true;
     }
 
-
-    /*public async Task<List<Image>> CreateImagesAsync()
+    public async Task<Image?> CreateImagesAsync(CreateImageRequest request)
     {
-        var image = new Image();
+        var organization = await _db.Organizations.FindAsync(request.OrganizationId);
+        if (organization == null)
+        {
+            return null;
+        }
+
+        var image = new Image
+        {
+            name = request.Name,
+            path = request.StorageKey,
+            CitizenId = request.CitizenId,
+            OrganizationId = organization.Id,
+            Organization = organization,
+            StorageKey = request.StorageKey,
+            FileName = request.FileName,
+            FileType = request.FileType,
+            SizeBytes = request.SizeBytes
+        };
+        
         _db.Images.Add(image);
         await _db.SaveChangesAsync();
-        return image;
+        
+        return await GetIDInImagesAsync(image.Id);
     }
-    */
+    
 }
 
 

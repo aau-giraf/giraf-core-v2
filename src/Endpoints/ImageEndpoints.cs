@@ -10,7 +10,7 @@ public static class ImageEndpoints
 
             group.MapGet("/{image_id}", GetIDInImages);
             group.MapGet("/", GetAllImages);
-            //group.MapPost("/", PostImage);
+            group.MapPost("/", PostImage);
             //group.MapPost("/{image_id}/sound");
             group.MapDelete("/{image_id}", DeleteImage);
 
@@ -37,9 +37,12 @@ public static class ImageEndpoints
         return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    //private static async Task<Created<Image>> PostImage(ImageService ImageService)
-    //{
-        //var image = await ImageService.CreateImagesAsync();
-        //return TypedResults.Created($"/images/{image.Id}", image);  
-    //} 
+    // POST image
+    private static async Task<Results<Created<Image>, BadRequest>> PostImage(CreateImageRequest request, ImageService imageService)
+    {
+        var image = await imageService.CreateImagesAsync(request);
+        return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);  
+    }
+
 }
+      public record CreateImageRequest(string Name, int OrganizationId, int? CitizenId, string StorageKey, string FileName, string FileType, long SizeBytes);
