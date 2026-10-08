@@ -2,7 +2,10 @@ using Xunit.Abstractions;
 
 public class UserServiceTest : TestBase
 {
-    public UserServiceTest(ITestOutputHelper output): base(output) {}
+    public UserServiceTest(ITestOutputHelper output) : base(output) { }
+
+    // TODO: add sanitization tests, once sanitization has been made.
+
 
     [Fact]
     public async Task UpdateCurrentUserAsync_UpdatesTheUser()
@@ -80,5 +83,90 @@ public class UserServiceTest : TestBase
         Assert.Equal(faker.Email, user!.Email);
         Assert.Equal(faker.Username, user!.Username);
 
+    }
+
+    [Fact]
+    public async Task UpdateCurrentUserAsync_UpdatesCorrectUser()
+    {
+        await using var db = CreateDbContext();
+
+        var users = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = users[0];
+        var user2 = users[1];
+
+        Assert.NotNull(user1);
+        Assert.NotNull(user2);
+
+        string newUsername = "NewCrazyUser-NameThatTotallyWontBeInBogusDB123xD!!()ADN";
+
+        var service = new UserService(db);
+
+        user1 = await service.UpdateCurrentUserAsync(
+            user1.Id,
+            new UpdateUserDTO
+            {
+                Username = newUsername
+            });
+
+        Assert.NotEqual(user1!.Id, user2!.Id);
+        Assert.NotEqual(user1!.Username, user2!.Username);
+
+    }
+
+    [Fact]
+    public async Task DeleteCurrentUserAsync_DeletesCurrentUser()
+    {
+        await using var db = CreateDbContext();
+
+        var user = await UserSeeder.SeedAsync(db, Seed);
+
+        var service = new UserService(db);
+
+        Assert.True(await service.DeleteCurrentUserAsync(user.Id));
+
+        var deletedUser = await db.Users
+            .SingleOrDefaultAsync(u => u.Id == user.Id);
+
+        Assert.Null(deletedUser);
+    }
+
+    [Fact]
+    public async Task DeleteCurrentUserAsync_DeletesCorrectUser()
+    {
+        await using var db = CreateDbContext();
+
+        var users = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = users[0];
+        var user2 = users[1];
+
+        Assert.NotNull(user1);
+        Assert.NotNull(user2);
+
+        var service = new UserService(db);
+
+        Assert.True(await service.DeleteCurrentUserAsync(user1.Id));
+
+        var deletedUser = await db.Users
+            .SingleOrDefaultAsync(u => u.Id == user1.Id);
+
+        Assert.Null(deletedUser);
+
+        // Make sure the other user was not accidentally deleted
+        var remainingUser = await db.Users
+            .SingleOrDefaultAsync(u => u.Id == user2.Id);
+
+        Assert.NotNull(remainingUser);
+    }
+
+    [Fact]
+    public async Task DeleteCurrentUserAsync_CannotDeleteNonExistingUser()
+    {
+        await using var db = CreateDbContext();
+
+        int id = 1;
+
+        var service = new UserService(db);
+
+        Assert.False(await service.DeleteCurrentUserAsync(id));
     }
 }
