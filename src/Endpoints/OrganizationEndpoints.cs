@@ -11,19 +11,23 @@ public static class OrganizationEndpoints
 
         group.MapGet("/{org_id:int}", GetOrganizationById);
 
-        group.MapDelete("/{org_id:int}", DeleteOrganization);
-
         group.MapGet("/{org_id:int}/classes/{class_id:int}", GetClassInOrganization);
 
         group.MapGet("/{org_id:int}/classes", GetClassesInOrganization);
 
-        group.MapDelete("/{org_id:int}/classes/{class_id:int}", DeleteClassInOrganization);
-
         group.MapPost("/{org_id:int}/classes", CreateClassInOrganization);
 
         group.MapPost("/", CreateOrganization);
+
+        group.MapPut("/{org_id:int}/members/{user_id:int}", CreateUserInOrganization);
         
-        group.MapPost("/{org_id:int}", UpdateOrganization);
+        group.MapPatch("/{org_id:int}", UpdateOrganization);
+
+        group.MapDelete("/{org_id}/members/{user_id:int}", DeleteUserInOrganization);
+
+        group.MapDelete("/{org_id:int}", DeleteOrganization);
+
+        group.MapDelete("/{org_id:int}/classes/{class_id:int}", DeleteClassInOrganization);
 
     }
 
@@ -79,4 +83,17 @@ public static class OrganizationEndpoints
         var updatedOrganization = await organizationservice.UpdateOrganizationAsync(requestCreateOrganizationDTO, org_id);
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
+
+    private static async Task<Results<NoContent, NotFound>> DeleteUserInOrganization(int org_id, int user_id, OrganizationService organizationservice)
+    {
+        var selectedClass = await organizationservice.DeleteUserInOrganizationAsync(org_id, user_id);
+        return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
+    }
+
+    private static async Task<Results<Ok<ResponseCreateUserOrganizationDTO>, NotFound>> CreateUserInOrganization(int user_id, int org_id, OrganizationService organizationservice)
+    {   
+        var createdUserInOrganization = await organizationservice.CreateUserInOrganizationAsync(user_id, org_id);
+        return createdUserInOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdUserInOrganization);
+    }
+
 }

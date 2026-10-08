@@ -12,7 +12,6 @@ public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    // Fetch the organizations
     public async Task<List<ResponseGetOrganizationDTO>> GetOrganizationsAsync()
     {   
         // Fetch organizations
@@ -34,7 +33,7 @@ public class OrganizationService(AppDbContext db)
         return organizationsDtoList;
     }
 
-    // Fetch the organization by org_id from route
+    // Fetch the organization by org_id from Route parameter
     public async Task<ResponseGetOrganizationDTO> GetOrganizationByIdAsync(int org_id)
     {   
         var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
@@ -48,7 +47,7 @@ public class OrganizationService(AppDbContext db)
         return responseOrganizationDTO;
     }
 
-    // Delete organization by org_id from route
+    // Delete organization by org_id from Route parameter
     public async Task<bool> DeleteOrganizationAsync(int org_id)
     {   
         
@@ -67,11 +66,12 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<ResponseGetClassInOrganizationDTO> GetClassInOrganizationAsync(int org_id, int class_id)
     {   
-        // Fetch the classes tuples, where the column OrganizationId equals org_id and
-        // find the class where the columns Id equals class_id from route
+        // Fetch the class tuple, where the column OrganizationId equals org_id and
+        // the columns Id equals class_id from Route parameter
         var selectedClass = await _db.Classes
             .Where(c => c.OrganizationId == org_id).FirstOrDefaultAsync(c => c.Id == class_id);
         
+        // Return correctly formatted response
         ResponseGetClassInOrganizationDTO responseOrganizationDTO = new ResponseGetClassInOrganizationDTO
 		    {
 			    Id = selectedClass.Id,
@@ -84,7 +84,7 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<List<ResponseGetClassInOrganizationDTO>> GetClassesInOrganizationAsync(int org_id)
     {   
-        // Fetch all class tuples, where the column OrganizationId equals org_id
+        // Fetch all class tuples, where the column OrganizationId equals Route parameter org_id
         var classes = await _db.Classes
             .Where(c => c.OrganizationId == org_id).AsNoTracking().ToListAsync();
 
@@ -107,7 +107,7 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<bool> DeleteClassInOrganizationAsync(int org_id, int class_id)
     {   
-        // Fetch the specific class like before and delete it.
+        // Fetch the class with classId and organationId matching Route parameters
         var selectedClass = await _db.Classes
             .Where(c => c.OrganizationId == org_id).FirstOrDefaultAsync(c => c.Id == class_id);
         
@@ -122,7 +122,6 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<ResponseCreateClassDTO> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass, int org_id)
     {
-       
        // Fetch organization instance from db (Required in Class model)
        var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
 
@@ -134,7 +133,7 @@ public class OrganizationService(AppDbContext db)
             Organization = organization,
 		};
 
-        // Check if the name specified in the requestbody is already taken
+        // Check if the name specified in the requestbody is already taken by a tuple in the classes relation
         bool checkNameAlreadyExist = _db.Classes.Any(o => o.Name  == createClass.Name);
 
         // Insert the new instance tuple into the db.
@@ -224,6 +223,60 @@ public class OrganizationService(AppDbContext db)
 		};
         
         return responseOrganization;
+    }
+
+       public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int user_id)
+    {   
+        // Fetch the user with userId and organationId matching Route parameters
+        var selectedUser = await _db.UserOrganizations
+            .Where(uo => uo.OrganizationId == org_id ).FirstOrDefaultAsync(uo => uo.UserId == user_id);
+        
+        if (selectedUser.UserId == user_id)
+        {
+            _db.UserOrganizations.Remove(selectedUser);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        return false;
+    }
+
+    public async Task<ResponseCreateUserOrganizationDTO> CreateUserInOrganizationAsync(int org_id, int user_id)
+    {   
+        
+        // Fetch organization instance from db (Required in UserOrganization model)
+        var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
+
+        // Fetch user instance from db (Required in UserOrganization model)
+       var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == user_id);
+
+
+       // Create new instance of UserOrganization
+       UserOrganization createdUserOrganization = new UserOrganization
+		{
+			UserId = user_id,
+            User = user,
+            OrganizationId = org_id,
+            Organization = organization,
+		};
+
+        // Check if the user_id specified in Route parameter is already a tuple in the UserOrganization relation.
+        bool checkUserOrganizationAlreadyExist = _db.UserOrganizations.Any(uo => uo.UserId == user_id && uo.OrganizationId == org_id);
+
+        // Insert the new instance tuple into the db.
+        if (createdUserOrganization.Organization is not null && checkUserOrganizationAlreadyExist is false) {
+        _db.UserOrganizations.Add(createdUserOrganization);
+        await _db.SaveChangesAsync();
+        } 
+
+        // Return correctly formatted response
+        ResponseCreateUserOrganizationDTO responseUserOrganization = new ResponseCreateUserOrganizationDTO
+		{
+			UserId = createdUserOrganization.UserId,
+            OrganizationId = createdUserOrganization.OrganizationId,
+		};
+
+        return responseUserOrganization;
+
     }
 
 }
