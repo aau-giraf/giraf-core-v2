@@ -1,4 +1,5 @@
-using Bogus;
+using BCrypt;
+
 
 public static class UserSeeder
 {
@@ -45,6 +46,6 @@ public static class UserSeeder
             .RuleFor(u => u.LastName, f => f.Name.LastName())
             .RuleFor(u => u.Email, f => f.Internet.Email())
             .RuleFor(u => u.Username, f => f.Internet.UserName())
-            .RuleFor(u => u.Password, f => f.Internet.Password());
+            .RuleFor(u => u.Password, f => BCrypt.Net.BCrypt.HashPassword(f.Internet.Password(), 12));
     }
 }

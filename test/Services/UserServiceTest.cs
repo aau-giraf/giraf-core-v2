@@ -4,9 +4,10 @@ public class UserServiceTest : TestBase
 {
     public UserServiceTest(ITestOutputHelper output) : base(output) { }
 
+    // used to offset seed for different results.
+    private readonly int SEED_OFFSET = 123;
+
     // TODO: add sanitization tests, once sanitization has been made.
-
-
     [Fact]
     public async Task UpdateCurrentUserAsync_UpdatesTheUser()
     {
@@ -21,8 +22,8 @@ public class UserServiceTest : TestBase
         string ogEmail = user.Email;
         string ogUsername = user.Username;
 
-        // generate 'fake' user firstname using Bogus. (use different seed than us)
-        User faker = new Faker<User>().UseSeed(Seed + 123)
+        // generate a different firstname with another seed
+        User faker = new Faker<User>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName());
 
 
@@ -57,8 +58,8 @@ public class UserServiceTest : TestBase
         string ogEmail = user.Email;
         string ogUsername = user.Username;
 
-        // generate 'fake' user firstname using Bogus. (use different seed than us)
-        User faker = new Faker<User>().UseSeed(Seed + 123)
+        // generate different user with another seed
+        User faker = new Faker<User>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                                     .RuleFor(u => u.LastName, f => f.Name.LastName())
                                     .RuleFor(u => u.Email, f => f.Internet.Email())
@@ -254,32 +255,31 @@ public class UserServiceTest : TestBase
         Assert.NotEqual(user!.Password, newPassword);
     }
 
-    // TODO: Do rest of password tests when user registration has been made.
-    //     [Fact]
-    //     public async Task UpdateUserPasswordAsync_DoesNothingOnWrongPassword()
-    //     {
-    //         await using var db = CreateDbContext();
-    //
-    //         var user = await UserSeeder.SeedAsync(db, Seed);
-    //
-    //         Assert.NotNull(user);
-    //
-    //         string newPassword = "HestePeter2*2=4";
-    //         var service = new UserService(db);
-    //
-    //         int result = await service.UpdateUserPasswordAsync(
-    //             user.Id,
-    //             new UpdatePasswordDTO
-    //             {
-    //                 OldPassword = "CorrectPasswordByHestePeter",
-    //                 NewPassword = newPassword
-    //             });
-    //
-    //         Assert.Equal(1, result);
-    //
-    //         user = await service.GetCurrentUserAsync(user.Id);
-    //
-    //         Assert.NotEqual(user!.Password, newPassword);
-    //     }
+    [Fact]
+    public async Task UpdateUserPasswordAsync_DoesNothingOnWrongPassword()
+    {
+        await using var db = CreateDbContext();
+
+        var user = await UserSeeder.SeedAsync(db, Seed);
+
+        Assert.NotNull(user);
+
+        string newPassword = "HestePeter2*2=4";
+        var service = new UserService(db);
+
+        int result = await service.UpdateUserPasswordAsync(
+            user.Id,
+            new UpdatePasswordDTO
+            {
+                OldPassword = "CorrectPasswordByHestePeter",
+                NewPassword = newPassword
+            });
+
+        Assert.Equal(1, result);
+
+        user = await service.GetCurrentUserAsync(user.Id);
+
+        Assert.NotEqual(user!.Password, newPassword);
+    }
 
 }
