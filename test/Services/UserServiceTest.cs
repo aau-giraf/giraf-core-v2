@@ -18,18 +18,22 @@ public class UserServiceTest : TestBase
         string ogEmail = user.Email;
         string ogUsername = user.Username;
 
+        // generate 'fake' user firstname using Bogus. (use different seed than us)
+        User faker = new Faker<User>().UseSeed(Seed + 123)
+                                    .RuleFor(u => u.FirstName, f => f.Name.FirstName());
+
+
         var service = new UserService(db);
 
         user = await service.UpdateCurrentUserAsync(
             user.Id,
             new UpdateUserDTO
             {
-                FirstName = "New"
+                FirstName = faker.FirstName
             });
 
         Assert.Equal(ogId, user!.Id);
-        Assert.Equal("New", user!.FirstName);
-        Assert.NotEqual(ogFirstname, user!.FirstName);
+        Assert.Equal(faker.FirstName, user!.FirstName);
         Assert.Equal(ogLastname, user!.LastName);
         Assert.Equal(ogEmail, user!.Email);
         Assert.Equal(ogUsername, user!.Username);
@@ -50,28 +54,31 @@ public class UserServiceTest : TestBase
         string ogEmail = user.Email;
         string ogUsername = user.Username;
 
+        // generate 'fake' user firstname using Bogus. (use different seed than us)
+        User faker = new Faker<User>().UseSeed(Seed + 123)
+                                    .RuleFor(u => u.FirstName, f => f.Name.FirstName())
+                                    .RuleFor(u => u.LastName, f => f.Name.LastName())
+                                    .RuleFor(u => u.Email, f => f.Internet.Email())
+                                    .RuleFor(u => u.Username, f => f.Internet.UserName());
+
+
         var service = new UserService(db);
 
         user = await service.UpdateCurrentUserAsync(
             user.Id,
             new UpdateUserDTO
             {
-                FirstName = "New",
-                LastName = "Name",
-                Email = "funnymailß@ifunny.com",
-                Username = "Hesteviskeren33@@¡;)",
+                FirstName = faker.FirstName,
+                LastName = faker.LastName,
+                Email = faker.Email,
+                Username = faker.Username,
             });
 
         Assert.Equal(ogId, user!.Id);
-        Assert.Equal("New", user!.FirstName);
-        Assert.Equal("Name", user!.LastName);
-        Assert.Equal("funnymailß@ifunny.com", user!.Email);
-        Assert.Equal("Hesteviskeren33@@¡;)", user!.Username);
-        Assert.NotEqual(ogFirstname, user!.FirstName);
-        Assert.NotEqual(ogLastname, user!.LastName);
-        Assert.NotEqual(ogEmail, user!.Email);
-        Assert.NotEqual(ogUsername, user!.Username);
+        Assert.Equal(faker.FirstName, user!.FirstName);
+        Assert.Equal(faker.LastName, user!.LastName);
+        Assert.Equal(faker.Email, user!.Email);
+        Assert.Equal(faker.Username, user!.Username);
 
     }
-    // TODO: brug bogus i den nye user data i stedet for hestevisker etc.
 }
