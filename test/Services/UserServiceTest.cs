@@ -169,4 +169,58 @@ public class UserServiceTest : TestBase
 
         Assert.False(await service.DeleteCurrentUserAsync(id));
     }
+
+    [Fact]
+    public async Task GetCurrentUserAsync_CannotDeleteNonExistingUser()
+    {
+        await using var db = CreateDbContext();
+
+        int id = 1;
+
+        var service = new UserService(db);
+
+        var user = await service.GetCurrentUserAsync(id);
+
+        Assert.Null(user);
+    }
+
+    [Fact]
+    public async Task GetCurrentUserAsync_GetsCurrentUser()
+    {
+        await using var db = CreateDbContext();
+
+        var user = await UserSeeder.SeedAsync(db, Seed);
+
+        var service = new UserService(db);
+
+        var fetchedUser = await service.GetCurrentUserAsync(user.Id);
+
+        Assert.Equal(fetchedUser!.Id, user.Id);
+        Assert.Equal(fetchedUser!.FirstName, user.FirstName);
+        Assert.Equal(fetchedUser!.LastName, user.LastName);
+        Assert.Equal(fetchedUser!.Email, user.Email);
+        Assert.Equal(fetchedUser!.Username, user.Username);
+
+    }
+
+    [Fact]
+    public async Task GetCurrentUserAsync_GetsCorrectUser()
+    {
+        await using var db = CreateDbContext();
+
+        var users = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = users[0];
+        var user2 = users[1];
+
+        Assert.NotNull(user1);
+        Assert.NotNull(user2);
+
+        var service = new UserService(db);
+
+        var fetchedUser = await service.GetCurrentUserAsync(user2.Id);
+
+        Assert.NotNull(fetchedUser);
+        Assert.Equal(user2.Id, fetchedUser.Id);
+        Assert.NotEqual(user1.Id, fetchedUser.Id);
+    }
 }
