@@ -47,6 +47,27 @@ public class UserServiceTest : TestBase
     }
 
     [Fact]
+    public async Task UpdateCurrentUserAsync_DoesNotUpdateNonExistingUser()
+    {
+        await using var db = CreateDbContext();
+
+        int id = 1;
+
+
+        var service = new UserService(db);
+
+        var user = await service.UpdateCurrentUserAsync(
+            id,
+            new UpdateUserDTO
+            {
+                FirstName = ":)"
+            });
+
+        Assert.Null(user);
+
+    }
+
+    [Fact]
     public async Task UpdateCurrentUserAsync_UpdatesEntireUser()
     {
         await using var db = CreateDbContext();
