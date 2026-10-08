@@ -8,10 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 10.0.x
+
     - uses: actions/download-artifact@v4
       with:
         name: build-output
-    - run: dotnet test --configuration Release --verbosity normal
+
+    - name: Build test image
+      run: docker build -f Dockerfile.test -t test .
+
+    - name: Run tests
+      run: docker run --rm test

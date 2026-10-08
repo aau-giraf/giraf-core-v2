@@ -23,5 +23,13 @@ services:
             timeout: 5s
             retries: 10
 
+
+    test:
+      build:
+        context: .
+        dockerfile: Dockerfile
+        target: test
+      working_dir: /source
+      command: dotnet test --logger "console;verbosity=detailed"
 volumes:
     pgdata:
