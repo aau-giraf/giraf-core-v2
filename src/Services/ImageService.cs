@@ -4,29 +4,31 @@ public class ImageService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<Image> GetIDInImagesAsync(int image_id)
+    public async Task<Image?> GetIDInImagesAsync(int image_id)
     {
         var image = await _db.Images
+            .AsNoTracking()
             .FirstOrDefaultAsync(c=> c.Id == image_id);
         return image;
     }
 
     public async Task<List<Image>> GetAllImagesAsync()
     {
-        return await _db.Images.ToListAsync();
+        return await _db.Images
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<bool> DeleteImageAsync(int image_id)
     {
         var removedimage = await _db.Images.FindAsync(image_id);
-        if (removedimage.Id == image_id)
+        if (removedimage is null)
         {
-            _db.Images.Remove(removedimage);
-            await _db.SaveChangesAsync();
-            return true;
+            return false;
         }
-
-        return false;
+        _db.Images.Remove(removedimage);
+        await _db.SaveChangesAsync();
+        return true;
     }
 
 
