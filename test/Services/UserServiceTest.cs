@@ -13,7 +13,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var user = await UserSeeder.SeedAsync(db, Seed);
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+
+        var user = SeededUser.User;
 
         // save origianl data, because user cannot be a constant entity.
         int ogId = user.Id;
@@ -49,7 +51,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var user = await UserSeeder.SeedAsync(db, Seed);
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+
+        var user = SeededUser.User;
 
         // save origianl data, because user cannot be a constant entity.
         int ogId = user.Id;
@@ -91,9 +95,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var users = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = users[0];
-        var user2 = users[1];
+        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = SeededUsers[0].User;
+        var user2 = SeededUsers[1].User;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -119,7 +123,8 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var user = await UserSeeder.SeedAsync(db, Seed);
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = SeededUser.User;
 
         var service = new UserService(db);
 
@@ -136,9 +141,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var users = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = users[0];
-        var user2 = users[1];
+        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = SeededUsers[0].User;
+        var user2 = SeededUsers[1].User;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -172,7 +177,7 @@ public class UserServiceTest : TestBase
     }
 
     [Fact]
-    public async Task GetCurrentUserAsync_CannotDeleteNonExistingUser()
+    public async Task GetCurrentUserAsync_CannotGetNonExistingUser()
     {
         await using var db = CreateDbContext();
 
@@ -190,7 +195,8 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var user = await UserSeeder.SeedAsync(db, Seed);
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = SeededUser.User;
 
         var service = new UserService(db);
 
@@ -209,9 +215,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var users = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = users[0];
-        var user2 = users[1];
+        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = SeededUsers[0].User;
+        var user2 = SeededUsers[1].User;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -230,7 +236,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var user = await UserSeeder.SeedAsync(db, Seed);
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = SeededUser.User;
+        var password = SeededUser.PlainPassword;
 
         Assert.NotNull(user);
 
@@ -244,7 +252,7 @@ public class UserServiceTest : TestBase
             nonId,
             new UpdatePasswordDTO
             {
-                OldPassword = user.Password,
+                OldPassword = password,
                 NewPassword = newPassword
             });
 
@@ -260,7 +268,8 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var user = await UserSeeder.SeedAsync(db, Seed);
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = SeededUser.User;
 
         Assert.NotNull(user);
 
@@ -282,4 +291,63 @@ public class UserServiceTest : TestBase
         Assert.NotEqual(user!.Password, newPassword);
     }
 
+    [Fact]
+    public async Task UpdateUserPasswordAsync_UpdatesPassword()
+    {
+        await using var db = CreateDbContext();
+
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = SeededUser.User;
+        var password = SeededUser.PlainPassword;
+
+        Assert.NotNull(user);
+
+        string newPassword = "HestePeter2*2=4";
+        var service = new UserService(db);
+
+        int result = await service.UpdateUserPasswordAsync(
+            user.Id,
+            new UpdatePasswordDTO
+            {
+                OldPassword = password,
+                NewPassword = newPassword
+            });
+
+        Assert.Equal(2, result);
+
+        user = await db.Users.FindAsync(user.Id);
+        Assert.NotNull(user);
+
+        Assert.True(BCrypt.Net.BCrypt.Verify(newPassword, user!.Password));
+    }
+
+    [Fact]
+    public async Task UpdateUserPasswordAsync_UpdatesCorrectUser()
+    {
+        await using var db = CreateDbContext();
+
+        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = SeededUsers[0].User;
+        var user2 = SeededUsers[1].User;
+        var password = SeededUsers[0].PlainPassword;
+
+        Assert.NotNull(user1);
+        Assert.NotNull(user2);
+
+        string newPassword = "HestePeter2*2=4";
+        var service = new UserService(db);
+
+        int result = await service.UpdateUserPasswordAsync(
+            user1.Id,
+            new UpdatePasswordDTO
+            {
+                OldPassword = password,
+                NewPassword = newPassword
+            });
+
+        Assert.Equal(2, result);
+
+
+        Assert.False(BCrypt.Net.BCrypt.Verify(newPassword, user2!.Password));
+    }
 }
