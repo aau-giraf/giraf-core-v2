@@ -13,7 +13,7 @@ public class User
     public required string Username {get; set;}
     public required string Password {get; set;}
     
-    //Navigational property, organizations the user is linked to
-    public ICollection<UserOrganization> Organizations { get; } = [];
+    //Navigational property: Roles of the user - possibly within different organizations
+    public ICollection<UserRole> Roles { get; } = [];
     public Citizen? Citizen { get; init; }
 }

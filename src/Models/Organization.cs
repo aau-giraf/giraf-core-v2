@@ -8,6 +8,6 @@ public class Organization
     public int Id { get; init; }
     public required string Name {get; set;}
 
-    //Navigational property for users belonging to an organization
-    public ICollection<UserOrganization> Users { get; } = [];
+    //Navigational property: user roles related to the organization. 
+    public ICollection<UserRole> UserRoles { get; } = [];
 }
