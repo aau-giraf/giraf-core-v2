@@ -223,4 +223,63 @@ public class UserServiceTest : TestBase
         Assert.Equal(user2.Id, fetchedUser.Id);
         Assert.NotEqual(user1.Id, fetchedUser.Id);
     }
+
+    [Fact]
+    public async Task UpdateUserPasswordAsync_DoesNothingOnNonExistingId()
+    {
+        await using var db = CreateDbContext();
+
+        var user = await UserSeeder.SeedAsync(db, Seed);
+
+        Assert.NotNull(user);
+
+        // create a non-exsting id
+        int nonId = user.Id + 2;
+        string newPassword = "HestePeter2*2=4";
+
+        var service = new UserService(db);
+
+        int result = await service.UpdateUserPasswordAsync(
+            nonId,
+            new UpdatePasswordDTO
+            {
+                OldPassword = user.Password,
+                NewPassword = newPassword
+            });
+
+        Assert.Equal(0, result);
+
+        user = await service.GetCurrentUserAsync(user.Id);
+
+        Assert.NotEqual(user!.Password, newPassword);
+    }
+
+    // TODO: Do rest of password tests when user registration has been made.
+    //     [Fact]
+    //     public async Task UpdateUserPasswordAsync_DoesNothingOnWrongPassword()
+    //     {
+    //         await using var db = CreateDbContext();
+    //
+    //         var user = await UserSeeder.SeedAsync(db, Seed);
+    //
+    //         Assert.NotNull(user);
+    //
+    //         string newPassword = "HestePeter2*2=4";
+    //         var service = new UserService(db);
+    //
+    //         int result = await service.UpdateUserPasswordAsync(
+    //             user.Id,
+    //             new UpdatePasswordDTO
+    //             {
+    //                 OldPassword = "CorrectPasswordByHestePeter",
+    //                 NewPassword = newPassword
+    //             });
+    //
+    //         Assert.Equal(1, result);
+    //
+    //         user = await service.GetCurrentUserAsync(user.Id);
+    //
+    //         Assert.NotEqual(user!.Password, newPassword);
+    //     }
+
 }
