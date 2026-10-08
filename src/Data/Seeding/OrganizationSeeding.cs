@@ -1,9 +1,9 @@
-namespace giraf_core_v2.Data.Configuration;
+namespace giraf_core_v2.Data.Seeding;
 
-public class OrganizationConfiguration {
+public class OrganizationSeeding : ISeeding {
 
-    public static void Seed(AppDbContext context) {
-        
+    public int SeedingPosition { get; init; } = 1;
+    public void Seed(AppDbContext context) {        
         if (!context.Set<Organization>().Any()) {
             var organizations = new[] { 
                 new Organization{ Name = "Egebakken" }, 

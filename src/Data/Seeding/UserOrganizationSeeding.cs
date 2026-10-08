@@ -1,9 +1,9 @@
-namespace giraf_core_v2.Data.Configuration;
+namespace giraf_core_v2.Data.Seeding;
 
-public class UserOrganizationConfiguration {
+public class UserOrganizationSeeding : ISeeding {
 
-    public static void Seed(AppDbContext context) {
-        
+    public int SeedingPosition { get; init; } = 5;  
+    public void Seed(AppDbContext context) {        
         if (!context.Set<UserOrganization>().Any()) {
 
             Organization egeBakken = context.Set<Organization>().First(org => org.Name == "Egebakken"); // put navn i variabel / fetch dynamisk 
