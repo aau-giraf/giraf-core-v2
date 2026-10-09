@@ -107,7 +107,7 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<bool> DeleteClassInOrganizationAsync(int org_id, int class_id)
     {   
-        // Fetch the class with classId and organationId matching Route parameters
+        // Fetch the class with classId and organizationId matching Route parameters
         var selectedClass = await _db.Classes
             .Where(c => c.OrganizationId == org_id).FirstOrDefaultAsync(c => c.Id == class_id);
         
@@ -133,11 +133,13 @@ public class OrganizationService(AppDbContext db)
             Organization = organization,
 		};
 
-        // Check if the name specified in the requestbody is already taken by a tuple in the classes relation
-        bool checkNameAlreadyExist = _db.Classes.Any(o => o.Name  == createClass.Name);
+        // Check if the createdClass already exists as a tuple in the classes relation.
+        // We check this by attributes: Name and organizationId
+        // Ensures that an organization can not hold two classes named: 4a
+        bool checkTupleAlreadyExist = _db.Classes.Any(c => c.Name  == createClass.Name && c.OrganizationId == org_id);
 
         // Insert the new instance tuple into the db.
-        if (createdClass.Name is not null && createdClass.Organization is not null && checkNameAlreadyExist is false) {
+        if (createdClass.Name is not null && createdClass.Organization is not null && checkTupleAlreadyExist is false) {
         _db.Classes.Add(createdClass);
         await _db.SaveChangesAsync();
         }
@@ -227,13 +229,13 @@ public class OrganizationService(AppDbContext db)
 
        public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int user_id)
     {   
-        // Fetch the user with userId and organationId matching Route parameters
-        var selectedUser = await _db.UserOrganizations
+        // Fetch the userOrganization with userId and organizationId matching Route parameters
+        var selectedUserOrganization = await _db.UserOrganizations
             .Where(uo => uo.OrganizationId == org_id ).FirstOrDefaultAsync(uo => uo.UserId == user_id);
         
-        if (selectedUser.UserId == user_id)
+        if (selectedUserOrganization.UserId == user_id && selectedUserOrganization.OrganizationId == org_id)
         {
-            _db.UserOrganizations.Remove(selectedUser);
+            _db.UserOrganizations.Remove(selectedUserOrganization);
             await _db.SaveChangesAsync();
             return true;
         }
