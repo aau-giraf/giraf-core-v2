@@ -59,9 +59,21 @@ public class OrganizationServiceTest : TestBase
         var fetchedOrganizations = await service.GetOrganizationsAsync();
 
         //----- ASSERT -----\\
-        // Ugly: Properly a better way (We also dont know if we get list in same order, which this requires)
-        Assert.True(organizationsList[0].Id == fetchedOrganizations[0].Id || organizationsList[0].Id == fetchedOrganizations[1].Id);
-        Assert.True(organizationsList[1].Id == fetchedOrganizations[0].Id || organizationsList[1].Id == fetchedOrganizations[1].Id);
+        Assert.True(organizations.Count() == fetchedOrganizations.Count());
+        
+        if (fetchedOrganizations.Count() == 2 && fetchedOrganizations[0].Id == organization1.Id)
+        {
+            Assert.True(fetchedOrganizations[0].Id == organization1.Id);
+            Assert.True(fetchedOrganizations[0].Name == organization1.Name);
+            Assert.True(fetchedOrganizations[1].Id == organization2.Id);
+            Assert.True(fetchedOrganizations[1].Name == organization2.Name);
+        } else if (fetchedOrganizations.Count() == 2 && fetchedOrganizations[0].Id == organization2.Id)
+        {
+            Assert.True(fetchedOrganizations[0].Id == organization2.Id);
+            Assert.True(fetchedOrganizations[0].Name == organization2.Name);
+            Assert.True(fetchedOrganizations[1].Id == organization1.Id);
+            Assert.True(fetchedOrganizations[1].Name == organization1.Name);
+        }
     }
 
     [Fact]
@@ -287,5 +299,56 @@ public class OrganizationServiceTest : TestBase
         }
     }
 
+
+    [Fact] 
+    public async Task GetClassesInOrganization_GetsCorrectClassesInOrganization()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organization1 = organizations[0];
+        var organization2 = organizations[1];
+
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var class1 = classes[0];
+        var class2 = classes[1];
+
+        Assert.NotNull(organization1);
+        Assert.NotNull(organization2);
+        Assert.NotNull(class1);
+        Assert.NotNull(class2);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        var fetchedClassesInOrganization = await service.GetClassesInOrganizationAsync(organization1.Id);
+
+         //----- ASSERT -----\\
+        if (fetchedClassesInOrganization.Count() == 0)
+        {
+            Assert.Empty(fetchedClassesInOrganization); 
+        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class1.Id)
+        {
+            Assert.True(fetchedClassesInOrganization[0].Id == class1.Id);
+            Assert.True(fetchedClassesInOrganization[0].Name == class1.Name);
+        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class2.Id)
+        {
+            Assert.True(fetchedClassesInOrganization[0].Id == class2.Id);
+            Assert.True(fetchedClassesInOrganization[0].Name == class2.Name);
+        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class1.Id)
+        {
+            Assert.True(fetchedClassesInOrganization[0].Id == class1.Id);
+            Assert.True(fetchedClassesInOrganization[0].Name == class1.Name);
+            Assert.True(fetchedClassesInOrganization[1].Id == class2.Id);
+            Assert.True(fetchedClassesInOrganization[1].Name == class2.Name);
+        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class2.Id)
+        {
+            Assert.True(fetchedClassesInOrganization[0].Id == class2.Id);
+            Assert.True(fetchedClassesInOrganization[0].Name == class2.Name);
+            Assert.True(fetchedClassesInOrganization[1].Id == class1.Id);
+            Assert.True(fetchedClassesInOrganization[1].Name == class1.Name);
+        }
+    }
 }
 

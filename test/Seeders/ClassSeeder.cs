@@ -41,8 +41,6 @@ public static class ClassSeeder
     {
         return new Faker<Class>()
             .UseSeed(seed)
-            .RuleFor(c => c.Id, f => f.Random.Long())
-            .RuleFor(c => c.Name, f => f.Name.FirstName())
-            .RuleFor(c => c.OrganizationId, f => f.Random.Long());
+            .RuleFor(c => c.Name, f => f.Name.FirstName());
     }
 }
