@@ -39,13 +39,18 @@ public static class CitizenEndpoints
 		return TypedResults.Created($"/citizens/{citizen.UserId}", citizen);
     }
 
-    private static async Task<Results<Ok<Citizen>, NotFound>> UpdateCitizen(int citizenId, CitizenService citizenService)
+    private static async Task<Results<Ok<Citizen>, NotFound, BadRequest>> UpdateCitizen(int citizenId, CitizenService citizenService, [FromBody] UpdateCitizenDTO? updateCitizen)
     {
-        var citizen = await citizenService.UpdateCitizenAsync(citizenId);
+		if (updateCitizen is null)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var citizen = await citizenService.UpdateCitizenAsync(citizenId, updateCitizen);
         return citizen is null ? TypedResults.NotFound() : TypedResults.Ok(citizen);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteCitizen(int citizenId, CitizenService citizenService)
+    private static async Task<Results<NoContent, NotFound>> DeleteCitizen(int citizenId, [FromBody] CitizenService? citizenService)
     {
         var deleted = await citizenService.DeleteCitizenAsync(citizenId);
         return deleted ? TypedResults.NoContent() : TypedResults.NotFound();

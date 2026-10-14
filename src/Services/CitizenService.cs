@@ -36,31 +36,32 @@ public class CitizenService(AppDbContext db)
 		return citizen;
     }
 
-    public async Task<Citizen?> UpdateCitizenAsync(int citizenId)
+    public async Task<Citizen?> UpdateCitizenAsync(int citizenId, UpdateCitizenDTO updateCitizen)
     {
         var citizen = await _db.Citizens.FindAsync(citizenId);
 
-        // Return null if citizen does not exist.
-        if (citizen is null)
-        {
-            return null;
-        }
+		if (citizen is null)
+    	{
+        	return null;
+    	}
 
-        // TODO: apply updated fields once Citizen has properties beyond its id.
-        await _db.SaveChangesAsync();
-        return citizen;
+		if (updateCitizen.GuardianId is not null) citizen.GuardianId = updateCitizen.GuardianId.Value;
+		if (updateCitizen.ClassId is not null) citizen.ClassId = updateCitizen.ClassId.Value;
+
+		await _db.SaveChangesAsync();
+
+		return citizen;	
     }
 
     public async Task<bool> DeleteCitizenAsync(int citizenId)
     {
-        // Return true on successful deletion.
-        if (await _db.Citizens.FindAsync(citizenId) is Citizen citizen)
-        {
-            _db.Citizens.Remove(citizen);
-            await _db.SaveChangesAsync();
-            return true;
-        }
+		var citizen = await _db.Citizens.FindAsync(citizenId);
+		if (citizen is not null)
+		{
+			_db.Citizens.Remove(citizen);	
+			await _db.SaveChangesAsync();	
+		}
 
-        return false;
+		return Results.NotFound();
     }
 }
