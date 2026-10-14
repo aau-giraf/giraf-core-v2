@@ -1,25 +1,25 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc; 
+using Microsoft.AspNetCore.Mvc;
 namespace giraf_core_v2.Endpoints;
 
 public static class ImageEndpoints
 {
     public static void MapImageEndpoints(this WebApplication application)
-        {
-            var group = application.MapGroup("/images");
-
-            group.MapGet("/{image_id}", GetIDInImages);
-            group.MapGet("/", GetAllImages);
-            group.MapPost("/", PostImage);
-            //group.MapPost("/{image_id}/sound");
-            group.MapDelete("/{image_id}", DeleteImage);
-
-        } 
-        
-    // GET imagees by ID
-    private static async Task<Results<Ok<Image>, NotFound>> GetIDInImages(int image_id, ImageService imageService)
     {
-        var image = await imageService.GetIDInImagesAsync(image_id);
+        var group = application.MapGroup("/images");
+
+        group.MapGet("/{image_id}", GetImageById);
+        group.MapGet("/", GetAllImages);
+        group.MapPost("/", PostImage);
+        //group.MapPost("/{image_id}/sound");
+        group.MapDelete("/{image_id}", DeleteImage);
+
+    }
+
+    // GET imagees by ID
+    private static async Task<Results<Ok<Image>, NotFound>> GetImageById(int image_id, ImageService imageService)
+    {
+        var image = await imageService.GetImageByIdAsync(image_id);
         return image == null ? TypedResults.NotFound() : TypedResults.Ok(image);
     }
 
@@ -41,8 +41,8 @@ public static class ImageEndpoints
     private static async Task<Results<Created<Image>, BadRequest>> PostImage(CreateImageRequest request, ImageService imageService)
     {
         var image = await imageService.CreateImagesAsync(request);
-        return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);  
+        return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
     }
 
 }
-      public record CreateImageRequest(string Name, int OrganizationId, int? CitizenId, string StorageKey, string FileName, string FileType, long SizeBytes);
+public record CreateImageRequest(string Name, int OrganizationId, int? CitizenId, string StorageKey, string FileName, string FileType, long SizeBytes);

@@ -50,5 +50,5 @@ Might require the following package a separate 'docker buildx' package depending
 
 ## Run Tests
 
-Run: `dotnet test --configuration Release --verbosity normal`
+Run: `docker compose --profile test build --no-cache test; docker compose --profile test run --rm test`
 The test seed will then be visible in the error message if a test fails.

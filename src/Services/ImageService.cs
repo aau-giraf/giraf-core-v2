@@ -5,11 +5,11 @@ public class ImageService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<Image?> GetIDInImagesAsync(int image_id)
+    public async Task<Image?> GetImageByIdAsync(int image_id)
     {
         var image = await _db.Images
             .AsNoTracking()
-            .FirstOrDefaultAsync(c=> c.Id == image_id);
+            .FirstOrDefaultAsync(c => c.Id == image_id);
         return image;
     }
 
@@ -42,8 +42,8 @@ public class ImageService(AppDbContext db)
 
         var image = new Image
         {
-            name = request.Name,
-            path = request.StorageKey,
+            Name = request.Name,
+            Path = request.StorageKey,
             CitizenId = request.CitizenId,
             OrganizationId = organization.Id,
             Organization = organization,
@@ -52,13 +52,11 @@ public class ImageService(AppDbContext db)
             FileType = request.FileType,
             SizeBytes = request.SizeBytes
         };
-        
+
         _db.Images.Add(image);
         await _db.SaveChangesAsync();
-        
-        return await GetIDInImagesAsync(image.Id);
+
+        return await GetImageByIdAsync(image.Id);
     }
-    
+
 }
-
-
