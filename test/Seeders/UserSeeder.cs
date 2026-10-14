@@ -39,7 +39,7 @@ public static class UserSeeder
 
         var user = CreateFaker(seed, password).Generate();
 
-        return new SeededUser(user, password);
+        return new SeededUser(user, password); // returns hashed password in user and unhashed for itself
     }
 
     // Create x random users.
@@ -64,7 +64,7 @@ public static class UserSeeder
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(password, 12);
 
-            users.Add(new SeededUser(user, password));
+            users.Add(new SeededUser(user, password)); 
         }
 
         return users;

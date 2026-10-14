@@ -37,6 +37,10 @@ Might require the following package a separate 'docker buildx' package depending
 
 `docker compose up --build`
 
+### Run tests
+
+`docker compose --profile test run --run --rm test`
+
 ### Optional: discard the local database volume to fix the existing EnsureCreated/migration mismatch
 
 ### WARNING: deletes database data
