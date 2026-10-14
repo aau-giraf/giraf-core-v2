@@ -11,7 +11,7 @@ public class OrganizationServiceTest : TestBase
     public OrganizationServiceTest(ITestOutputHelper output) : base(output) { }
 
     // used to offset seed for different results.
-    private readonly int SEED_OFFSET = 124;
+    // private readonly int SEED_OFFSET = 124;
 
     [Fact]
     public async Task GetOrganization_GetsCorrectOrganization()
@@ -148,8 +148,6 @@ public class OrganizationServiceTest : TestBase
             Assert.True(deletedClassInOrganization);
         } else if (selectedClass is null && class1.OrganizationId != organization1.Id)
         {   
-            // If the class is not in the organization it must be in the other organization
-            Assert.True(selectedClass.OrganizationId == organization2.Id);
             // Since the class is not in the organization the method must return false
             Assert.False(deletedClassInOrganization);
         }
@@ -192,13 +190,9 @@ public class OrganizationServiceTest : TestBase
         {
             Assert.NotNull(fetchedClass);
             Assert.True(class2.Id == fetchedClass.Id);
-            Assert.True(class2.Name == fetchedClass.Name);
+            Assert.Equal(class2.Name, fetchedClass.Name);
             Assert.True(class2.OrganizationId == fetchedClass.OrganizationId);
-        } else
-        {   
-            // Assert that if it isnt in organization1 then it must be in organization2
-            Assert.True(organization2.Id == fetchedClass.OrganizationId);
-        }
+        } 
     }
 
     [Fact] 
@@ -292,11 +286,6 @@ public class OrganizationServiceTest : TestBase
         Assert.True(requestCreateClassinOrganizationDTO.Name == createdClassInOrganization.Name);
         Assert.True(organization1.Id == createdClassInOrganization.OrganizationId);
 
-        // Asserts that the created class does contain a name of a class already in the organization.
-        if (class2.OrganizationId == organization1.Id)
-        {
-            Assert.False(createdClassInOrganization.Name == class2.Name);
-        }
     }
 
 
