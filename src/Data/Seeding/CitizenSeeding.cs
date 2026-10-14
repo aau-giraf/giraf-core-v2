@@ -1,10 +1,10 @@
 namespace giraf_core_v2.Data.Seeding;
 
-public class CitizenSeeding : ISeeding {
-
+public class CitizenSeeding : ISeeding 
+{
     public int SeedingPosition { get; init; } = 4;  
-    public void Seed(AppDbContext context) {  
-
+    public void Seed(AppDbContext context) 
+    {  
         if (context.Set<Citizen>().Any()) return;
 
         User[] users = context.Set<User>().ToArray();

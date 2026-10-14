@@ -1,7 +1,7 @@
 namespace giraf_core_v2.Data.Seeding;
 
-public class ClassSeeding : ISeeding {
-
+public class ClassSeeding : ISeeding 
+{
     public int SeedingPosition { get; init; } = 2;  
     public void Seed(AppDbContext context) {  
 

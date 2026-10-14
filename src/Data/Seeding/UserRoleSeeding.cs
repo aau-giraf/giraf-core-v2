@@ -1,10 +1,10 @@
 namespace giraf_core_v2.Data.Seeding;
 using giraf_core_v2.Models;
-public class UserRoleSeeding : ISeeding {
-
+public class UserRoleSeeding : ISeeding 
+{
     public int SeedingPosition { get; init; } = 6;  
-    public void Seed(AppDbContext context) {  
-
+    public void Seed(AppDbContext context) 
+    {  
         if (context.Set<UserRole>().Any()) return;
 
         User[] users = context.Set<User>().ToArray();
@@ -19,8 +19,7 @@ public class UserRoleSeeding : ISeeding {
         ];
 
         context.Set<UserRole>().AddRange(userRoles);
-        context.SaveChanges();
-        
+        context.SaveChanges();  
     }
 
 }

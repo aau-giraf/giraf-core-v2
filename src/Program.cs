@@ -15,7 +15,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
                 .Select(type => (ISeeding)Activator.CreateInstance(type)!)
                 .OrderBy(seeder => seeder.SeedingPosition); // Creates instances of said classes
 
-            foreach (ISeeding seeder in seeders) {
+            foreach (ISeeding seeder in seeders) 
+            {
                 seeder.Seed((AppDbContext)context);
             }
         })

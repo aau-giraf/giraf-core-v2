@@ -1,10 +1,10 @@
 namespace giraf_core_v2.Data.Seeding;
 
-public class UserOrganizationSeeding : ISeeding {
-
+public class UserOrganizationSeeding : ISeeding 
+{
     public int SeedingPosition { get; init; } = 5;  
-    public void Seed(AppDbContext context) { 
-
+    public void Seed(AppDbContext context) 
+    { 
         if (context.Set<UserOrganization>().Any()) return;
 
         Organization egeBakken = context.Set<Organization>().First(org => org.Name == "Egebakken");
@@ -22,8 +22,7 @@ public class UserOrganizationSeeding : ISeeding {
         ];
 
         context.Set<UserOrganization>().AddRange(userOrganizations);
-        context.SaveChanges();
-        
+        context.SaveChanges(); 
     }
 
 }
