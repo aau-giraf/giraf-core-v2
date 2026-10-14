@@ -325,13 +325,13 @@ public class OrganizationServiceTest : TestBase
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class2.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class2.Name);
-        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class1.Id)
+        } else if (fetchedClassesInOrganization.Count() == 2 && fetchedClassesInOrganization[0].Id == class1.Id)
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class1.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class1.Name);
             Assert.True(fetchedClassesInOrganization[1].Id == class2.Id);
             Assert.True(fetchedClassesInOrganization[1].Name == class2.Name);
-        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class2.Id)
+        } else if (fetchedClassesInOrganization.Count() == 2 && fetchedClassesInOrganization[0].Id == class2.Id)
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class2.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class2.Name);
