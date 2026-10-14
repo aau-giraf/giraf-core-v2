@@ -4,6 +4,7 @@ using System.Security.Principal;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.VisualBasic;
 
 namespace giraf_core_v2.Services;
@@ -108,7 +109,7 @@ public class OrganizationService(AppDbContext db)
     {   
         // Fetch the class with classId and organizationId matching Route parameters
         var selectedClass = await _db.Classes
-            .Where(c => c.OrganizationId == org_id).FirstAsync(c => c.Id == class_id);
+            .Where(c => c.OrganizationId == org_id).FirstAsync(c => c.Id == class_id && c.OrganizationId == org_id);
         
         if (selectedClass.Id == class_id && selectedClass.OrganizationId == org_id)
         {
@@ -195,17 +196,17 @@ public class OrganizationService(AppDbContext db)
     
     }
 
-    public async Task<ResponseGetOrganizationDTO> UpdateOrganizationAsync(RequestCreateOrganizationDTO createOrganization, int org_id)
+    public async Task<ResponseGetOrganizationDTO> UpdateOrganizationAsync(RequestCreateOrganizationDTO updateOrganization, int org_id)
     {
         // Find the organization in db
         var organization = await _db.Organizations.FindAsync(org_id);
 
         // Check if the name specified in the request is already taken, including if the name is not changed it is taken. 
-        bool checkNameAlreadyExist = _db.Organizations.Any(o => o.Name == organization.Name);
-        
-        if (organization.Id == org_id && checkNameAlreadyExist is false)
+        bool nameAlreadyExist = _db.Organizations.Any(o => o.Name == updateOrganization.Name);
+
+        if (organization.Id == org_id && nameAlreadyExist is false)
         {
-            organization.Name = createOrganization.Name;
+            organization.Name = updateOrganization.Name;
         }
 
         // Save the updated organization in db. 

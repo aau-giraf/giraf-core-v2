@@ -1,3 +1,4 @@
+using System.Data;
 using System.Security.Cryptography.X509Certificates;
 using Bogus.DataSets;
 using Microsoft.OpenApi;
@@ -211,7 +212,7 @@ public class OrganizationServiceTest : TestBase
         // Create the dummy DTO for the requestbody
         RequestCreateOrganizationDTO requestCreateOrganizationDTO = new RequestCreateOrganizationDTO
         {
-            Name = "MunkholmSkolen",
+            Name = "SchoolOfIdoha",
         };
 
         //----- ACT -----\\
@@ -231,29 +232,28 @@ public class OrganizationServiceTest : TestBase
         var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
-
+        int organization1Id = organization1.Id;
+        string organization1Name = organization1.Name;
         Assert.NotNull(organization1);
         Assert.NotNull(organization2);
 
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        RequestCreateOrganizationDTO requestCreateOrganizationDTO = new RequestCreateOrganizationDTO
+        RequestCreateOrganizationDTO requestUpdateOrganizationDTO = new RequestCreateOrganizationDTO
         {
-            Name = organization1.Name,
+            Name = "SchoolOfNY",
         };
 
         //----- ACT -----\\
-        var updatedOrganization = await service.UpdateOrganizationAsync(requestCreateOrganizationDTO, organization1.Id);
+        var updatedOrganization = await service.UpdateOrganizationAsync(requestUpdateOrganizationDTO, organization1.Id);
 
         //----- ASSERT -----\\
         Assert.NotNull(updatedOrganization);
-        Assert.True(requestCreateOrganizationDTO.Name == updatedOrganization.Name);
-        Assert.True(organization1.Id == updatedOrganization.Id);
-        // Asserts that the new name for the organization is actually new
-        Assert.True(organization1.Name != updatedOrganization.Name);
+        Assert.Equal(requestUpdateOrganizationDTO.Name, updatedOrganization.Name);
+        Assert.True(organization1Id == updatedOrganization.Id);
         // Asserts that you cant rename and organization to an existing one
-        Assert.True(organization2.Name != updatedOrganization.Name);
+        Assert.NotEqual(organization1Name, updatedOrganization.Name);
     }
 
     [Fact] 
