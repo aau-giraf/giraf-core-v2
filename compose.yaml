@@ -1,35 +1,36 @@
 services:
-    server:
-        build:
-            context: .
-            target: final
-        ports:
-            - 8080:8080
-        depends_on:
-            db:
-                condition: service_healthy
+  server:
+    build:
+      context: .
+      target: final
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
 
-    db:
-        image: postgres
-        restart: always
-        environment:
-            POSTGRES_PASSWORD: core2026
-            POSTGRES_DB: defaultdb
-        volumes:
-            - pgdata:/var/lib/postgresql
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U postgres"]
-            interval: 1s
-            timeout: 5s
-            retries: 10
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: core2026
+      POSTGRES_DB: defaultdb
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
 
-    test:
-      build:
-        context: .
-        dockerfile: Dockerfile
-        target: test
-      working_dir: /source
-      command: dotnet test --logger "console;verbosity=detailed"
+  test:
+    profiles: ["test"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    working_dir: /source
+    command: dotnet test --logger "console;verbosity=detailed"
 volumes:
-    pgdata:
+  pgdata:

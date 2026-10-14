@@ -58,3 +58,10 @@ COPY appsettings.json .
 USER $APP_UID
 
 ENTRYPOINT ["dotnet", "giraf-core-v2.dll"]
+
+# Tests
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS test
+
+COPY . /source
+
+WORKDIR /source
