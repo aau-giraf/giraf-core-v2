@@ -47,3 +47,8 @@ Might require the following package a separate 'docker buildx' package depending
 
 `docker compose down -v`
 `docker compose up --build`
+
+## Run Tests
+
+Run: `dotnet test --configuration Release --verbosity normal`
+The test seed will then be visible in the error message if a test fails.
