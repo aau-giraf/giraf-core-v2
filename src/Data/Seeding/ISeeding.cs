@@ -4,5 +4,5 @@ public interface ISeeding
 {
     public abstract void Seed(AppDbContext context);
 
-    public int SeedingPosition { get; init;}
+    public int SeedingPosition { get; init; }
 }

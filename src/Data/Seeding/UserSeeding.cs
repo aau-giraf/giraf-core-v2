@@ -1,9 +1,9 @@
 namespace giraf_core_v2.Data.Seeding;
 
-public class UserSeeding : ISeeding 
+public class UserSeeding : ISeeding
 {
-    public int SeedingPosition { get; init; } = 3;  
-    public void Seed(AppDbContext context) 
+    public int SeedingPosition { get; init; } = 3;
+    public void Seed(AppDbContext context)
     {
         if (context.Set<User>().Any()) return;
 
@@ -55,5 +55,4 @@ public class UserSeeding : ISeeding
         context.Set<User>().AddRange(users);
         context.SaveChanges();
     }
-    
 }
