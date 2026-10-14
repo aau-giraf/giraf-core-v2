@@ -21,18 +21,54 @@ public static class ImageSeeder
         return new SeededImage(image);
     }
 
+    public static async Task<List<SeededImage>> SeedManyAsync(AppDbContext db, int seed, int count)
+    {
+        var images = CreateMany(seed, count);
+
+        db.Images.AddRange(images.Select(x => x.Image));
+        await db.SaveChangesAsync();
+
+        return images;
+    }
+
     public static Faker<Image> CreateFaker(int seed)
     {
         return new Faker<Image>()
-        .UseSeed(seed)
-        .RuleFor(i => i.Name, f => f.Lorem.Word())
-        .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
-        .RuleFor(i => i.Path, f => f.System.FilePath())
-        .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
-        .RuleFor(i => i.StorageKey, f => f.Random.String())
-        .RuleFor(i => i.FileName, f => f.System.FileName())
-        .RuleFor(i => i.FileType, f => f.System.FileType())
-        .RuleFor(i => i.SizeBytes, f => f.Random.Byte())
-        .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
+            .UseSeed(seed)
+            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.Path, f => f.System.FilePath())
+            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.StorageKey, f => f.Random.String())
+            .RuleFor(i => i.FileName, f => f.System.FileName())
+            .RuleFor(i => i.FileType, f => f.System.FileType())
+            .RuleFor(i => i.SizeBytes, f => f.Random.Byte())
+            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
+    }
+
+    public static List<SeededImage> CreateMany(int seed, int count)
+    {
+        var ImageFaker = new Faker<Image>()
+            .UseSeed(seed)
+            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.Path, f => f.System.FilePath())
+            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.StorageKey, f => f.Random.String())
+            .RuleFor(i => i.FileName, f => f.System.FileName())
+            .RuleFor(i => i.FileType, f => f.System.FileType())
+            .RuleFor(i => i.SizeBytes, f => f.Random.Byte())
+            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
+
+        var images = new List<SeededImage>();
+
+        for (int i = 0; i < count; i++)
+        {
+            var image = ImageFaker.Generate();
+
+            images.Add(new SeededImage(image));
+        }
+
+        return images;
     }
 }
