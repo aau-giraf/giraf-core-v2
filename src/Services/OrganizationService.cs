@@ -37,33 +37,36 @@ public class OrganizationService(AppDbContext db)
     // Fetch the organization by org_id from Route parameter
     public async Task<ResponseGetOrganizationDTO?> GetOrganizationByIdAsync(int org_id)
     {   
-        if (_db.Organizations.Any(o => o.Id == org_id))
-        {
-            var organization = await _db.Organizations.FindAsync(org_id);
-        
-            ResponseGetOrganizationDTO responseOrganizationDTO = new ResponseGetOrganizationDTO
-		    {
-			    Id = organization!.Id,
-                Name = organization.Name,
-		    };
+        var organization = await _db.Organizations.FindAsync(org_id);
 
-            return responseOrganizationDTO;
-        }
+        if (organization is null)
+        {  
         return null;
+        }
+        
+        ResponseGetOrganizationDTO responseOrganizationDTO = new ResponseGetOrganizationDTO
+        {
+            Id = organization!.Id,
+            Name = organization.Name,
+        };
+        return responseOrganizationDTO;
     }
 
     // Delete organization by org_id from Route parameter
     public async Task<bool> DeleteOrganizationAsync(int org_id)
     {   
         // Fetch organization and delete it
-        var organization = await _db.Organizations
+        if (_db.Organizations.Any(o => o.Id == org_id))
+        {
+            var organization = await _db.Organizations
             .FindAsync(org_id);
         
-        if (organization!.Id == org_id)
+        if (organization!.Id == org_id && organization is not null)
         {
             _db.Organizations.Remove(organization);
             await _db.SaveChangesAsync();
             return true;
+        }
         }
         return false;
     }
@@ -72,21 +75,22 @@ public class OrganizationService(AppDbContext db)
     {   
         // Fetch the class tuple, where the column OrganizationId equals org_id and
         // the column Id equals class_id from Route parameter
-        if (db.Classes.Any(c => c.Id == class_id && c.OrganizationId == org_id))
+        var selectedClass = await _db.Classes
+            .FirstOrDefaultAsync(c => c.Id == class_id && c.OrganizationId == org_id);
+            
+        if (selectedClass is null)
         {
-            var selectedClass = await _db.Classes
-                .FirstOrDefaultAsync(c => c.Id == class_id && c.OrganizationId == org_id);
-
-            // Return correctly formatted response
-             ResponseGetClassInOrganizationDTO responseClassInOrganizationDTO = new ResponseGetClassInOrganizationDTO
-		    {
-			    Id = selectedClass!.Id,
-                Name = selectedClass.Name,
-                OrganizationId = selectedClass.OrganizationId,
-		    };
-        return responseClassInOrganizationDTO;
-        }
         return null;
+        }
+        
+        // Return correctly formatted response
+        ResponseGetClassInOrganizationDTO responseClassInOrganizationDTO = new ResponseGetClassInOrganizationDTO
+        {
+            Id = selectedClass!.Id,
+            Name = selectedClass.Name,
+            OrganizationId = selectedClass.OrganizationId,
+        };
+    return responseClassInOrganizationDTO;
     }
 
     public async Task<List<ResponseGetClassInOrganizationDTO>> GetClassesInOrganizationAsync(int org_id)
@@ -130,10 +134,15 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseCreateClassDTO> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass, int org_id)
+    public async Task<ResponseCreateClassDTO?> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass, int org_id)
     {
        // Fetch organization instance from db (Required in Class model)
        var organization = await _db.Organizations.FindAsync(org_id);
+
+       if (organization is null)
+        {
+            return null;
+        }
 
        // Create new instance of class
        Class createdClass = new Class
@@ -159,7 +168,12 @@ public class OrganizationService(AppDbContext db)
         // It is therefore we insert it in the db, and then fetches that same entry now containing id. 
         Class newClass = _db.Classes.FirstOrDefault(c => c.Name == createdClass.Name 
                 && c.OrganizationId == createdClass.OrganizationId)!;
-        
+
+        if (newClass is null)
+        {
+            return null;
+        }
+
         // Return correctly formatted response
         ResponseCreateClassDTO responseClass = new ResponseCreateClassDTO
 		{
@@ -173,7 +187,7 @@ public class OrganizationService(AppDbContext db)
     }
 
 
-    public async Task<ResponseGetOrganizationDTO> CreateOrganizationAsync(RequestCreateOrganizationDTO createOrganization)
+    public async Task<ResponseGetOrganizationDTO?> CreateOrganizationAsync(RequestCreateOrganizationDTO createOrganization)
     { 
        // Check if the name specified in the requestbody is already taken
        bool checkNameAlreadyExist = _db.Organizations.Any(o => o.Name == createOrganization.Name);
@@ -195,6 +209,11 @@ public class OrganizationService(AppDbContext db)
         // It is therefore we insert it in the db, and then fetches that same entry now containing id. 
         Organization newOrganization = _db.Organizations.FirstOrDefault(o => o.Name == createdOrganization.Name)!;
         
+        if (newOrganization is null)
+        {
+            return null;
+        }
+        
         // Return correctly formatted response
         ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
 		{
@@ -206,10 +225,15 @@ public class OrganizationService(AppDbContext db)
     
     }
 
-    public async Task<ResponseGetOrganizationDTO> UpdateOrganizationAsync(RequestCreateOrganizationDTO updateOrganization, int org_id)
+    public async Task<ResponseGetOrganizationDTO?> UpdateOrganizationAsync(RequestCreateOrganizationDTO updateOrganization, int org_id)
     {
         // Find the organization in db
         var organization = await _db.Organizations.FindAsync(org_id);
+
+        if (organization is null)
+        {
+            return null;
+        }
 
         // Check if the name specified in the request is already taken, including if the name is not changed it is taken. 
         bool nameAlreadyExist = _db.Organizations.Any(o => o.Name == updateOrganization.Name);
@@ -225,6 +249,11 @@ public class OrganizationService(AppDbContext db)
         // Find the updated organization in db
         var updatedOrganization = await _db.Organizations.FindAsync(org_id);
 
+        if (updatedOrganization is null)
+        {
+            return null;
+        }
+
         // Return correctly formatted response
         ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
 		{
@@ -238,7 +267,9 @@ public class OrganizationService(AppDbContext db)
        public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int user_id)
     {   
         // Fetch the userOrganization with userId and organizationId matching Route parameters
-        var selectedUserOrganization = await _db.UserOrganizations
+        if (_db.UserOrganizations.Any(uo => uo.UserId == user_id && uo.OrganizationId == org_id))
+        {
+            var selectedUserOrganization = await _db.UserOrganizations
             .FirstOrDefaultAsync(uo => uo.UserId == user_id && uo.OrganizationId == org_id);
         
         if (selectedUserOrganization!.UserId == user_id && selectedUserOrganization.OrganizationId == org_id)
@@ -247,17 +278,28 @@ public class OrganizationService(AppDbContext db)
             await _db.SaveChangesAsync();
             return true;
         }
+        }
         return false;
     }
 
-    public async Task<ResponseCreateUserOrganizationDTO> CreateUserInOrganizationAsync(int org_id, int user_id)
+    public async Task<ResponseCreateUserOrganizationDTO?> CreateUserInOrganizationAsync(int org_id, int user_id)
     {   
         
         // Fetch organization instance from db (Required in UserOrganization model)
         var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
 
+        if (organization is null)
+        {
+            return null;
+        }
+
         // Fetch user instance from db (Required in UserOrganization model)
        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == user_id);
+
+       if (user is null)
+        {
+            return null;
+        }
 
        // Create new instance of UserOrganization
        UserOrganization createdUserOrganization = new UserOrganization
@@ -282,6 +324,11 @@ public class OrganizationService(AppDbContext db)
 
         // Fetch the new UserOrganization
         var newUserOrganization = await _db.UserOrganizations.FirstAsync(uo => uo.UserId == user_id && uo.OrganizationId == org_id);
+
+        if (newUserOrganization is null)
+        {
+            return null;
+        }
 
         // Return correctly formatted response
         ResponseCreateUserOrganizationDTO responseUserOrganization = new ResponseCreateUserOrganizationDTO
