@@ -80,4 +80,13 @@ public class ImageServiceTest : TestBase
         Assert.NotNull(remainingImage);
 
     }
+
+    [Fact]
+    public async Task PostImageAsync_PostImage()
+    {
+        await using var db = CreateDbContext();
+
+        
+
+    }
 }
