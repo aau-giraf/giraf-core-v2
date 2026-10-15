@@ -6,26 +6,23 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace giraf_core_v2.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCoreEntitiesAndSingularTableNames : Migration
+    public partial class OrganizationAndClass : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Users");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Colors",
-                table: "Colors");
-
-            migrationBuilder.RenameTable(
-                name: "Colors",
-                newName: "Color");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Color",
-                table: "Color",
-                column: "Id");
+            migrationBuilder.CreateTable(
+                name: "Color",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ColorName = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Color", x => x.Id);
+                });
 
             migrationBuilder.CreateTable(
                 name: "Organization",
@@ -178,6 +175,9 @@ namespace giraf_core_v2.Migrations
                 name: "Citizen");
 
             migrationBuilder.DropTable(
+                name: "Color");
+
+            migrationBuilder.DropTable(
                 name: "UserOrganization");
 
             migrationBuilder.DropTable(
@@ -191,37 +191,6 @@ namespace giraf_core_v2.Migrations
 
             migrationBuilder.DropTable(
                 name: "Organization");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_Color",
-                table: "Color");
-
-            migrationBuilder.RenameTable(
-                name: "Color",
-                newName: "Colors");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_Colors",
-                table: "Colors",
-                column: "Id");
-
-            migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Email = table.Column<string>(type: "text", nullable: false),
-                    FirstName = table.Column<string>(type: "text", nullable: false),
-                    LastName = table.Column<string>(type: "text", nullable: false),
-                    Password = table.Column<string>(type: "text", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false),
-                    Username = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
         }
     }
 }

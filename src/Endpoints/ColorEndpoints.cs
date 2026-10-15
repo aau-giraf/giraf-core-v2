@@ -9,6 +9,7 @@ public static class ColorEndpoints
         var group = app.MapGroup("/colors");
 
         group.MapGet("/", GetColors);
+        
     }
 
     private static async Task<IResult> GetColors(ColorService colorService)
@@ -17,4 +18,6 @@ public static class ColorEndpoints
 
         return Results.Ok(colors);
     }
+
+
 }

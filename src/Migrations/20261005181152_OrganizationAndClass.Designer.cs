@@ -4,14 +4,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using giraf_core_v2.Data;
 
 #nullable disable
 
 namespace giraf_core_v2.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261002155155_AddCoreEntitiesAndSingularTableNames")]
-    partial class AddCoreEntitiesAndSingularTableNames
+    [Migration("20261005181152_OrganizationAndClass")]
+    partial class OrganizationAndClass
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,23 +23,6 @@ namespace giraf_core_v2.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Color", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ColorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Color");
-                });
 
             modelBuilder.Entity("giraf_core_v2.Models.Citizen", b =>
                 {
@@ -80,6 +64,23 @@ namespace giraf_core_v2.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("Class");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.Color", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Color");
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.Organization", b =>

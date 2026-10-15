@@ -8,6 +8,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection")));
 
 builder.Services.AddScoped<ColorService>();
+builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
 
 builder.Services.AddValidation();
@@ -23,12 +24,12 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
+app.MapOrganizationEndpoints();
 app.MapColorEndpoints();
 app.MapUserEndpoints();
 

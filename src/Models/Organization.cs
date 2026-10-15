@@ -6,7 +6,7 @@ public class Organization
 {
     [Key]
     public int Id { get; init; }
-    public required string Name {get; set;}
+    public required string Name { get; set; }
 
     //Navigational property for users belonging to an organization
     public ICollection<UserOrganization> Users { get; } = [];
