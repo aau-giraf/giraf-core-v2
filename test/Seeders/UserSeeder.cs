@@ -21,7 +21,7 @@ public static class UserSeeder
     // Create x random users and add them to mock database.
     public static async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
-        var users = CreateMany(seed, count);
+        var users = CreateManyFakers(seed, count);
 
         // add all User classes to db.
         db.Users.AddRange(users.Select(x => x.User));
@@ -43,7 +43,7 @@ public static class UserSeeder
     }
 
     // Create x random users.
-    private static List<SeededUser> CreateMany(int seed, int count)
+    private static List<SeededUser> CreateManyFakers(int seed, int count)
     {
         // create fakers to reuse for different data
         var UserFaker = new Faker<User>()
@@ -64,7 +64,7 @@ public static class UserSeeder
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(password, 12);
 
-            users.Add(new SeededUser(user, password)); 
+            users.Add(new SeededUser(user, password));
         }
 
         return users;

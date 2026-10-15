@@ -12,10 +12,8 @@ public static class ImageSeeder
         return image;
     }
 
-    public static SeededImage Create(int seed)
+    private static SeededImage Create(int seed)
     {
-        var faker = new Faker<string>().UseSeed(seed);
-
         var image = CreateFaker(seed);
 
         return new SeededImage(image);
@@ -23,7 +21,7 @@ public static class ImageSeeder
 
     public static async Task<List<SeededImage>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
-        var images = CreateMany(seed, count);
+        var images = CreateManyFakers(seed, count);
 
         db.Images.AddRange(images.Select(x => x.Image));
         await db.SaveChangesAsync();
@@ -31,7 +29,7 @@ public static class ImageSeeder
         return images;
     }
 
-    public static Faker<Image> CreateFaker(int seed)
+    private static Faker<Image> CreateFaker(int seed)
     {
         return new Faker<Image>()
             .UseSeed(seed)
@@ -46,19 +44,9 @@ public static class ImageSeeder
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
-    public static List<SeededImage> CreateMany(int seed, int count)
+    private static List<SeededImage> CreateManyFakers(int seed, int count)
     {
-        var ImageFaker = new Faker<Image>()
-            .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
-            .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.Path, f => f.System.FilePath())
-            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.StorageKey, f => f.Random.String())
-            .RuleFor(i => i.FileName, f => f.System.FileName())
-            .RuleFor(i => i.FileType, f => f.System.FileType())
-            .RuleFor(i => i.SizeBytes, f => f.Random.Byte())
-            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
+        var ImageFaker = CreateFaker(seed);
 
         var images = new List<SeededImage>();
 
