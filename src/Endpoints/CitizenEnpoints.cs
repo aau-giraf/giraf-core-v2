@@ -16,13 +16,13 @@ public static class CitizenEndpoints
         groupOrg.MapPost("/citizens", CreateCitizen);
     }
 
-    private static async Task<Results<Ok<Citizen>, NotFound>> GetCitizen(int userId, CitizenService citizenService)
+    private static async Task<Results<Ok<Citizen>, NotFound>> GetCitizen(int citizenId, CitizenService citizenService)
     {
-        var citizen = await citizenService.GetCitizenAsync(userId);
+        var citizen = await citizenService.GetCitizenAsync(citizenId);
         return citizen is null ? TypedResults.NotFound() : TypedResults.Ok(citizen);
     }
 
-    private static async Task<Results<Created<Citizen>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
+    private static async Task<Results<Created<CitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
     {
 		if (createCitizen is null)
         {
@@ -30,13 +30,10 @@ public static class CitizenEndpoints
         }
 
 		var citizen = await citizenService.CreateCitizenAsync(createCitizen);
-        
-		if (citizen is null)
-        {
-            return TypedResults.BadRequest();
-        }
 
-		return TypedResults.Created($"/citizens/{citizen.UserId}", citizen);
+		var dto = new CitizenDTO(citizen.UserId, citizen.GuardianId,  citizen.ClassId);
+
+		return TypedResults.Created($"/citizens/{dto.UserId}", dto);
     }
 
     private static async Task<Results<Ok<Citizen>, NotFound, BadRequest>> UpdateCitizen(int citizenId, CitizenService citizenService, [FromBody] UpdateCitizenDTO? updateCitizen)
@@ -50,7 +47,7 @@ public static class CitizenEndpoints
         return citizen is null ? TypedResults.NotFound() : TypedResults.Ok(citizen);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteCitizen(int citizenId, [FromBody] CitizenService? citizenService)
+    private static async Task<Results<NoContent, NotFound>> DeleteCitizen(int citizenId, CitizenService citizenService)
     {
         var deleted = await citizenService.DeleteCitizenAsync(citizenId);
         return deleted ? TypedResults.NoContent() : TypedResults.NotFound();

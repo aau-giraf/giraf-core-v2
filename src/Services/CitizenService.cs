@@ -59,9 +59,11 @@ public class CitizenService(AppDbContext db)
 		if (citizen is not null)
 		{
 			_db.Citizens.Remove(citizen);	
-			await _db.SaveChangesAsync();	
-		}
-
-		return Results.NotFound();
-    }
+			await _db.SaveChangesAsync();
+			return true;	
+		} else
+		{
+			return false;
+    	}
+	}
 }
