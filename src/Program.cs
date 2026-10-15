@@ -10,6 +10,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 builder.Services.AddScoped<ColorService>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ImageService>();
 
 builder.Services.AddValidation();
 
@@ -32,6 +33,7 @@ app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapColorEndpoints();
 app.MapUserEndpoints();
+app.MapImageEndpoints();
 
 
 app.Run();
