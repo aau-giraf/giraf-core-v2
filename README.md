@@ -52,3 +52,7 @@ Might require the following package a separate 'docker buildx' package depending
 
 Run: `dotnet test --configuration Release --verbosity normal`
 The test seed will then be visible in the error message if a test fails.
+
+## Contributing
+
+Before creating a pull request, please run `dotnet format`. This ensures consistent formatting between developers and reduces conflicts when merging.
