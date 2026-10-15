@@ -16,7 +16,7 @@ public static class ClassSeeder
     // Create x random classes and add them to mock database.
     public static async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
-        var classes = CreateMany(seed, count);
+        var classes = CreateManyFakers(seed, count);
 
         db.Classes.AddRange(classes);
         await db.SaveChangesAsync();
@@ -31,7 +31,7 @@ public static class ClassSeeder
     }
 
     // Create x random classes.
-    private static List<Class> CreateMany(int seed, int count)
+    private static List<Class> CreateManyFakers(int seed, int count)
     {
         return CreateFaker(seed).Generate(count);
     }

@@ -16,7 +16,7 @@ public static class OrganizationSeeder
     // Create x random organizations and add them to mock database.
     public static async Task<List<Organization>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
-        var organizations = CreateMany(seed, count);
+        var organizations = CreateManyFakers(seed, count);
 
         db.Organizations.AddRange(organizations);
         await db.SaveChangesAsync();
@@ -31,7 +31,7 @@ public static class OrganizationSeeder
     }
 
     // Create x random users.
-    private static List<Organization> CreateMany(int seed, int count)
+    private static List<Organization> CreateManyFakers(int seed, int count)
     {
         return CreateFaker(seed).Generate(count);
     }

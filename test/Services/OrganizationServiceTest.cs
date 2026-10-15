@@ -10,9 +10,6 @@ public class OrganizationServiceTest : TestBase
 {
     public OrganizationServiceTest(ITestOutputHelper output) : base(output) { }
 
-    // used to offset seed for different results.
-    // private readonly int SEED_OFFSET = 124;
-
     [Fact]
     public async Task GetOrganization_GetsCorrectOrganization()
     {
