@@ -7,5 +7,5 @@ public class RequestCreateClassDTO
 {
     [Required]
     [Length(3, 255)]
-    public required string Name {get; set;}
+    public required string Name { get; set; }
 }

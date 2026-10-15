@@ -64,7 +64,7 @@ public static class UserSeeder
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(password, 12);
 
-            users.Add(new SeededUser(user, password)); 
+            users.Add(new SeededUser(user, password));
         }
 
         return users;

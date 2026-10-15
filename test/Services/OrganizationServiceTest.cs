@@ -15,7 +15,7 @@ public class OrganizationServiceTest : TestBase
 
     [Fact]
     public async Task GetOrganization_GetsCorrectOrganization()
-    {   
+    {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
@@ -41,7 +41,7 @@ public class OrganizationServiceTest : TestBase
 
     [Fact]
     public async Task GetOrganizationsList_GetsCorrectOrganizationsList()
-    {   
+    {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
@@ -49,7 +49,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        List<Organization> organizationsList = new List<Organization>(){organization1, organization2};
+        List<Organization> organizationsList = new List<Organization>() { organization1, organization2 };
 
         Assert.NotNull(organization1);
         Assert.NotNull(organization2);
@@ -61,14 +61,15 @@ public class OrganizationServiceTest : TestBase
 
         //----- ASSERT -----\\
         Assert.True(organizations.Count() == fetchedOrganizations.Count());
-        
+
         if (fetchedOrganizations.Count() == 2 && fetchedOrganizations[0].Id == organization1.Id)
         {
             Assert.True(fetchedOrganizations[0].Id == organization1.Id);
             Assert.True(fetchedOrganizations[0].Name == organization1.Name);
             Assert.True(fetchedOrganizations[1].Id == organization2.Id);
             Assert.True(fetchedOrganizations[1].Name == organization2.Name);
-        } else if (fetchedOrganizations.Count() == 2 && fetchedOrganizations[0].Id == organization2.Id)
+        }
+        else if (fetchedOrganizations.Count() == 2 && fetchedOrganizations[0].Id == organization2.Id)
         {
             Assert.True(fetchedOrganizations[0].Id == organization2.Id);
             Assert.True(fetchedOrganizations[0].Name == organization2.Name);
@@ -79,7 +80,7 @@ public class OrganizationServiceTest : TestBase
 
     [Fact]
     public async Task DeleteOrganization_DeletesCorrectOrganization()
-    {   
+    {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
@@ -109,7 +110,7 @@ public class OrganizationServiceTest : TestBase
 
     [Fact]
     public async Task DeleteClassInOrganization_DeletesCorrectClassInOrganization()
-    {   
+    {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
@@ -144,25 +145,26 @@ public class OrganizationServiceTest : TestBase
         //----- ASSERT -----\\
         // Be aware that the assertions differ given if the selectedClass was in the organization or not. 
         if (selectedClass is null && class1.OrganizationId == organization1.Id)
-        { 
+        {
             Assert.True(deletedClassInOrganization);
-        } else if (selectedClass is null && class1.OrganizationId != organization1.Id)
-        {   
+        }
+        else if (selectedClass is null && class1.OrganizationId != organization1.Id)
+        {
             // Since the class is not in the organization the method must return false
             Assert.False(deletedClassInOrganization);
         }
 
         // After possible delition of class1 ensure that the state of other classes are not affected
-        if (notSelectedClass is not null) 
-        {   
+        if (notSelectedClass is not null)
+        {
             Assert.NotNull(await db.Classes
                 .Where(c => c.OrganizationId == organization1.Id).FirstOrDefaultAsync(c => c.Id == class2.Id));
-        } 
+        }
     }
 
     [Fact]
     public async Task GetClassInOrganization_GetsCorrectClassInOrganization()
-    {   
+    {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
@@ -184,7 +186,7 @@ public class OrganizationServiceTest : TestBase
         //----- ACT -----\\
         var fetchedClass = await service.GetClassInOrganizationAsync(organization2.Id, class2.Id);
 
-         //----- ASSERT -----\\
+        //----- ASSERT -----\\
         // If class2 is in organization2 then make these assertions.
         if (class2.OrganizationId == organization2.Id)
         {
@@ -192,13 +194,13 @@ public class OrganizationServiceTest : TestBase
             Assert.True(class2.Id == fetchedClass.Id);
             Assert.Equal(class2.Name, fetchedClass.Name);
             Assert.True(class2.OrganizationId == fetchedClass.OrganizationId);
-        } 
+        }
     }
 
-    [Fact] 
+    [Fact]
     public async Task CreateOrganization_CreatesCorrectOrganization()
     {
-         //----- ARRANGE -----\\
+        //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
         var service = new OrganizationService(db);
@@ -217,10 +219,10 @@ public class OrganizationServiceTest : TestBase
         Assert.True(requestCreateOrganizationDTO.Name == createdOrganization.Name);
     }
 
-    [Fact] 
+    [Fact]
     public async Task UpdateOrganization_UpdatesCorrectOrganization()
     {
-         //----- ARRANGE -----\\
+        //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
         var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
@@ -250,7 +252,7 @@ public class OrganizationServiceTest : TestBase
         Assert.NotEqual(organization1Name, updatedOrganization.Name);
     }
 
-    [Fact] 
+    [Fact]
     public async Task CreateClassInOrganization_CreatesCorrectClassInOrganization()
     {
         //----- ARRANGE -----\\
@@ -289,7 +291,7 @@ public class OrganizationServiceTest : TestBase
     }
 
 
-    [Fact] 
+    [Fact]
     public async Task GetClassesInOrganization_GetsCorrectClassesInOrganization()
     {
         //----- ARRANGE -----\\
@@ -313,25 +315,29 @@ public class OrganizationServiceTest : TestBase
         //----- ACT -----\\
         var fetchedClassesInOrganization = await service.GetClassesInOrganizationAsync(organization1.Id);
 
-         //----- ASSERT -----\\
+        //----- ASSERT -----\\
         if (fetchedClassesInOrganization.Count() == 0)
         {
-            Assert.Empty(fetchedClassesInOrganization); 
-        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class1.Id)
+            Assert.Empty(fetchedClassesInOrganization);
+        }
+        else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class1.Id)
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class1.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class1.Name);
-        } else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class2.Id)
+        }
+        else if (fetchedClassesInOrganization.Count() == 1 && fetchedClassesInOrganization[0].Id == class2.Id)
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class2.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class2.Name);
-        } else if (fetchedClassesInOrganization.Count() == 2 && fetchedClassesInOrganization[0].Id == class1.Id)
+        }
+        else if (fetchedClassesInOrganization.Count() == 2 && fetchedClassesInOrganization[0].Id == class1.Id)
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class1.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class1.Name);
             Assert.True(fetchedClassesInOrganization[1].Id == class2.Id);
             Assert.True(fetchedClassesInOrganization[1].Name == class2.Name);
-        } else if (fetchedClassesInOrganization.Count() == 2 && fetchedClassesInOrganization[0].Id == class2.Id)
+        }
+        else if (fetchedClassesInOrganization.Count() == 2 && fetchedClassesInOrganization[0].Id == class2.Id)
         {
             Assert.True(fetchedClassesInOrganization[0].Id == class2.Id);
             Assert.True(fetchedClassesInOrganization[0].Name == class2.Name);

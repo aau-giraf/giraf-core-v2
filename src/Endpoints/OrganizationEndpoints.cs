@@ -20,7 +20,7 @@ public static class OrganizationEndpoints
         group.MapPost("/", CreateOrganization);
 
         group.MapPut("/{org_id:int}/members/{user_id:int}", CreateUserInOrganization);
-        
+
         group.MapPatch("/{org_id:int}", UpdateOrganization);
 
         group.MapDelete("/{org_id}/members/{user_id:int}", DeleteUserInOrganization);
@@ -32,15 +32,15 @@ public static class OrganizationEndpoints
     }
 
     private static async Task<Results<Ok<List<ResponseGetOrganizationDTO>>, NotFound>> GetOrganizations(OrganizationService organizationService)
-    {   
+    {
         var organizations = await organizationService.GetOrganizationsAsync();
-        return organizations == null? TypedResults.NotFound() : TypedResults.Ok(organizations);
+        return organizations == null ? TypedResults.NotFound() : TypedResults.Ok(organizations);
     }
 
-    private static async  Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> GetOrganizationById(int org_id, OrganizationService organizationService)
-    {   
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> GetOrganizationById(int org_id, OrganizationService organizationService)
+    {
         var organization = await organizationService.GetOrganizationByIdAsync(org_id);
-        return organization == null? TypedResults.NotFound() : TypedResults.Ok(organization);
+        return organization == null ? TypedResults.NotFound() : TypedResults.Ok(organization);
     }
 
     private static async Task<Results<NoContent, NotFound>> DeleteOrganization(int org_id, OrganizationService organizationservice)
@@ -68,18 +68,19 @@ public static class OrganizationEndpoints
     }
 
     private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, int org_id, OrganizationService organizationservice)
-    {   
+    {
         var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClassDTO, org_id);
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
     private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationservice)
-    {   
+    {
         var createdOrganization = await organizationservice.CreateOrganizationAsync(requestCreateOrganizationDTO);
         return createdOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdOrganization);
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int org_id, OrganizationService organizationservice) {
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int org_id, OrganizationService organizationservice)
+    {
         var updatedOrganization = await organizationservice.UpdateOrganizationAsync(requestCreateOrganizationDTO, org_id);
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
@@ -91,7 +92,7 @@ public static class OrganizationEndpoints
     }
 
     private static async Task<Results<Ok<ResponseCreateUserOrganizationDTO>, NotFound>> CreateUserInOrganization(int user_id, int org_id, OrganizationService organizationservice)
-    {   
+    {
         var createdUserInOrganization = await organizationservice.CreateUserInOrganizationAsync(user_id, org_id);
         return createdUserInOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdUserInOrganization);
     }

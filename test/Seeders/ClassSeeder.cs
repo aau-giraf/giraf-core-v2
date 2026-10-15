@@ -1,7 +1,7 @@
 
 public static class ClassSeeder
 {
-    
+
     // Create a random class and add it to mock database.
     public static async Task<Class> SeedAsync(AppDbContext db, int seed)
     {
@@ -30,13 +30,13 @@ public static class ClassSeeder
         return CreateFaker(seed).Generate();
     }
 
-     // Create x random classes.
+    // Create x random classes.
     private static List<Class> CreateMany(int seed, int count)
     {
         return CreateFaker(seed).Generate(count);
     }
 
-     // Create a random test class using bogus.
+    // Create a random test class using bogus.
     private static Faker<Class> CreateFaker(int seed)
     {
         return new Faker<Class>()

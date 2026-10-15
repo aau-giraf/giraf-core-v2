@@ -1,7 +1,7 @@
 
 public static class OrganizationSeeder
 {
-    
+
     // Create a random organization and add it to mock database.
     public static async Task<Organization> SeedAsync(AppDbContext db, int seed)
     {
@@ -30,13 +30,13 @@ public static class OrganizationSeeder
         return CreateFaker(seed).Generate();
     }
 
-     // Create x random users.
+    // Create x random users.
     private static List<Organization> CreateMany(int seed, int count)
     {
         return CreateFaker(seed).Generate(count);
     }
 
-     // Create a random test organization using bogus.
+    // Create a random test organization using bogus.
     private static Faker<Organization> CreateFaker(int seed)
     {
         return new Faker<Organization>()
