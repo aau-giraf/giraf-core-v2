@@ -3,24 +3,25 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace giraf_core_v2.Models;
 
-//Configure a composite key in order
-[PrimaryKey(nameof(UserId), nameof(Type), nameof(OrganizationId))]
+//Configure a composite key in order. Based on usage, introduce Id primary key if needed.
+[PrimaryKey(nameof(NonCitizenId), nameof(Type), nameof(OrganizationId))]
 public class UserRole
 {
-    public int UserId {get; init; }
-    public required User User { get; init; }
+    public int NonCitizenId { get; init; }
+    public required NonCitizen NonCitizen { get; init; }
 
     //The role
     public RoleType Role { get; init; }
 
     //A role is in relation to an organization
-    public required int OrganizationId {get; init;}
+    public required int OrganizationId { get; init; }
     public required Organization Organization { get; init; }
 }
 
 public enum RoleType
 {
-    Admin, Citizen, Teacher, Parent
+    //Based on use cases, further determine which needed enum values
+    Employee, Parent
 }
 
 public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
