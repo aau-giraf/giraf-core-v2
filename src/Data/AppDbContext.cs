@@ -10,7 +10,6 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public DbSet<Color> Colors => Set<Color>();
-
     public DbSet<User> Users => Set<User>();
     public DbSet<Citizen> Citizens => Set<Citizen>();
     public DbSet<NonCitizen> NonCitizens => Set<NonCitizen>();
