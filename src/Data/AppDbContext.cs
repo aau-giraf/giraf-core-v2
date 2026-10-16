@@ -10,13 +10,15 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public DbSet<Color> Colors => Set<Color>();
-
     public DbSet<User> Users => Set<User>();
-    public DbSet<Organization> Organizations => Set<Organization>();
-    public DbSet<UserOrganization> UserOrganizations => Set<UserOrganization>();
     public DbSet<Citizen> Citizens => Set<Citizen>();
+    public DbSet<NonCitizen> NonCitizens => Set<NonCitizen>();
+    public DbSet<Guardianship> Guardianships => Set<Guardianship>();
+
+    public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Class> Classes => Set<Class>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<Image> Images => Set<Image>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
