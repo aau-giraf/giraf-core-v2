@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace giraf_core_v2.Models;
 
 //Configure a composite key in order. Based on usage, introduce Id primary key if needed.
-[PrimaryKey(nameof(NonCitizenId), nameof(Type), nameof(OrganizationId))]
+[PrimaryKey(nameof(NonCitizenId), nameof(Role), nameof(OrganizationId))]
 public class UserRole
 {
     public int NonCitizenId { get; init; }
