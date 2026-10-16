@@ -50,7 +50,6 @@ public static class UserSeeder
                    .UseSeed(seed)
                    .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                    .RuleFor(u => u.LastName, f => f.Name.LastName())
-                   .RuleFor(u => u.Email, f => f.Internet.Email())
                    .RuleFor(u => u.Username, f => f.Internet.UserName());
 
         var PasswordFaker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
@@ -77,7 +76,6 @@ public static class UserSeeder
             .UseSeed(seed)
             .RuleFor(u => u.FirstName, f => f.Name.FirstName())
             .RuleFor(u => u.LastName, f => f.Name.LastName())
-            .RuleFor(u => u.Email, f => f.Internet.Email())
             .RuleFor(u => u.Username, f => f.Internet.UserName())
             .RuleFor(u => u.Password, f => BCrypt.Net.BCrypt.HashPassword(password, 12));
     }
