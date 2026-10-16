@@ -21,7 +21,6 @@ public class UserServiceTest : TestBase
         int ogId = user.Id;
         string ogFirstname = user.FirstName;
         string ogLastname = user.LastName;
-        string ogEmail = user.Email;
         string ogUsername = user.Username;
 
         // generate a different firstname with another seed
@@ -41,7 +40,6 @@ public class UserServiceTest : TestBase
         Assert.Equal(ogId, user!.Id);
         Assert.Equal(faker.FirstName, user!.FirstName);
         Assert.Equal(ogLastname, user!.LastName);
-        Assert.Equal(ogEmail, user!.Email);
         Assert.Equal(ogUsername, user!.Username);
 
     }
@@ -80,14 +78,12 @@ public class UserServiceTest : TestBase
         int ogId = user.Id;
         string ogFirstname = user.FirstName;
         string ogLastname = user.LastName;
-        string ogEmail = user.Email;
         string ogUsername = user.Username;
 
         // generate different user with another seed
         User faker = new Faker<User>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                                     .RuleFor(u => u.LastName, f => f.Name.LastName())
-                                    .RuleFor(u => u.Email, f => f.Internet.Email())
                                     .RuleFor(u => u.Username, f => f.Internet.UserName());
 
 
@@ -99,14 +95,12 @@ public class UserServiceTest : TestBase
             {
                 FirstName = faker.FirstName,
                 LastName = faker.LastName,
-                Email = faker.Email,
                 Username = faker.Username,
             });
 
         Assert.Equal(ogId, user!.Id);
         Assert.Equal(faker.FirstName, user!.FirstName);
         Assert.Equal(faker.LastName, user!.LastName);
-        Assert.Equal(faker.Email, user!.Email);
         Assert.Equal(faker.Username, user!.Username);
 
     }
@@ -226,7 +220,6 @@ public class UserServiceTest : TestBase
         Assert.Equal(fetchedUser!.Id, user.Id);
         Assert.Equal(fetchedUser!.FirstName, user.FirstName);
         Assert.Equal(fetchedUser!.LastName, user.LastName);
-        Assert.Equal(fetchedUser!.Email, user.Email);
         Assert.Equal(fetchedUser!.Username, user.Username);
 
     }

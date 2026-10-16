@@ -266,17 +266,17 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int user_id)
+    public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int nonCitizenId)
     {
-        // Fetch the userOrganization with userId and organizationId matching Route parameters
-        if (_db.UserOrganizations.Any(uo => uo.UserId == user_id && uo.OrganizationId == org_id))
+        // Fetch the userOrganization with nonCitizenId and organizationId matching Route parameters
+        if (_db.UserRoles.Any(ur => ur.NonCitizenId == nonCitizenId && ur.OrganizationId == org_id))
         {
-            var selectedUserOrganization = await _db.UserOrganizations
-            .FirstOrDefaultAsync(uo => uo.UserId == user_id && uo.OrganizationId == org_id);
+            var selectedUserOrganization = await _db.UserRoles
+            .FirstOrDefaultAsync(ur => ur.NonCitizenId == nonCitizenId && ur.OrganizationId == org_id);
 
-            if (selectedUserOrganization!.UserId == user_id && selectedUserOrganization.OrganizationId == org_id)
+            if (selectedUserOrganization!.NonCitizenId == nonCitizenId && selectedUserOrganization.OrganizationId == org_id)
             {
-                _db.UserOrganizations.Remove(selectedUserOrganization);
+                _db.UserRoles.Remove(selectedUserOrganization);
                 await _db.SaveChangesAsync();
                 return true;
             }
@@ -295,8 +295,8 @@ public class OrganizationService(AppDbContext db)
             return null;
         }
 
-        // Fetch user instance from db (Required in UserOrganization model)
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == user_id);
+        // Fetch non-citizen instance from db (Required in UserOrganization model)
+        var user = await _db.NonCitizens.FirstOrDefaultAsync(u => u.Id == user_id);
 
         if (user is null)
         {
@@ -304,29 +304,30 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Create new instance of UserOrganization
-        UserOrganization createdUserOrganization = new UserOrganization
+        UserRole createdUserRole = new UserRole
         {
-            UserId = user!.Id,
-            User = user,
+            NonCitizenId = user!.Id,
+            NonCitizen = user,
+            Role = RoleType.Parent, //Compiler Error Fix
             OrganizationId = organization!.Id,
             Organization = organization,
         };
 
         // Check if the userOrganization specified in Route parameter is already a tuple in the UserOrganization relation.
-        bool checkUserOrganizationAlreadyExist = _db.UserOrganizations.Any(uo => uo.UserId == user_id && uo.OrganizationId == org_id);
+        bool checkUserOrganizationAlreadyExist = _db.UserRoles.Any(ur => ur.NonCitizenId == user_id && ur.OrganizationId == org_id);
 
         // Insert the new UserOrganization tuple into the db.
-        if (createdUserOrganization.UserId == user_id && createdUserOrganization.OrganizationId == org_id
+        if (createdUserRole.NonCitizenId == user_id && createdUserRole.OrganizationId == org_id
                 && checkUserOrganizationAlreadyExist is false
-                && createdUserOrganization.Organization is not null
-                && createdUserOrganization.User is not null)
+                && createdUserRole.Organization is not null
+                && createdUserRole.NonCitizen is not null)
         {
-            _db.UserOrganizations.Add(createdUserOrganization);
+            _db.UserRoles.Add(createdUserRole);
             await _db.SaveChangesAsync();
         }
 
         // Fetch the new UserOrganization
-        var newUserOrganization = await _db.UserOrganizations.FirstAsync(uo => uo.UserId == user_id && uo.OrganizationId == org_id);
+        var newUserOrganization = await _db.UserRoles.FirstAsync(ur => ur.NonCitizenId == user_id && ur.OrganizationId == org_id);
 
         if (newUserOrganization is null)
         {
@@ -336,7 +337,7 @@ public class OrganizationService(AppDbContext db)
         // Return correctly formatted response
         ResponseCreateUserOrganizationDTO responseUserOrganization = new ResponseCreateUserOrganizationDTO
         {
-            UserId = newUserOrganization.UserId,
+            UserId = newUserOrganization.NonCitizenId,
             OrganizationId = newUserOrganization.OrganizationId,
         };
 
