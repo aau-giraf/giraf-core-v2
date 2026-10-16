@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace giraf_core_v2.Models;
 
+[Index(nameof(Email), IsUnique = true)] //To enforce UNIQUE constraint
 public class NonCitizen : User
 {
     public required string Email { get; set; }
