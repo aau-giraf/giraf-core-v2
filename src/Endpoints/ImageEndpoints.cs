@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+
 namespace giraf_core_v2.Endpoints;
+
 
 public static class ImageEndpoints
 {
@@ -34,9 +37,14 @@ public static class ImageEndpoints
     }
 
     // POST image
-    private static async Task<Results<Created<Image>, BadRequest>> PostImage(CreateImageRequest imageFile, ImageService imageService)
+    private static async Task<Results<Created<Image>, BadRequest>> PostImage([FromBody] PostImageDTO? imageRequest, ImageService imageService)
     {
-        var image = await imageService.CreateImagesAsync(request);
+        if (imageRequest is null)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        var image = await imageService.CreateImagesAsync(imageRequest);
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
     }
 

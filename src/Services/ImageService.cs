@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 namespace giraf_core_v2.Services;
 
 public class ImageService(AppDbContext db)
@@ -32,31 +33,35 @@ public class ImageService(AppDbContext db)
         return true;
     }
 
-    public async Task<Image?> CreateImagesAsync(CreateImageRequest request)
+    public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
-        var organization = await _db.Organizations.FindAsync(request.OrganizationId);
-        if (organization == null)
-        {
-            return null;
-        }
+        var citizen = await _db.Users.FindAsync(imageRequest.CitizenId);
 
+        StoreImage(imageRequest.File, imageRequest.Name);
+
+        
         var image = new Image
         {
-            Name = request.Name,
-            Path = request.StorageKey,
-            CitizenId = request.CitizenId,
-            OrganizationId = organization.Id,
-            Organization = organization,
-            StorageKey = request.StorageKey,
-            FileName = request.FileName,
-            FileType = request.FileType,
-            SizeBytes = request.SizeBytes
-        };
+            Name = imageRequest.Name
 
+        }
+        
         _db.Images.Add(image);
         await _db.SaveChangesAsync();
 
         return await GetImageByIdAsync(image.Id);
+    }
+    // stores image on core machine
+    private string StoreImage(IFormFile file, string name)
+    {
+        // gives a unique ID and keeps the extension
+        string path = Path.Combine("images", $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
+
+        using var stream = File.Create(path);
+
+        file.CopyTo(stream);
+
+        return path;
     }
 
 }
