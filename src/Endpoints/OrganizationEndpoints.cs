@@ -85,10 +85,10 @@ public static class OrganizationEndpoints
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int org_id, int user_id, RoleType role, OrganizationService organizationservice)
+    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int organizationId, int userId, RoleType role, OrganizationService organizationservice)
     {
-        var deleted = await organizationservice.DeleteUserRoleAsync(org_id, user_id, role);
-        return deleted ? TypedResults.NoContent() : TypedResults.NotFound();
+        var deletionOccurred = await organizationservice.DeleteUserRoleAsync(organizationId, userId, role);
+        return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
     private static async Task<Results<Ok<ResponseCreateUserOrganizationDTO>, NotFound>> CreateUserInOrganization(int user_id, int org_id, OrganizationService organizationservice)

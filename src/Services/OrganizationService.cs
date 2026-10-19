@@ -266,15 +266,18 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserRoleAsync(int orgId, int nonCitizenId, RoleType role )
+    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role )
     {
-        //Consider direct deletion instead of 2 round trips. Implications of change tracking unknown.
-        if (await _db.UserRoles.FindAsync(nonCitizenId, role, orgId) is UserRole userRole)
+        /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
+        * Be aware of composite key ordering of UserRole. */
+        if (await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId) is UserRole userRole)
         {
-             db.UserRoles.Remove(userRole);
-             await db.SaveChangesAsync();
-             return true;
+            db.UserRoles.Remove(userRole);
+            await db.SaveChangesAsync();
+            //Deletion occured, indicate for HTTP response
+            return true;
         }
+        //Corresponding row didn't exist, no deletion occurred, indicate for HTTP response
         return false;
     }
 
