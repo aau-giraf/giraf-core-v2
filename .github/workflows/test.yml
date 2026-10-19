@@ -18,63 +18,40 @@ jobs:
         with:
           name: build-output
 
-      - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+      - name: Run tests with coverage
+        run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
-      - name: Generate Per-File Coverage Report
-        shell: pwsh
+      - name: Filter coverage to src C# files
+        shell: python
         run: |
-          [xml]$xml = Get-Content (Get-ChildItem ./coverage -Filter coverage.cobertura.xml -Recurse | Select-Object -First 1).FullName
+          import glob
+          import xml.etree.ElementTree as ET
 
-          $results = @{}
+          for filename in glob.glob("coverage/**/coverage.cobertura.xml", recursive=True):
+              tree = ET.parse(filename)
+              root = tree.getroot()
 
-          foreach ($class in $xml.SelectNodes("//class[@filename]")) {
-            $path = $class.GetAttribute("filename") -replace '\\', '/'
+              for package in root.findall(".//package"):
+                  for cls in list(package.findall("./classes/class")):
+                      source_file = cls.get("filename", "").replace("\\", "/")
 
-            # Ignore files in any Migrations folder
-            if ($path -match '(^|/)Migrations/') {
-              continue
-            }
+                      if not source_file.endswith(".cs") or not (
+                          source_file.startswith("src/")
+                          or "/src/" in source_file
+                      ):
+                          package.find("./classes").remove(cls)
 
-            if (-not $path.EndsWith(".cs")) {
-              continue
-            }
+              tree.write(filename, encoding="utf-8", xml_declaration=True)
 
-            $lines = $class.SelectNodes("./lines/line")
-            $total = $lines.Count
-            $covered = @($lines | Where-Object {
-              [int]$_.GetAttribute("hits") -gt 0
-            }).Count
-
-            if (-not $results.ContainsKey($path)) {
-              $results[$path] = @{ Covered = 0; Total = 0 }
-            }
-
-            $results[$path].Covered += $covered
-            $results[$path].Total += $total
-            }
-
-          $markdown = @(
-            "## Code Coverage by C# File"
-            ""
-            "| File | Coverage | Covered / Total |"
-            "|---|---:|---:|"
-          )
-
-          foreach ($path in ($results.Keys | Sort-Object)) {
-            $item = $results[$path]
-            $percent = if ($item.Total -gt 0) {
-              [math]::Round(100 * $item.Covered / $item.Total, 2)
-            } else { 0 }
-
-            $markdown += "| ``$path`` | $percent% | $($item.Covered) / $($item.Total) |"
-            }
-
-          $markdown | Set-Content code-coverage-results.md
-
-      - name: Add Coverage PR Comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request'
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          recreate: true
-          path: code-coverage-results.md
+          filename: coverage/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: "60 80"
