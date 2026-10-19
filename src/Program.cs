@@ -8,14 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection"))
-        .UseSeeding((context, _) => { // Runs when Databse.Migrate.
+        .UseSeeding((context, _) =>
+        { // Runs when Databse.Migrate.
             var seeders = typeof(AppDbContext).Assembly // Gets all classes from the assembly AppDbContext gets compiled into (all classes)
                 .GetTypes()
                 .Where(type => typeof(ISeeding).IsAssignableFrom(type) && !type.IsInterface) // Ensures only entities compatible with ISeeding are included (excluding ISeeding itself)
                 .Select(type => (ISeeding)Activator.CreateInstance(type)!) // Creates instances of said classes
                 .OrderBy(seeder => seeder.SeedingPosition); // Ensures seeding happens in the correct order in respect to FK linking
 
-            foreach (ISeeding seeder in seeders) 
+            foreach (ISeeding seeder in seeders)
             {
                 seeder.Seed((AppDbContext)context);
             }

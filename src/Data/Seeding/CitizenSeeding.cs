@@ -13,9 +13,24 @@ public class CitizenSeeding : ISeeding
         Class class2 = context.Set<Class>().First(class_ => class_.Name == "4.B");
 
         Citizen[] citizens = [
-            new() { User = users[0], GuardianId = users[3].Id, Guardian = users[3], ClassId = class1.Id, Class = class1 },
-            new() { User = users[1], GuardianId = users[4].Id, Guardian = users[4], ClassId = class1.Id, Class = class1 },
-            new() { User = users[2], GuardianId = users[5].Id, Guardian = users[5], ClassId = class2.Id, Class = class2 }
+            new()
+            {
+                FirstName = "Mikkel", LastName = "Mikkelsen",
+                Username = "mikkel123", Password = BCrypt.Net.BCrypt.HashPassword("mikkelkode", 12),
+                Class = class1
+            },
+            new()
+            {
+                FirstName = "Erik", LastName = "Eriksen",
+                Username = "erik123", Password = BCrypt.Net.BCrypt.HashPassword("erikkode", 12),
+                Class = class1
+            },
+            new()
+            {
+                FirstName = "Hans", LastName = "Hansen",
+                Username = "hans123", Password = BCrypt.Net.BCrypt.HashPassword("hanskode", 12),
+                Class = class2
+            }
         ];
 
         context.Set<Citizen>().AddRange(citizens);
