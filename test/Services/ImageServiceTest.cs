@@ -62,10 +62,10 @@ public class ImageServiceTest : TestBase
         var SeededImages = await ImageSeeder.SeedManyAsync(db, Seed, 2);
         var image1 = SeededImages[0].Image;
         var image2 = SeededImages[1].Image;
-        
+
         Assert.NotNull(image1);
         Assert.NotNull(image2);
-        
+
         var service = new ImageService(db);
 
         Assert.True(await service.DeleteImageAsync(image1.Id));
@@ -73,11 +73,20 @@ public class ImageServiceTest : TestBase
         var deletedImage = await db.Images
             .SingleOrDefaultAsync(c => c.Id == image1.Id);
         Assert.Null(deletedImage);
-        
+
         var remainingImage = await db.Images
             .SingleOrDefaultAsync(i => i.Id == image2.Id);
 
         Assert.NotNull(remainingImage);
+
+    }
+
+    [Fact]
+    public async Task PostImageAsync_PostImage()
+    {
+        await using var db = CreateDbContext();
+
+        
 
     }
 }
