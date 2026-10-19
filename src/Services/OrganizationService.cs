@@ -266,20 +266,14 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int nonCitizenId)
+    public async Task<bool> DeleteUserRoleAsync(int orgId, int nonCitizenId, RoleType role )
     {
-        // Fetch the userOrganization with nonCitizenId and organizationId matching Route parameters
-        if (_db.UserRoles.Any(ur => ur.NonCitizenId == nonCitizenId && ur.OrganizationId == org_id))
+        //Consider direct deletion instead of 2 round trips. Implications of change tracking unknown.
+        if (await _db.UserRoles.FindAsync(nonCitizenId, role, orgId) is UserRole userRole)
         {
-            var selectedUserOrganization = await _db.UserRoles
-            .FirstOrDefaultAsync(ur => ur.NonCitizenId == nonCitizenId && ur.OrganizationId == org_id);
-
-            if (selectedUserOrganization!.NonCitizenId == nonCitizenId && selectedUserOrganization.OrganizationId == org_id)
-            {
-                _db.UserRoles.Remove(selectedUserOrganization);
-                await _db.SaveChangesAsync();
-                return true;
-            }
+             db.UserRoles.Remove(userRole);
+             await db.SaveChangesAsync();
+             return true;
         }
         return false;
     }
