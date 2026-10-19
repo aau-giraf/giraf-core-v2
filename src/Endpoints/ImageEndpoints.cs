@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 namespace giraf_core_v2.Endpoints;
 
 public static class ImageEndpoints
@@ -11,11 +10,8 @@ public static class ImageEndpoints
         group.MapGet("/{image_id}", GetImageById);
         group.MapGet("/", GetAllImages);
         group.MapPost("/", PostImage);
-        //group.MapPost("/{image_id}/sound");
         group.MapDelete("/{image_id}", DeleteImage);
-
     }
-
     // GET imagees by ID
     private static async Task<Results<Ok<Image>, NotFound>> GetImageById(int image_id, ImageService imageService)
     {
@@ -38,7 +34,7 @@ public static class ImageEndpoints
     }
 
     // POST image
-    private static async Task<Results<Created<Image>, BadRequest>> PostImage(CreateImageRequest request, ImageService imageService)
+    private static async Task<Results<Created<Image>, BadRequest>> PostImage(CreateImageRequest imageFile, ImageService imageService)
     {
         var image = await imageService.CreateImagesAsync(request);
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
