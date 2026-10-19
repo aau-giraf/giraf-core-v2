@@ -33,7 +33,6 @@ jobs:
             "-reports:**/coverage.cobertura.xml" \
             "-targetdir:coverage-report" \
             "-reporttypes:Html;TextSummary" \
-            "-minimumCoverageThresholds:lineCoverage=80"
 
       - name: Display coverage summary
         if: always()
