@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace giraf_core_v2.Models;
 
+[Index(nameof(Username), IsUnique = true)] //To enforce UNIQUE constraint
 public abstract class User
 {
     [Key]

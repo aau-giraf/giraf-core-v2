@@ -11,7 +11,7 @@ public class UserRole
     public required NonCitizen NonCitizen { get; init; }
 
     //The role
-    public RoleType Role { get; init; }
+    public required RoleType Role { get; init; }
 
     //A role is in relation to an organization
     public required int OrganizationId { get; init; }
