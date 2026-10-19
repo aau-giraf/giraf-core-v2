@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticAssets;
 
+namespace giraf_core_v2.Endpoints;
+
 public static class AuthEndpoints
 {
     public static void MapAuthEndpoints(this WebApplication app)
