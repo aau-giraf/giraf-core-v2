@@ -10,7 +10,7 @@ def should_ignore(filename):
     return (
         "/obj/" in normalized
         or "/bin/" in normalized
-        or "/src/migrations/" in normalized
+        or "/src/Migrations/" in normalized
     )
 
 
@@ -79,8 +79,8 @@ with open(
     encoding="utf-8",
 ) as out:
     out.write("## Code coverage by file\n\n")
-    out.write("| Status | File | Line coverage | Covered lines |\n")
-    out.write("|---|---|---:|---:|\n")
+    out.write("| Status | Filename | Line coverage |\n")
+    out.write("|---|---|---:|\n")
 
     for filename, line_pct, covered, total in rows:
         coverage = float(line_pct.rstrip("%")) if line_pct != "N/A" else None
@@ -92,11 +92,11 @@ with open(
         else:
             status = "❌"
 
-        out.write(f"| {status} | `{filename}` | {line_pct} | {covered}/{total} |\n")
+        out.write(f"| {status} | `{filename}` | {line_pct} |\n")
 
     if rows:
         out.write(
-            "\n<sub>Threshold: 70% line coverage. "
+            f"\n<sub>Threshold: {COVERAGE_THRESHOLD:.0f}% line coverage. "
             "Excludes obj, bin, and src/migrations.</sub>\n"
         )
     else:
