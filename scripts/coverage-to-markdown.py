@@ -1,3 +1,4 @@
+
 import glob
 import xml.etree.ElementTree as ET
 from collections import defaultdict
@@ -48,23 +49,22 @@ for report in reports:
             )
 
 
-# Calculate coverage for each file.
+# Calculate coverage for each file and overall coverage.
 rows = []
+total_covered_lines = 0
+total_lines = 0
 
 for filename, data in sorted(files.items()):
     lines = data["lines"]
-    covered_lines = sum(hits > 0 for hits in lines.values())
-    total_lines = len(lines)
+    covered = sum(hits > 0 for hits in lines.values())
+    total = len(lines)
 
-    rows.append(
-        (
-            filename,
-            percentage(covered_lines, total_lines),
-            covered_lines,
-            total_lines,
-        )
-    )
+    rows.append((filename, percentage(covered, total)))
 
+    total_covered_lines += covered
+    total_lines += total
+
+overall_coverage = percentage(total_covered_lines, total_lines)
 
 # Generate the Markdown report for the GitHub PR comment.
 COVERAGE_THRESHOLD = 70.0
@@ -78,7 +78,7 @@ with open(
     out.write("| Status | Filename | Line coverage |\n")
     out.write("|---|---|---:|\n")
 
-    for filename, line_pct, covered, total in rows:
+    for filename, line_pct in rows:
         coverage = float(line_pct.rstrip("%")) if line_pct != "N/A" else None
 
         if coverage is None:
@@ -97,3 +97,22 @@ with open(
         )
     else:
         out.write("No source files found after applying exclusions.\n")
+
+    # Overall coverage summary in a separate table.
+    overall_value = (
+        float(overall_coverage.rstrip("%"))
+        if overall_coverage != "N/A"
+        else None
+    )
+
+    if overall_value is None:
+        overall_status = "⚪"
+    elif overall_value >= COVERAGE_THRESHOLD:
+        overall_status = "✅"
+    else:
+        overall_status = "❌"
+
+    out.write("\n## Overall code coverage\n\n")
+    out.write("| Status | Overall coverage |\n")
+    out.write("|---|---:|\n")
+    out.write(f"| {overall_status} | **{overall_coverage}** |\n")
