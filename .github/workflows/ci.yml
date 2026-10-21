@@ -12,5 +12,11 @@ jobs:
   test:
     needs: build
     uses: ./.github/workflows/test.yml
+    permissions:
+          contents: read
+          issues: write
   format:
     uses: ./.github/workflows/format.yml
+    permissions:
+          contents: read
+          issues: write
