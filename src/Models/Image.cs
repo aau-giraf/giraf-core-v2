@@ -17,8 +17,8 @@ public class Image
     public required string Path { get; set; }
 
     //Foreign key to the Organization the image is scoped to. If connected to a citizen it should be found by though the citizen and never be NULL
-    public int OrganizationId { get; set; }
-    public required Organization Organization { get; set; }
+    public required int OrganizationId { get; set; }
+    public Organization? Organization { get; set; }
 
     public DateTime CreatedAt { get; init; }
 }

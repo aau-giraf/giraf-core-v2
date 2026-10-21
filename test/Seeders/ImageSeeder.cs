@@ -36,11 +36,7 @@ public static class ImageSeeder
             .RuleFor(i => i.Name, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
             .RuleFor(i => i.Path, f => f.System.FilePath())
-            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.StorageKey, f => f.Random.String())
-            .RuleFor(i => i.FileName, f => f.System.FileName())
-            .RuleFor(i => i.FileType, f => f.System.FileType())
-            .RuleFor(i => i.SizeBytes, f => f.Random.Byte())
+            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100)
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
