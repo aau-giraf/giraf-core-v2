@@ -22,7 +22,7 @@ public static class OrganizationEndpoints
         group.MapPut("/{org_id:int}/members/{user_id:int}", CreateUserInOrganization);
 
         group.MapPatch("/{org_id:int}", UpdateOrganization);
-        
+
         group.MapDelete("/{org_id}/members/{user_id:int}/{role:alpha}", DeleteUserRole);
 
         group.MapDelete("/{org_id:int}", DeleteOrganization);

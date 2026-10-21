@@ -266,7 +266,7 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role )
+    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
         /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
         * Be aware of composite key ordering of UserRole. */
