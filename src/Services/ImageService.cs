@@ -39,27 +39,27 @@ public class ImageService(AppDbContext db)
 
         StoreImage(imageRequest.File, imageRequest.Name);
 
-        
+
         var image = new Image
         {
             Name = imageRequest.Name
 
         }
-        
+
         _db.Images.Add(image);
         await _db.SaveChangesAsync();
 
         return await GetImageByIdAsync(image.Id);
     }
     // stores image on core machine
-    private string StoreImage(IFormFile file, string name)
+    private static async Task<string> StoreImageAsync(IFormFile file)
     {
         // gives a unique ID and keeps the extension
         string path = Path.Combine("images", $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
 
         using var stream = File.Create(path);
 
-        file.CopyTo(stream);
+        await file.CopyToAsync(stream);
 
         return path;
     }
