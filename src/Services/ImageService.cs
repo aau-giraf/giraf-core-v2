@@ -46,7 +46,7 @@ public class ImageService(AppDbContext db)
             return class_!.OrganizationId;
         }
     }
-// Tester
+// Tester new
     public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
