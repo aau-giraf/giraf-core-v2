@@ -8,14 +8,14 @@ namespace giraf_core_v2.Models;
 public class UserRole
 {
     public int NonCitizenId { get; init; }
-    public required NonCitizen NonCitizen { get; init; }
+    public NonCitizen? NonCitizen { get; init; }
 
     //The role
     public required RoleType Role { get; init; }
 
     //A role is in relation to an organization
     public required int OrganizationId { get; init; }
-    public required Organization Organization { get; init; }
+    public Organization? Organization { get; init; }
 }
 
 public enum RoleType
