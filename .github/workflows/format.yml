@@ -26,16 +26,16 @@ jobs:
       - name: Verify formatting
         run: dotnet format --verify-no-changes --verbosity diagnostic
 
-            - name: Comment on formatting failure
-              if: ${{ failure() && github.event.pull_request.number }}
-              uses: actions/github-script@v9
-              with:
-                script: |
-                  const prNumber = context.payload.pull_request.number;
+      - name: Comment on formatting failure
+        if: ${{ failure() && github.event.pull_request.number }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
 
-                  await github.rest.issues.createComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: prNumber,
-                    body: 'Run `dotnet format` in the root directory.'
-                  });
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: 'Run `dotnet format` in the root directory.'
+            });
