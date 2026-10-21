@@ -33,20 +33,21 @@ public class ImageService(AppDbContext db)
         return true;
     }
 
-    private async Task<int> FindOrganizationAsync (PostImageDTO imageRequest)
+    private async Task<int> FindOrganizationAsync(PostImageDTO imageRequest)
     {
         if (imageRequest.CitizenId == null)
         {
             var class_ = await _db.Classes.FindAsync(imageRequest.ClassId);
             return class_!.OrganizationId;
-        } else
+        }
+        else
         {
             var citizen = await _db.Citizens.FindAsync(imageRequest.CitizenId);
             var class_ = await _db.Classes.FindAsync(citizen!.ClassId);
             return class_!.OrganizationId;
         }
     }
-// Tester new
+
     public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);

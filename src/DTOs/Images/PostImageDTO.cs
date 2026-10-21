@@ -11,10 +11,6 @@ public class PostImageDTO
 
     [Required]
     [Length(3, 255)]
-    public required string Path { get; set; }
-
-    [Required]
-    [Length(3, 255)]
     public required IFormFile File { get; set; }
 
     [Length(3, 255)]

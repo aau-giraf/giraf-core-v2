@@ -80,15 +80,32 @@ public class ImageServiceTest : TestBase
         Assert.NotNull(remainingImage);
 
     }
-
     [Fact]
     public async Task PostImageAsync_PostImage()
     {
         await using var db = CreateDbContext();
-
-
-
-
-
+        Directory.CreateDirectory("images");
+        var request = ImageSeeder.CreateRequestBody(Seed);
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+        try
+        {
+            Assert.NotNull(created);
+            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.OrganizationId, created.OrganizationId);
+            Assert.Equal(request.CitizenId, created.CitizenId);
+            Assert.EndsWith(".png", created.Path);
+            Assert.True(File.Exists(created.Path));
+            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
+            Assert.NotNull(stored);
+            Assert.Equal(created.Path, stored!.Path);
+        }
+        finally
+        {
+            if (created?.Path is not null && File.Exists(created.Path))
+            {
+                File.Delete(created.Path);
+            }
+        }
     }
 }

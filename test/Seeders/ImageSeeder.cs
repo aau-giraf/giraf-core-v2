@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Http;
+
+
 public static class ImageSeeder
 {
     public record SeededImage(Image Image);
@@ -19,6 +22,10 @@ public static class ImageSeeder
         return new SeededImage(image);
     }
 
+    public static PostImageDTO CreateRequestBody(int seed)
+    {
+        return CreateFakerRequest(seed).Generate();
+    }
     public static async Task<List<SeededImage>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
         var images = CreateManyFakers(seed, count);
@@ -40,6 +47,21 @@ public static class ImageSeeder
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
+    private static Faker<PostImageDTO> CreateFakerRequest(int seed)
+    {
+        return new Faker<PostImageDTO>()
+            .UseSeed(seed)
+            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.CitizenId, _ => null)
+            .RuleFor(i => i.ClassId, _ => null)
+            .RuleFor(i => i.File, f =>
+            {
+                var bytes = f.Random.Bytes(32);
+                var stream = new MemoryStream(bytes);
+                return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.png");
+            });
+    }
     private static List<SeededImage> CreateManyFakers(int seed, int count)
     {
         var ImageFaker = CreateFaker(seed);
