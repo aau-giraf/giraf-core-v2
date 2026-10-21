@@ -266,7 +266,7 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role )
+    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
         /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
         * Be aware of composite key ordering of UserRole. */
@@ -281,65 +281,44 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseCreateUserOrganizationDTO?> CreateUserInOrganizationAsync(int org_id, int user_id)
+    public async Task<int> CreateOrUpdateUserRole(int organizationId, int nonCitizenId, RoleType role)
     {
+        //CASE 1: organization, non-citizen, role each exist seperately. (Assumed to minimize reads, most frequent case)
+        bool createdUserRole = false;
+        var userRole = await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId);
 
-        // Fetch organization instance from db (Required in UserOrganization model)
-        var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == org_id);
-
-        if (organization is null)
+        // 1.A: the UserRole tuple does not exist. Create it
+        if (userRole is null)
         {
-            return null;
+            //Create new object
+            userRole = new UserRole
+            {
+                NonCitizenId = nonCitizenId,
+                Role = role,
+                OrganizationId = organizationId
+            };
+
+            //Add it to change tracking
+            _db.UserRoles.Add(userRole);
+
+            //Indicate Successfull(Created) case 1.A occurred
+            createdUserRole = true;
         }
 
-        // Fetch non-citizen instance from db (Required in UserOrganization model)
-        var user = await _db.NonCitizens.FirstOrDefaultAsync(u => u.Id == user_id);
+        // Wether 1.A(created) | 1.B(updated) - Future properties can be set here, before try-cactch block 
 
-        if (user is null)
+        try
         {
-            return null;
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException) when (createdUserRole)
+        {
+            /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
+             * Potentially check wether organization or user failed to provide more detailed response */
+            return -1;
         }
 
-        // Create new instance of UserOrganization
-        UserRole createdUserRole = new UserRole
-        {
-            NonCitizenId = user!.Id,
-            NonCitizen = user,
-            Role = RoleType.Parent, //Compiler Error Fix
-            OrganizationId = organization!.Id,
-            Organization = organization,
-        };
-
-        // Check if the userOrganization specified in Route parameter is already a tuple in the UserOrganization relation.
-        bool checkUserOrganizationAlreadyExist = await _db.UserRoles.AnyAsync(ur => ur.NonCitizenId == user_id && ur.OrganizationId == org_id);
-
-        // Insert the new UserOrganization tuple into the db.
-        if (createdUserRole.NonCitizenId == user_id && createdUserRole.OrganizationId == org_id
-                && checkUserOrganizationAlreadyExist is false
-                && createdUserRole.Organization is not null
-                && createdUserRole.NonCitizen is not null)
-        {
-            _db.UserRoles.Add(createdUserRole);
-            await _db.SaveChangesAsync();
-        }
-
-        // Fetch the new UserOrganization
-        var newUserOrganization = await _db.UserRoles.FirstAsync(ur => ur.NonCitizenId == user_id && ur.OrganizationId == org_id);
-
-        if (newUserOrganization is null)
-        {
-            return null;
-        }
-
-        // Return correctly formatted response
-        ResponseCreateUserOrganizationDTO responseUserOrganization = new ResponseCreateUserOrganizationDTO
-        {
-            UserId = newUserOrganization.NonCitizenId,
-            OrganizationId = newUserOrganization.OrganizationId,
-        };
-
-        return responseUserOrganization;
-
+        //For successfull cases, distuinguish between creation & update
+        return createdUserRole ? 1 : 0;
     }
-
 }
