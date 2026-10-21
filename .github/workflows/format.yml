@@ -3,11 +3,6 @@ name: Format
 on:
   workflow_call:
 
-name: Format
-
-on:
-  workflow_call:
-
 permissions:
   contents: read
   issues: write
