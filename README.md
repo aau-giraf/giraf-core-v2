@@ -3,16 +3,15 @@
 Run
 `docker compose up --build`
 
-Then check the following endpoints:
+Then check the following endpoint:
 `localhost:8080/health`
-`localhost:8080/colors`
 
-The `/colors` endpoint should return an empty array. To add entries to the colors table, run:
+To add entries to tables, run:
 `docker exec -it giraf-core-v2-db-1 psql -U postgres -d defaultdb`
 
-Now you can run `INSERT INTO "Colors" ("Id", "ColorName") VALUES (1, 'Red');`
+Now you can run `INSERT INTO ...;`
 
-Or `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
+E.g., `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
 
 ### Linux
 
@@ -48,3 +47,7 @@ Might require the following package a separate 'docker buildx' package depending
 
 Run: `docker compose --profile test build --no-cache test; docker compose --profile test run --rm test`
 The test seed will then be visible in the error message if a test fails.
+
+## Contributing
+
+Before creating a pull request, please run `dotnet format`. This ensures consistent formatting between developers and reduces conflicts when merging.
