@@ -28,7 +28,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
-        app.MapOrganizationEndpoints();
+app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 
 app.Run();
