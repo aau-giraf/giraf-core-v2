@@ -24,7 +24,7 @@ public class UserServiceTest : TestBase
         string ogUsername = user.Username;
 
         // generate a different firstname with another seed
-        User faker = new Faker<User>().UseSeed(Seed + SEED_OFFSET)
+        User faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName());
 
 
@@ -81,7 +81,7 @@ public class UserServiceTest : TestBase
         string ogUsername = user.Username;
 
         // generate different user with another seed
-        User faker = new Faker<User>().UseSeed(Seed + SEED_OFFSET)
+        User faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                                     .RuleFor(u => u.LastName, f => f.Name.LastName())
                                     .RuleFor(u => u.Username, f => f.Internet.UserName());

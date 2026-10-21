@@ -56,7 +56,7 @@ public class OrganizationService(AppDbContext db)
     public async Task<bool> DeleteOrganizationAsync(int org_id)
     {
         // Fetch organization and delete it
-        if (_db.Organizations.Any(o => o.Id == org_id))
+        if (await _db.Organizations.AnyAsync(o => o.Id == org_id))
         {
             var organization = await _db.Organizations
             .FindAsync(org_id);
@@ -119,7 +119,7 @@ public class OrganizationService(AppDbContext db)
     public async Task<bool> DeleteClassInOrganizationAsync(int org_id, int class_id)
     {
         // Fetch the class with classId and organizationId matching Route parameters
-        if (_db.Classes.Any(c => c.Id == class_id && c.OrganizationId == org_id))
+        if (await _db.Classes.AnyAsync(c => c.Id == class_id && c.OrganizationId == org_id))
         {
             var selectedClass = await _db.Classes
             .FirstOrDefaultAsync(c => c.Id == class_id && c.OrganizationId == org_id);
@@ -155,7 +155,7 @@ public class OrganizationService(AppDbContext db)
         // Check if the createdClass already exists as a tuple in the classes relation.
         // We check this by attributes: Name and organizationId
         // Ensures that an organization can not hold two classes named: 4a
-        bool checkTupleAlreadyExist = _db.Classes.Any(c => c.Name == createClass.Name && c.OrganizationId == org_id);
+        bool checkTupleAlreadyExist = await _db.Classes.AnyAsync(c => c.Name == createClass.Name && c.OrganizationId == org_id);
 
         // Insert the new instance tuple into the db.
         if (createdClass.Name is not null && createdClass.Organization is not null && checkTupleAlreadyExist is false)
@@ -191,7 +191,7 @@ public class OrganizationService(AppDbContext db)
     public async Task<ResponseGetOrganizationDTO?> CreateOrganizationAsync(RequestCreateOrganizationDTO createOrganization)
     {
         // Check if the name specified in the requestbody is already taken
-        bool checkNameAlreadyExist = _db.Organizations.Any(o => o.Name == createOrganization.Name);
+        bool checkNameAlreadyExist = await _db.Organizations.AnyAsync(o => o.Name == createOrganization.Name);
 
         // Create new instance of Organization
         Organization createdOrganization = new Organization
@@ -238,7 +238,7 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Check if the name specified in the request is already taken, including if the name is not changed it is taken. 
-        bool nameAlreadyExist = _db.Organizations.Any(o => o.Name == updateOrganization.Name);
+        bool nameAlreadyExist = await _db.Organizations.AnyAsync(o => o.Name == updateOrganization.Name);
 
         if (organization!.Id == org_id && nameAlreadyExist is false && updateOrganization.Name is not null)
         {
@@ -266,21 +266,18 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserInOrganizationAsync(int org_id, int nonCitizenId)
+    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
-        // Fetch the userOrganization with nonCitizenId and organizationId matching Route parameters
-        if (_db.UserRoles.Any(ur => ur.NonCitizenId == nonCitizenId && ur.OrganizationId == org_id))
+        /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
+        * Be aware of composite key ordering of UserRole. */
+        if (await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId) is UserRole userRole)
         {
-            var selectedUserOrganization = await _db.UserRoles
-            .FirstOrDefaultAsync(ur => ur.NonCitizenId == nonCitizenId && ur.OrganizationId == org_id);
-
-            if (selectedUserOrganization!.NonCitizenId == nonCitizenId && selectedUserOrganization.OrganizationId == org_id)
-            {
-                _db.UserRoles.Remove(selectedUserOrganization);
-                await _db.SaveChangesAsync();
-                return true;
-            }
+            db.UserRoles.Remove(userRole);
+            await db.SaveChangesAsync();
+            //Deletion occured, indicate for HTTP response
+            return true;
         }
+        //Corresponding row didn't exist, no deletion occurred, indicate for HTTP response
         return false;
     }
 
@@ -314,7 +311,7 @@ public class OrganizationService(AppDbContext db)
         };
 
         // Check if the userOrganization specified in Route parameter is already a tuple in the UserOrganization relation.
-        bool checkUserOrganizationAlreadyExist = _db.UserRoles.Any(ur => ur.NonCitizenId == user_id && ur.OrganizationId == org_id);
+        bool checkUserOrganizationAlreadyExist = await _db.UserRoles.AnyAsync(ur => ur.NonCitizenId == user_id && ur.OrganizationId == org_id);
 
         // Insert the new UserOrganization tuple into the db.
         if (createdUserRole.NonCitizenId == user_id && createdUserRole.OrganizationId == org_id

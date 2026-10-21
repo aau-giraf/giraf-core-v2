@@ -23,7 +23,7 @@ public static class OrganizationEndpoints
 
         group.MapPatch("/{org_id:int}", UpdateOrganization);
 
-        group.MapDelete("/{org_id}/members/{user_id:int}", DeleteUserInOrganization);
+        group.MapDelete("/{org_id}/members/{user_id:int}/{role:alpha}", DeleteUserRole);
 
         group.MapDelete("/{org_id:int}", DeleteOrganization);
 
@@ -85,10 +85,10 @@ public static class OrganizationEndpoints
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserInOrganization(int org_id, int user_id, OrganizationService organizationservice)
+    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int organizationId, int userId, RoleType role, OrganizationService organizationservice)
     {
-        var selectedClass = await organizationservice.DeleteUserInOrganizationAsync(org_id, user_id);
-        return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
+        var deletionOccurred = await organizationservice.DeleteUserRoleAsync(organizationId, userId, role);
+        return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
     private static async Task<Results<Ok<ResponseCreateUserOrganizationDTO>, NotFound>> CreateUserInOrganization(int user_id, int org_id, OrganizationService organizationservice)
