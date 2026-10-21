@@ -25,14 +25,3 @@ jobs:
 
       - name: Verify formatting
         run: dotnet format --verify-no-changes --verbosity diagnostic
-
-      - name: Comment on formatting failure
-        if: failure() && github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: dotnet-format
-          recreate: true
-          message: |
-            **Formatting check failed**
-
-            Run `dotnet format` in the root directory and commit the changes.
