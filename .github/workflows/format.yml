@@ -3,6 +3,15 @@ name: Format
 on:
   workflow_call:
 
+name: Format
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   dotnet-format:
     name: .NET Format Check
@@ -21,3 +30,15 @@ jobs:
 
       - name: Verify formatting
         run: dotnet format --verify-no-changes --verbosity diagnostic
+
+      - name: Comment on formatting failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Run `dotnet format` in root directory.'
+            })
