@@ -5,13 +5,9 @@ from collections import defaultdict
 
 def should_ignore(filename):
     normalized = filename.replace("\\", "/").lower()
-    normalized = f"/{normalized.strip('/')}/"
+    parts = normalized.strip("/").split("/")
 
-    return (
-        "/obj/" in normalized
-        or "/bin/" in normalized
-        or "/src/Migrations/" in normalized
-    )
+    return any(part in {"obj", "bin", "migrations"} for part in parts)
 
 
 def percentage(covered, total):
