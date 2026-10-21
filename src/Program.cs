@@ -28,6 +28,8 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
+
+
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 
