@@ -71,21 +71,32 @@ for filename, data in sorted(files.items()):
 
 
 # Generate the Markdown report for the GitHub PR comment.
+COVERAGE_THRESHOLD = 70.0
+
 with open(
     "code-coverage-results.md",
     "w",
     encoding="utf-8",
 ) as out:
     out.write("## Code coverage by file\n\n")
-    out.write("| File | Line coverage | Covered lines |\n")
-    out.write("|---|---:|---:|\n")
+    out.write("| Status | File | Line coverage | Covered lines |\n")
+    out.write("|---|---|---:|---:|\n")
 
     for filename, line_pct, covered, total in rows:
-        out.write(f"| `{filename}` | {line_pct} | {covered}/{total} |\n")
+        coverage = float(line_pct.rstrip("%")) if line_pct != "N/A" else None
+
+        if coverage is None:
+            status = "⚪"
+        elif coverage >= COVERAGE_THRESHOLD:
+            status = "✅"
+        else:
+            status = "❌"
+
+        out.write(f"| {status} | `{filename}` | {line_pct} | {covered}/{total} |\n")
 
     if rows:
         out.write(
-            "\n<sub>Generated from Cobertura coverage reports. "
+            "\n<sub>Threshold: 70% line coverage. "
             "Excludes obj, bin, and src/migrations.</sub>\n"
         )
     else:
