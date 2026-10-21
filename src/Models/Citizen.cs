@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,7 +12,7 @@ public class Citizen
     public required User User { get; set; }
 
     public int GuardianId { get; set; }
-    public required User Guardian {get; set; }
+    public required User Guardian { get; set; }
 
     public int ClassId { get; set; }
     public required Class Class { get; set; }
