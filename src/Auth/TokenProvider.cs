@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace giraf_core_v2.Auth;
 
-internal sealed class TokenProvider()
+public sealed class TokenProvider()
 {
     public string Create(User user)
     {
