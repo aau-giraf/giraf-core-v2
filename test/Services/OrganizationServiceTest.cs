@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using Bogus.DataSets;
 using Microsoft.OpenApi;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
+using Renci.SshNet.Messages.Transport;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -342,5 +343,74 @@ public class OrganizationServiceTest : TestBase
             Assert.True(fetchedClassesInOrganization[1].Name == class1.Name);
         }
     }
-}
+    [Fact]
+    public async Task CreateOrUpdateUserRole_CreateUserRole()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
 
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var user = await UserSeeder.SeedAsync(db, Seed);
+        var role1 = RoleType.Employee;
+
+        Assert.NotNull(organization);
+        Assert.NotNull(user);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        var initialisedRole = await service.CreateOrUpdateUserRole(organization.Id, user.User.Id, role1);
+
+        //----- ASSERT -----\\
+        Assert.True(initialisedRole == 1);
+    }
+    [Fact]
+    public async Task CreateOrUpdateUserRole_UpdateUserRole()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+
+        var user = await UserSeeder.SeedAsync(db, Seed);
+
+        var role1 = RoleType.Employee;
+        //var role2 = RoleType.Parent;
+
+        Assert.NotNull(organization);
+        Assert.NotNull(user);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        var initialisedRole = await service.CreateOrUpdateUserRole(organization.Id, user.User.Id, role1);
+        var UpdatedRole = await service.CreateOrUpdateUserRole(organization.Id, user.User.Id, role1);
+
+        //----- ASSERT -----\\
+        Assert.True(initialisedRole == 1);
+        Assert.True(UpdatedRole == 0);
+    }
+    [Fact]
+    public async Task CreateOrUpdateUserRole_CreateUserRoleFails()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var user = await UserSeeder.SeedAsync(db, Seed);
+        var user2 = await UserSeeder.SeedAsync(db, Seed);
+        var role1 = RoleType.Employee;
+
+        //Assert.NotNull(organization);
+        Assert.NotNull(user);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        var falseOrgRole = await service.CreateOrUpdateUserRole(100000000, user.User.Id, role1);
+        var falseUserRole = await service.CreateOrUpdateUserRole(1234567890, user2.User.Id, role1);
+
+        //----- ASSERT -----\\
+        Assert.Equal(-1, falseOrgRole);
+        Assert.Equal(-1, falseUserRole);
+    }
+}
