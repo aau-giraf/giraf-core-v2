@@ -1,5 +1,7 @@
 using giraf_core_v2.Auth;
 
+using Microsoft.EntityFrameworkCore;
+
 public class UserService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
@@ -86,22 +88,30 @@ public class UserService(AppDbContext db)
 
     public async Task<LoginResponseDTO?> Login(LoginRequestDTO loginRequestDTO)
     {
-        var user = await _db.Users.FindAsync(loginRequestDTO.Username);
+        try
+        {
+            var user = await _db.Users.SingleAsync(u => u.Username == loginRequestDTO.Username);
 
-        // If user doesn't exist or password is incorrect, return null.
-        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
+            // If user doesn't exist or password is incorrect, return null.
+            if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
+            {
+                return null;
+            }
+
+            TokenProvider tokenProvider = new();
+
+            return new LoginResponseDTO
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Username = user.Username,
+                Jwt = tokenProvider.Create(user)
+            };
+        }
+        catch (Exception e) // TODO: ike slug exception, find bedre løsning
         {
             return null;
         }
 
-        TokenProvider tokenProvider = new();
-
-        return new LoginResponseDTO
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Username = user.Username,
-            Jwt = tokenProvider.Create(user)
-        };
     }
 }
