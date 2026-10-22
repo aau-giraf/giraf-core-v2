@@ -75,37 +75,22 @@ namespace giraf_core_v2.Migrations
                     b.Property<int?>("CitizenId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ClassId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("FileName")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<string>("FileType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<int>("OrganizationId")
                         .HasColumnType("integer");
 
-                    b.Property<long>("SizeBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("StorageKey")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)");
-
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("path")
+                    b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -115,13 +100,7 @@ namespace giraf_core_v2.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.HasIndex("StorageKey")
-                        .IsUnique();
-
-                    b.ToTable("Image", t =>
-                        {
-                            t.HasCheckConstraint("CK_Image_SizeBytes_Positive", "\"SizeBytes\" > 0");
-                        });
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.Organization", b =>
