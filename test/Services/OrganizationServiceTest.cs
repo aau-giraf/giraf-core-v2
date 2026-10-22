@@ -405,7 +405,7 @@ public class OrganizationServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var seededUser = await UserSeeder.SeedAsync(db, Seed);
-        var seededUser2 = await UserSeeder.SeedAsync(db, Seed);
+        var seededUser2 = await UserSeeder.SeedAsync(db, Seed + 1);
         var role1 = RoleType.Employee;
 
         Assert.NotNull(seededUser);

@@ -283,6 +283,14 @@ public class OrganizationService(AppDbContext db)
         // 1.A: the UserRole tuple does not exist. Create it
         if (userRole is null)
         {
+            /* Case 2: Either organization or non-citizen does not exist. Client error response.
+             * Checked explicitly, since not every database provider enforces foreign keys (e.g. the in-memory test db) */
+            if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId)
+                || !await _db.NonCitizens.AnyAsync(nc => nc.Id == nonCitizenId))
+            {
+                return (-1, null);
+            }
+
             //Create new object
             userRole = new UserRole
             {
@@ -306,8 +314,7 @@ public class OrganizationService(AppDbContext db)
         }
         catch (DbUpdateException) when (createdUserRole)
         {
-            /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
-             * Potentially check wether organization or user failed to provide more detailed response */
+            //Case 2, if organization or non-citizen was deleted after the check above
             return (-1, null);
         }
 
