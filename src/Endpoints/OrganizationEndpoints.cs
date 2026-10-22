@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
+namespace giraf_core_v2.Endpoints;
+
 public static class OrganizationEndpoints
 {
     public static void MapOrganizationEndpoints(this WebApplication application)
@@ -91,14 +93,16 @@ public static class OrganizationEndpoints
         return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<NotFound, NoContent, Created>> PutUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationservice)
+    private static async Task<Results<NotFound, NoContent, Created<UserRoleResponse>>> PutUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationservice)
     {
-        int status = await organizationservice.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
+        (int, UserRole?) status = await organizationservice.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
         return status switch
         {
-            -1 => TypedResults.NotFound(),
-            0 => TypedResults.NoContent(),
-            1 => TypedResults.Created()
+            (-1, null) => TypedResults.NotFound(),
+            (0, null) => TypedResults.NoContent(),
+            (1, UserRole ur) => TypedResults.Created(
+                $"/organizations/{organizationId}/members/{nonCitizenId}/{role}",
+                new UserRoleResponse(ur.NonCitizenId, ur.OrganizationId, ur.Role))
         };
     }
 }

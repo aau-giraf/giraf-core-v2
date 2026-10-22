@@ -44,38 +44,6 @@ namespace giraf_core_v2.Migrations
                     b.ToTable("Class");
                 });
 
-            modelBuilder.Entity("giraf_core_v2.Models.Color", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ColorName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Color");
-                });
-
-            modelBuilder.Entity("giraf_core_v2.Models.Guardianship", b =>
-                {
-                    b.Property<int>("CitizenId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GuardianId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CitizenId", "GuardianId");
-
-                    b.HasIndex("GuardianId");
-
-                    b.ToTable("Guardianship");
-                });
-
             modelBuilder.Entity("giraf_core_v2.Models.Image", b =>
                 {
                     b.Property<int>("Id")

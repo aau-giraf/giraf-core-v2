@@ -11,6 +11,7 @@ services:
 
   db:
     image: postgres
+    container_name: db_dev
     restart: always
     environment:
       POSTGRES_PASSWORD: core2026
