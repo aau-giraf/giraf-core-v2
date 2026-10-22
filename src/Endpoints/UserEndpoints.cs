@@ -15,7 +15,7 @@ public static class UserEndpoints
         group.MapDelete("/me", DeleteCurrentUser);
         group.MapPatch("/me", UpdateCurrentUser);
         group.MapPut("/me/password", UpdateUserPassword);
-        group.MapPost("/login", Login); //.RequireRateLimiting(...);
+        group.MapPost("/login", Login).RequireRateLimiting("rateLimitByIp");
     }
 
     private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider)
@@ -65,17 +65,14 @@ public static class UserEndpoints
         };
     }
 
-    private static async Task<Results<BadRequest, Ok, InternalServerError>> Login(UserService userService, [FromBody] LogInDTO? logIn)
+    private static async Task<Results<Ok<LoginResponseDTO>, UnauthorizedHttpResult>> Login(UserService userService, [FromBody] LoginRequestDTO loginRequestDTO)
     {
-        if (logIn is null)
+        var loginResponse = await userService.Login(loginRequestDTO);
+
+        return loginResponse switch
         {
-            return TypedResults.BadRequest();
-        }
-
-        // Bruger findes ikke
-        // Bruger findes, password matcher ikke
-        // Bruger findes, password matcher
-
-
+            null => TypedResults.Unauthorized(),
+            _ => TypedResults.Ok(loginResponse),
+        };
     }
 }
