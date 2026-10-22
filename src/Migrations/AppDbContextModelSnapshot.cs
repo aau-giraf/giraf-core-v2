@@ -44,6 +44,21 @@ namespace giraf_core_v2.Migrations
                     b.ToTable("Class");
                 });
 
+            modelBuilder.Entity("giraf_core_v2.Models.Guardianship", b =>
+                {
+                    b.Property<int>("CitizenId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GuardianId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CitizenId", "GuardianId");
+
+                    b.HasIndex("GuardianId");
+
+                    b.ToTable("Guardianship");
+                });
+
             modelBuilder.Entity("giraf_core_v2.Models.Image", b =>
                 {
                     b.Property<int>("Id")
