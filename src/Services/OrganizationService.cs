@@ -311,14 +311,14 @@ public class OrganizationService(AppDbContext db)
         {
             await db.SaveChangesAsync();
         }
-        catch (DbUpdateException) when (createdUserRole)
+        catch //(DbUpdateException) when (createdUserRole)
         {
             /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
              * Potentially check wether organization or user failed to provide more detailed response */
             return -1;
         }
 
-        //For successfull cases, distuinguish between creation & update
+        //For successfull cases, distuinguish between creation(1) & update(0)
         return createdUserRole ? 1 : 0;
     }
 }
