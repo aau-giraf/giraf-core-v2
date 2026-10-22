@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using giraf_core_v2.Data.Seeding;
-using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +23,9 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
         })
 );
 
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(
+        new JsonStringEnumConverter()));
 
 builder.Services.AddScoped<ColorService>();
 builder.Services.AddScoped<OrganizationService>();

@@ -1,11 +1,4 @@
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
-using System.Security.Principal;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.VisualBasic;
 
 namespace giraf_core_v2.Services;
 
@@ -281,7 +274,7 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<int> CreateOrUpdateUserRole(int organizationId, int nonCitizenId, RoleType role)
+    public async Task<(int, UserRole?)> CreateOrUpdateUserRole(int organizationId, int nonCitizenId, RoleType role)
     {
         //CASE 1: organization, non-citizen, role each exist seperately. (Assumed to minimize reads, most frequent case)
         bool createdUserRole = false;
@@ -315,10 +308,10 @@ public class OrganizationService(AppDbContext db)
         {
             /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
              * Potentially check wether organization or user failed to provide more detailed response */
-            return -1;
+            return (-1, null);
         }
 
         //For successfull cases, distuinguish between creation & update
-        return createdUserRole ? 1 : 0;
+        return createdUserRole ? (1, userRole) : (0, null);
     }
 }
