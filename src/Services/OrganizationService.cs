@@ -304,7 +304,7 @@ public class OrganizationService(AppDbContext db)
         {
             await db.SaveChangesAsync();
         }
-        catch //(DbUpdateException) when (createdUserRole)
+        catch (DbUpdateException) when (createdUserRole)
         {
             /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
              * Potentially check wether organization or user failed to provide more detailed response */
