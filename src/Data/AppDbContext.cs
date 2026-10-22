@@ -1,7 +1,6 @@
-using giraf_core_v2.Models;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using giraf_core_v2.Models;
 
 namespace giraf_core_v2.Data;
 
@@ -10,6 +9,7 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 
+    public DbSet<Color> Colors => Set<Color>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Citizen> Citizens => Set<Citizen>();
     public DbSet<NonCitizen> NonCitizens => Set<NonCitizen>();

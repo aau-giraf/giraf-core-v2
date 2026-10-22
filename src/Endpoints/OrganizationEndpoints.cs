@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
-namespace giraf_core_v2.Endpoints;
-
 public static class OrganizationEndpoints
 {
     public static void MapOrganizationEndpoints(this WebApplication application)

@@ -3,15 +3,16 @@
 Run
 `docker compose up --build`
 
-Then check the following endpoint:
+Then check the following endpoints:
 `localhost:8080/health`
+`localhost:8080/colors`
 
-To add entries to tables, run:
+The `/colors` endpoint should return an empty array. To add entries to the colors table, run:
 `docker exec -it giraf-core-v2-db-1 psql -U postgres -d defaultdb`
 
-Now you can run `INSERT INTO ...;`
+Now you can run `INSERT INTO "Colors" ("Id", "ColorName") VALUES (1, 'Red');`
 
-E.g., `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
+Or `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
 
 ### Linux
 
