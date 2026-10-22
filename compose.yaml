@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: final
+    restart: unless-stopped
     ports:
       - 8080:8080
     depends_on:
@@ -10,8 +11,8 @@ services:
         condition: service_healthy
 
   db:
-    image: postgres
-    restart: always
+    image: postgres:18
+    restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: core2026
       POSTGRES_DB: defaultdb
