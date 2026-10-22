@@ -1,6 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using giraf_core_v2.Data.Seeding;
 using System.Text.Json.Serialization;
+
+using giraf_core_v2.Data.Seeding;
+using giraf_core_v2.Legacy.Abstractions;
+using giraf_core_v2.Legacy.Foodplanner;
+
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
 
+// Legacy API for the VTA and Foodplanner apps (src/Legacy/README.md)
+builder.Services.AddLegacyAdapters();
+
 builder.Services.AddValidation();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -50,5 +57,6 @@ app.UseHttpsRedirection();
 app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
+app.MapFoodplannerLegacyApi();
 
 app.Run();

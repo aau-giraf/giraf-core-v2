@@ -17,10 +17,10 @@ public sealed class LegacyResult<T>
     public string? Location { get; }    // set only by Created(value, location)
 
     // 200 with value
-    public static implicit operator LegacyResult<T>(T value) => throw new NotImplementedException();
+    public static implicit operator LegacyResult<T>(T value) => new(200, value, null, null);
 
     // Error status + optional body
-    public static implicit operator LegacyResult<T>(LegacyError error) => throw new NotImplementedException();
+    public static implicit operator LegacyResult<T>(LegacyError error) => new(error.StatusCode, default, error.Body, null);
 }
 
 // Non-generic error result, so `return LegacyResult.NotFound();` converts to any LegacyResult<T>
@@ -30,33 +30,36 @@ public static class LegacyResult
 {
     // Successes
     // 200 + body
-    public static LegacyResult<T> Ok<T>(T value) => throw new NotImplementedException();
+    public static LegacyResult<T> Ok<T>(T value) => new(200, value, null, null);
 
     // 200, no body
-    public static LegacyResult<NoBody> Ok() => throw new NotImplementedException();
+    public static LegacyResult<NoBody> Ok() => new(200, new NoBody(), null, null);
 
     // 204
-    public static LegacyResult<NoBody> NoContent() => throw new NotImplementedException();
+    public static LegacyResult<NoBody> NoContent() => new(204, new NoBody(), null, null);
 
     // 201 (legacy CreatedAtAction)
-    public static LegacyResult<T> Created<T>(T value, string? location = null) => throw new NotImplementedException();
+    public static LegacyResult<T> Created<T>(T value, string? location = null) => new(201, value, null, location);
+
+    // 201, no body (legacy Created())
+    public static LegacyResult<NoBody> Created() => new(201, new NoBody(), null, null);
 
     // Errors. The body is optional and written exactly as given
     // 400
-    public static LegacyError BadRequest(object? body = null) => throw new NotImplementedException();
+    public static LegacyError BadRequest(object? body = null) => new(400, body);
 
     // 401
-    public static LegacyError Unauthorized(object? body = null) => throw new NotImplementedException();
+    public static LegacyError Unauthorized(object? body = null) => new(401, body);
 
     // 403
-    public static LegacyError Forbidden(object? body = null) => throw new NotImplementedException();
+    public static LegacyError Forbidden(object? body = null) => new(403, body);
 
     // 404
-    public static LegacyError NotFound(object? body = null) => throw new NotImplementedException();
+    public static LegacyError NotFound(object? body = null) => new(404, body);
 
     // 409
-    public static LegacyError Conflict(object? body = null) => throw new NotImplementedException();
+    public static LegacyError Conflict(object? body = null) => new(409, body);
 
     // Anything else, e.g. 500
-    public static LegacyError Status(int statusCode, object? body = null) => throw new NotImplementedException();
+    public static LegacyError Status(int statusCode, object? body = null) => new(statusCode, body);
 }
