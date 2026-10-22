@@ -1,7 +1,9 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
 
 using Microsoft.AspNetCore.RateLimiting;
+using giraf_core_v2.Auth;
+
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder
 
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<TokenProvider>();
 
 builder.Services.AddValidation();
 
@@ -41,6 +44,9 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
+
+// Load environment variables
+DotNetEnv.Env.Load();
 
 app.UseSwagger();
 app.UseSwaggerUI();
