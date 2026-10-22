@@ -27,7 +27,6 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(
         new JsonStringEnumConverter()));
 
-builder.Services.AddScoped<ColorService>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
 
@@ -50,8 +49,6 @@ app.UseHttpsRedirection();
 
 app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
-app.MapColorEndpoints();
 app.MapUserEndpoints();
-
 
 app.Run();
