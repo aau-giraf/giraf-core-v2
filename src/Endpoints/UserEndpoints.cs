@@ -1,3 +1,5 @@
+using giraf_core_v2.Auth;
+
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,12 +15,11 @@ public static class UserEndpoints
         group.MapDelete("/me", DeleteCurrentUser);
         group.MapPatch("/me", UpdateCurrentUser);
         group.MapPut("/me/password", UpdateUserPassword);
+        group.MapPost("/login", Login); //.RequireRateLimiting(...);
     }
 
-    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService)
+    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider)
     {
-        // TODO: Get ID from authentication.
-
         var user = await userService.GetCurrentUserAsync(1);
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
@@ -62,5 +63,19 @@ public static class UserEndpoints
             2 => TypedResults.NoContent(),
             _ => TypedResults.BadRequest(),
         };
+    }
+
+    private static async Task<Results<BadRequest, Ok, InternalServerError>> Login(UserService userService, [FromBody] LogInDTO? logIn)
+    {
+        if (logIn is null)
+        {
+            return TypedResults.BadRequest();
+        }
+
+        // Bruger findes ikke
+        // Bruger findes, password matcher ikke
+        // Bruger findes, password matcher
+
+
     }
 }
