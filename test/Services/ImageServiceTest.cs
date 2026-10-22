@@ -6,6 +6,33 @@ public class ImageServiceTest : TestBase
     public ImageServiceTest(ITestOutputHelper output) : base(output) { }
 
     [Fact]
+    public async Task GetAllImagesAsync_ReturnsAllImages()
+    {
+        await using var db = CreateDbContext();
+        var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 3);
+        var expectedIds = seededImages.Select(s => s.Image.Id).OrderBy(id => id).ToList();
+
+        var service = new ImageService(db);
+
+        var result = await service.GetAllImagesAsync();
+
+        Assert.Equal(3, result.Count);
+        Assert.Equal(expectedIds, result.Select(i => i.Id).OrderBy(id => id).ToList());
+    }
+
+    [Fact]
+    public async Task GetAllImagesAsync_ReturnsEmptyList_WhenNoImages()
+    {
+        await using var db = CreateDbContext();
+        var service = new ImageService(db);
+
+        var result = await service.GetAllImagesAsync();
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public async Task GetIDInImagesAsync_ReturnsImage_WhenImageExists()
     {
         await using var db = CreateDbContext();
@@ -81,6 +108,16 @@ public class ImageServiceTest : TestBase
         Assert.NotNull(remainingImage);
 
     }
+
+    [Fact]
+    public async Task DeleteImageAsync_ReturnsFalseIfIdDontExists()
+    {
+        await using var db = CreateDbContext();
+
+
+    }
+
+
     [Fact]
     public async Task PostImageAsync_PostImage()
     {
