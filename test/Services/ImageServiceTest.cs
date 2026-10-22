@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -99,6 +100,36 @@ public class ImageServiceTest : TestBase
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
             Assert.NotNull(stored);
             Assert.Equal(created.Path, stored!.Path);
+        }
+        finally
+        {
+            if (created?.Path is not null && File.Exists(created.Path))
+            {
+                File.Delete(created.Path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task PostImageAsync_PostsTheRightImage()
+    {
+        await using var db = CreateDbContext();
+        Directory.CreateDirectory("images");
+        var request = ImageSeeder.CreateRequestBody(Seed);
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+        try
+        {
+            Assert.NotNull(created);
+            var allImages = await db.Images.ToListAsync();
+            var stored = Assert.Single(allImages);
+            Assert.Equal(created!.Id, stored.Id);
+            Assert.Equal(request.Name, stored.Name);
+            Assert.Equal(request.OrganizationId, stored.OrganizationId);
+            Assert.Equal(request.CitizenId, stored.CitizenId);
+
+            Assert.Equal(created.Path, stored.Path);
+            Assert.True(File.Exists(stored.Path));
         }
         finally
         {
