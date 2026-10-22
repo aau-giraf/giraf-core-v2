@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -113,8 +114,12 @@ public class ImageServiceTest : TestBase
     public async Task DeleteImageAsync_ReturnsFalseIfIdDontExists()
     {
         await using var db = CreateDbContext();
+        var service = new ImageService(db);
+        var nonExistingImageId = 9999;
 
+        var result = await service.DeleteImageAsync(nonExistingImageId);
 
+        Assert.False(result);
     }
 
 

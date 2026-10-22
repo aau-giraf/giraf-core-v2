@@ -14,6 +14,20 @@ public class ImageService(AppDbContext db)
         return image;
     }
 
+    public async Task<List<Image>?> GetImagesByCitizenIdAsync(int cit_id)
+    {
+        var citizenExists = await _db.Citizens.AnyAsync(c => c.UserId == cit_id); 
+        if (!citizenExists)
+        {
+            return null;
+        }
+
+        return await _db.Images
+            .AsNoTracking()
+            .Where(i => i.CitizenId == cit_id)
+            .ToListAsync();
+    }
+
     public async Task<List<Image>> GetAllImagesAsync()
     {
         return await _db.Images

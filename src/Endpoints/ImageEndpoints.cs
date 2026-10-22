@@ -12,6 +12,7 @@ public static class ImageEndpoints
 
         group.MapGet("/{image_id}", GetImageById);
         group.MapGet("/", GetAllImages);
+        group.MapGet("/Citizen/{cit_id}", GetImagesByCitizenId);
         group.MapPost("/", PostImage);
         group.MapDelete("/{image_id}", DeleteImage);
     }
@@ -21,6 +22,14 @@ public static class ImageEndpoints
         var image = await imageService.GetImageByIdAsync(image_id);
         return image == null ? TypedResults.NotFound() : TypedResults.Ok(image);
     }
+
+    // GET images with a specific Citizen id and returns a list with all images
+    private static async Task<Results<Ok<List<Image>>, NotFound>> GetImagesByCitizenId (int cit_id, ImageService imageService)
+    {
+        var images = await imageService.GetImagesByCitizenIdAsync(cit_id);
+        return images is null ? TypedResults.NotFound() : TypedResults.Ok(images);
+    }
+
 
     // GET all images
     private static async Task<Ok<List<Image>>> GetAllImages(ImageService imageService)
