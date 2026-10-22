@@ -1,7 +1,5 @@
-using System.Net.Http.Headers;
-using System.Threading.RateLimiting;
+﻿using System.Threading.RateLimiting;
 
-using Microsoft.AspNetCore.RateLimiting;
 using giraf_core_v2.Auth;
 
 using Microsoft.EntityFrameworkCore;
