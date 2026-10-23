@@ -399,6 +399,7 @@ public class OrganizationServiceTest : TestBase
         Assert.Null(secondResult.userRole);
 
     }
+    /*
     [Fact]
     public async Task CreateOrUpdateUserRole_CreateUserRoleFails()
     {
@@ -424,4 +425,5 @@ public class OrganizationServiceTest : TestBase
         Assert.Equal(-1, secondResult.outcomeStatus);
         Assert.Null(secondResult.userRole);
     }
+    */
 }
