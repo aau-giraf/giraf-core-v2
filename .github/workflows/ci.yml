@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -12,3 +12,5 @@ jobs:
   test:
     needs: build
     uses: ./.github/workflows/test.yml
+  format:
+    uses: ./.github/workflows/format.yml
