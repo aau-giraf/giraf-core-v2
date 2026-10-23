@@ -64,17 +64,16 @@ public class ImageServiceTest : TestBase
         Assert.Null(result);
     }
 
-
-    // SKAL LAVES OM NÅR CITIZEN SEEDEREN BLIVER LAVET
+    // Maybe have to be changed after the citizen seeder is done, or keep it in the imageseeder for imagetesting
     [Fact]
     public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
     {
         await using var db = CreateDbContext();
-        //await SeedCitizenAsync(db, 1);
-        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizenId: 1);
+        var citizen = await ImageSeeder.SeedCitizenForImageAsync(db, seed: 1);
+        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen.UserId);
         var service = new ImageService(db);
 
-        var result = await service.GetImagesByCitizenIdAsync(1);
+        var result = await service.GetImagesByCitizenIdAsync(citizen.UserId);
 
         Assert.NotNull(result);
         Assert.Equal(3, result!.Count);

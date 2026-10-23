@@ -15,6 +15,25 @@ public static class ImageSeeder
         return image;
     }
 
+    public static async Task<Citizen> SeedCitizenForImageAsync(AppDbContext db, int seed)
+    {
+        var user = (await UserSeeder.SeedAsync(db, seed)).User;
+        var guardian = (await UserSeeder.SeedAsync(db, seed + 1)).User;
+        var girafClass = await ClassSeeder.SeedAsync(db, seed);
+
+        var citizen = new Citizen
+        {
+            User = user,
+            Guardian = guardian,
+            Class = girafClass,
+        };
+
+        db.Citizens.Add(citizen);
+        await db.SaveChangesAsync();
+
+        return citizen;
+    }
+
     public static async Task<SeededImage> SeededForCitizenImageAsync(AppDbContext db, int seed, int? citizenId)
     {
         var image = CreateFaker(seed)
