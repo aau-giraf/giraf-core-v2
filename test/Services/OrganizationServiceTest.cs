@@ -5,6 +5,7 @@ using Bogus.DataSets;
 
 using Microsoft.OpenApi;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
+
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
@@ -389,7 +390,7 @@ public class OrganizationServiceTest : TestBase
 
         //----- ACT -----\\
         (int outcomeStatus, UserRole? userRole) initialResult = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
-        (int outcomeStatus, UserRole? userRole) secondResult  = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, UserRole? userRole) secondResult = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(1, initialResult.outcomeStatus);
@@ -419,7 +420,7 @@ public class OrganizationServiceTest : TestBase
         //----- ASSERT -----\\
         Assert.Equal(-1, initialResult.outcomeStatus);
         Assert.Null(initialResult.userRole);
-        
+
         Assert.Equal(-1, secondResult.outcomeStatus);
         Assert.Null(secondResult.userRole);
     }

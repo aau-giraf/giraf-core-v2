@@ -1,6 +1,8 @@
-using Microsoft.EntityFrameworkCore;
-using giraf_core_v2.Data.Seeding;
 using System.Text.Json.Serialization;
+
+using giraf_core_v2.Data.Seeding;
+
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
