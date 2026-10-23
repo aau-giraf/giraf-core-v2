@@ -220,7 +220,6 @@ public class UserServiceTest : TestBase
         var user = SeededUser.User;
 
         var service = new UserService(db);
-
         var fetchedUser = await service.GetCurrentUserAsync(user.Id);
 
         Assert.Equal(fetchedUser!.Id, user.Id);

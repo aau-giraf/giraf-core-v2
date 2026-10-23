@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+
 namespace giraf_core_v2.Services;
 
 public class CitizenService(AppDbContext db)
@@ -7,6 +10,21 @@ public class CitizenService(AppDbContext db)
     public async Task<Citizen?> GetCitizenAsync(int userId)
     {
         return await _db.Citizens.FindAsync(userId);
+    }
+
+    public async Task<List<Citizen>?> GetCitizensAsync(int orgId)
+    {
+	    var org = await _db.Organizations.AnyAsync(o => o.Id == orgId);
+	    if (!org)
+	    {
+		    return null;
+	    }
+	    
+	    var citizens = await _db.Citizens
+		    .Where(c => c.Class.OrganizationId == orgId)
+		    .ToListAsync();
+	    
+	    return citizens;
     }
 
     public async Task<Citizen?> CreateCitizenAsync(CreateCitizenDTO createCitizen)
