@@ -1,0 +1,28 @@
+// Copied from foodplanner-api: FoodplannerModels/Account/User/UserCreateChildDTO.cs (only the namespace changed)
+using System.ComponentModel.DataAnnotations;
+
+namespace giraf_core_v2.Legacy.Foodplanner.Dtos;
+
+// Create a child account DTO
+// with error messages
+public class UserCreateChildDTO
+{
+    [Required(ErrorMessage = "Fornavn er påkrævet")]
+    [StringLength(100, ErrorMessage = "Fornavn er for langt")]
+    public required string FirstName { get; set; }
+
+    [Required(ErrorMessage = "Efternavn er påkrævet")]
+    [StringLength(100, ErrorMessage = "Efternavn er for langt")]
+    public required string LastName { get; set; }
+
+    [Required(ErrorMessage = "Email er påkrævet")]
+    [EmailAddress(ErrorMessage = "Email er ikke gyldig")]
+    [StringLength(100, ErrorMessage = "Email er for langt")]
+    public required string Email { get; set; }
+
+    [Required(ErrorMessage = "Adgangskode er påkrævet")]
+    [StringLength(100, ErrorMessage = "Adgangskode er for langt")]
+    public required string Password { get; set; }
+
+    public int ClassId { get; set; }
+}
