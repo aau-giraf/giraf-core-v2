@@ -16,11 +16,9 @@ public class ImageService(AppDbContext db)
 
     public async Task<List<Image>?> GetImagesByCitizenIdAsync(int cit_id)
     {
-        var citizenExists = await _db.Citizens.AnyAsync(c => c.UserId == cit_id); 
-        if (!citizenExists)
-        {
-            return null;
-        }
+        var citizenExists = await _db.Citizens.AnyAsync(c => c.UserId == cit_id);
+        if (!citizenExists)return null;
+
 
         return await _db.Images
             .AsNoTracking()
@@ -38,10 +36,8 @@ public class ImageService(AppDbContext db)
     public async Task<bool> DeleteImageAsync(int image_id)
     {
         var removedimage = await _db.Images.FindAsync(image_id);
-        if (removedimage is null)
-        {
-            return false;
-        }
+        if (removedimage is null) return false;
+
         _db.Images.Remove(removedimage);
         await _db.SaveChangesAsync();
         return true;

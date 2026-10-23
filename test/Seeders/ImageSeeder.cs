@@ -15,6 +15,33 @@ public static class ImageSeeder
         return image;
     }
 
+    public static async Task<SeededImage> SeededForCitizenImageAsync(AppDbContext db, int seed, int? citizenId)
+    {
+        var image = CreateFaker(seed)
+            .RuleFor(i => i.CitizenId, _ => citizenId)
+            .Generate();
+
+        db.Images.Add(image);
+        await db.SaveChangesAsync();
+
+        return new SeededImage(image);
+    }
+
+    public static async Task<List<SeededImage>> SeededManyForCitizenImagesAsync(AppDbContext db, int seed, int count, int? citizenId)
+    {
+        var faker = CreateFaker(seed)
+            .RuleFor(i => i.CitizenId, _ => citizenId);
+
+        var images = faker.Generate(count)
+            .Select(i => new SeededImage(i))
+            .ToList();
+
+        db.Images.AddRange(images.Select(x => x.Image));
+        await db.SaveChangesAsync();
+
+        return images;
+    }
+
     private static SeededImage Create(int seed)
     {
         var image = CreateFaker(seed);

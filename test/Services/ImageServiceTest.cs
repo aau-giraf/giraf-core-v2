@@ -64,6 +64,26 @@ public class ImageServiceTest : TestBase
         Assert.Null(result);
     }
 
+
+    // SKAL LAVES OM NÅR CITIZEN SEEDEREN BLIVER LAVET
+    [Fact]
+    public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
+    {
+        await using var db = CreateDbContext();
+        //await SeedCitizenAsync(db, 1);
+        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizenId: 1);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByCitizenIdAsync(1);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result!.Count);
+        Assert.Equal(
+            seeded.Select(x => x.Image.Id).OrderBy(id => id),
+            result.Select(i => i.Id).OrderBy(id => id)
+        );
+    }
+
     [Fact]
     public async Task DeleteImageAsync_DeleteImage()
     {
