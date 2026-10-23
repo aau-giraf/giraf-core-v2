@@ -41,11 +41,6 @@ public class UserService(AppDbContext db)
             user.LastName = inputUser.LastName;
         }
 
-        if (inputUser.Email is not null)
-        {
-            user.Email = inputUser.Email;
-        }
-
         if (inputUser.Username is not null)
         {
             user.Username = inputUser.Username;
