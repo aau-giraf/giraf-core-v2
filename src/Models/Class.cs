@@ -6,7 +6,7 @@ public class Class
     public required string Name { get; set; }
 
     public int OrganizationId { get; init; }
-    public required Organization Organization { get; init; }
+    public Organization? Organization { get; init; }
 
     //Navigational property for citizens belonging to a class
     public ICollection<Citizen> Citizens { get; } = [];

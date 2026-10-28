@@ -1,34 +1,13 @@
-using System.ComponentModel.DataAnnotations;
-
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace giraf_core_v2.Models;
 
-public class Citizen
+public class Citizen : User
 {
-    [Key]
-    public int UserId { get; set; }
-    public required User User { get; set; }
-
-    public int GuardianId { get; set; }
-    public required User Guardian { get; set; }
-
     public int ClassId { get; set; }
-    public required Class Class { get; set; }
-}
+    public Class? Class { get; set; }
 
-// Explicitly configures database mapping of Citizen model - conventions were insufficient to determine mapping (shadow properties were created)
-public sealed class CitizenConfiguration : IEntityTypeConfiguration<Citizen>
-{
-    public void Configure(EntityTypeBuilder<Citizen> builder)
-    {
-        builder.HasOne(citizen => citizen.User)
-            .WithOne(user => user.Citizen)
-            .HasForeignKey<Citizen>(citizen => citizen.UserId);
+    //Navigational property: The guardianships involving this citizen. Find this citizen's guardians
+    public ICollection<Guardianship> Guardianships { get; } = [];
 
-        builder.HasOne(citizen => citizen.Guardian)
-            .WithMany()
-            .HasForeignKey(citizen => citizen.GuardianId);
-    }
+    //Navigational property: The images belonging to this citizen
+    public ICollection<Image> Images { get; } = [];
 }

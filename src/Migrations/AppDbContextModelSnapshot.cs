@@ -22,26 +22,6 @@ namespace giraf_core_v2.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("giraf_core_v2.Models.Citizen", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ClassId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("GuardianId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserId");
-
-                    b.HasIndex("ClassId");
-
-                    b.HasIndex("GuardianId");
-
-                    b.ToTable("Citizen");
-                });
-
             modelBuilder.Entity("giraf_core_v2.Models.Class", b =>
                 {
                     b.Property<int>("Id")
@@ -62,6 +42,21 @@ namespace giraf_core_v2.Migrations
                     b.HasIndex("OrganizationId");
 
                     b.ToTable("Class");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.Guardianship", b =>
+                {
+                    b.Property<int>("CitizenId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GuardianId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CitizenId", "GuardianId");
+
+                    b.HasIndex("GuardianId");
+
+                    b.ToTable("Guardianship");
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.Image", b =>
@@ -90,8 +85,16 @@ namespace giraf_core_v2.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("OrganizationId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<long>("SizeBytes")
                         .HasColumnType("bigint");
@@ -100,14 +103,6 @@ namespace giraf_core_v2.Migrations
                         .IsRequired()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)");
-
-                    b.Property<string>("name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("path")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -149,10 +144,6 @@ namespace giraf_core_v2.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -171,35 +162,122 @@ namespace giraf_core_v2.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("User");
-                });
 
-            modelBuilder.Entity("giraf_core_v2.Models.UserOrganization", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("OrganizationId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("UserId", "OrganizationId");
-
-                    b.HasIndex("OrganizationId");
-
-                    b.ToTable("UserOrganization");
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.UserRole", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<int>("NonCitizenId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
+                    b.Property<string>("Role")
+                        .HasColumnType("text");
+
+                    b.Property<int>("OrganizationId")
                         .HasColumnType("integer");
 
-                    b.HasKey("UserId", "Type");
+                    b.HasKey("NonCitizenId", "Role", "OrganizationId");
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("UserRole");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.Citizen", b =>
+                {
+                    b.HasBaseType("giraf_core_v2.Models.User");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("integer");
+
+                    b.HasIndex("ClassId");
+
+                    b.ToTable("Citizen");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.NonCitizen", b =>
+                {
+                    b.HasBaseType("giraf_core_v2.Models.User");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("NonCitizen");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.Class", b =>
+                {
+                    b.HasOne("giraf_core_v2.Models.Organization", "Organization")
+                        .WithMany("Classes")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.Guardianship", b =>
+                {
+                    b.HasOne("giraf_core_v2.Models.Citizen", "Citizen")
+                        .WithMany("Guardianships")
+                        .HasForeignKey("CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("giraf_core_v2.Models.NonCitizen", "Guardian")
+                        .WithMany("Guardianships")
+                        .HasForeignKey("GuardianId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Citizen");
+
+                    b.Navigation("Guardian");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.Image", b =>
+                {
+                    b.HasOne("giraf_core_v2.Models.Citizen", "Citizen")
+                        .WithMany("Images")
+                        .HasForeignKey("CitizenId");
+
+                    b.HasOne("giraf_core_v2.Models.Organization", "Organization")
+                        .WithMany("Images")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Citizen");
+
+                    b.Navigation("Organization");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.UserRole", b =>
+                {
+                    b.HasOne("giraf_core_v2.Models.NonCitizen", "NonCitizen")
+                        .WithMany("Roles")
+                        .HasForeignKey("NonCitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("giraf_core_v2.Models.Organization", "Organization")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("NonCitizen");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.Citizen", b =>
@@ -210,81 +288,22 @@ namespace giraf_core_v2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("giraf_core_v2.Models.User", "Guardian")
-                        .WithMany()
-                        .HasForeignKey("GuardianId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("giraf_core_v2.Models.User", "User")
-                        .WithOne("Citizen")
-                        .HasForeignKey("giraf_core_v2.Models.Citizen", "UserId")
+                    b.HasOne("giraf_core_v2.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("giraf_core_v2.Models.Citizen", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Class");
-
-                    b.Navigation("Guardian");
-
-                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("giraf_core_v2.Models.Class", b =>
+            modelBuilder.Entity("giraf_core_v2.Models.NonCitizen", b =>
                 {
-                    b.HasOne("giraf_core_v2.Models.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
+                    b.HasOne("giraf_core_v2.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("giraf_core_v2.Models.NonCitizen", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Organization");
-                });
-
-            modelBuilder.Entity("giraf_core_v2.Models.Image", b =>
-                {
-                    b.HasOne("giraf_core_v2.Models.Citizen", "Citizen")
-                        .WithMany()
-                        .HasForeignKey("CitizenId");
-
-                    b.HasOne("giraf_core_v2.Models.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Citizen");
-
-                    b.Navigation("Organization");
-                });
-
-            modelBuilder.Entity("giraf_core_v2.Models.UserOrganization", b =>
-                {
-                    b.HasOne("giraf_core_v2.Models.Organization", "Organization")
-                        .WithMany("Users")
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("giraf_core_v2.Models.User", "User")
-                        .WithMany("Organizations")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Organization");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("giraf_core_v2.Models.UserRole", b =>
-                {
-                    b.HasOne("giraf_core_v2.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("giraf_core_v2.Models.Class", b =>
@@ -294,14 +313,25 @@ namespace giraf_core_v2.Migrations
 
             modelBuilder.Entity("giraf_core_v2.Models.Organization", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("Classes");
+
+                    b.Navigation("Images");
+
+                    b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("giraf_core_v2.Models.User", b =>
+            modelBuilder.Entity("giraf_core_v2.Models.Citizen", b =>
                 {
-                    b.Navigation("Citizen");
+                    b.Navigation("Guardianships");
 
-                    b.Navigation("Organizations");
+                    b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("giraf_core_v2.Models.NonCitizen", b =>
+                {
+                    b.Navigation("Guardianships");
+
+                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }
