@@ -1,6 +1,3 @@
-using BCrypt;
-
-
 public static class UserSeeder
 {
     // Record to store DB user object and its unencrypted password.
