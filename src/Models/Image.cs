@@ -33,11 +33,11 @@ public sealed class ImageConfiguration : IEntityTypeConfiguration<Image>
             .HasDefaultValueSql("now()");
 
         builder.HasOne(image => image.Citizen)
-            .WithMany()
+            .WithMany(citizen => citizen.Images)
             .HasForeignKey(image => image.CitizenId);
 
         builder.HasOne(image => image.Organization)
-            .WithMany()
+            .WithMany(organization => organization.Images)
             .HasForeignKey(image => image.OrganizationId);
     }
 }

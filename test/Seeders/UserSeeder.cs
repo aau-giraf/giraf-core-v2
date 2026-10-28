@@ -1,5 +1,3 @@
-using BCrypt;
-
 
 public static class UserSeeder
 {
@@ -46,12 +44,12 @@ public static class UserSeeder
     private static List<SeededUser> CreateManyFakers(int seed, int count)
     {
         // create fakers to reuse for different data
-        var UserFaker = new Faker<User>()
+        var UserFaker = new Faker<NonCitizen>()
                    .UseSeed(seed)
                    .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                    .RuleFor(u => u.LastName, f => f.Name.LastName())
-                   .RuleFor(u => u.Email, f => f.Internet.Email())
-                   .RuleFor(u => u.Username, f => f.Internet.UserName());
+                   .RuleFor(u => u.Username, f => f.Internet.UserName())
+                   .RuleFor(u => u.Email, ""); // email field is 'required', but not needed
 
         var PasswordFaker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
         var users = new List<SeededUser>();
@@ -71,14 +69,14 @@ public static class UserSeeder
     }
 
     // Create a random test user using bogus.
-    private static Faker<User> CreateFaker(int seed, string password)
+    private static Faker<NonCitizen> CreateFaker(int seed, string password)
     {
-        return new Faker<User>()
+        return new Faker<NonCitizen>()
             .UseSeed(seed)
             .RuleFor(u => u.FirstName, f => f.Name.FirstName())
             .RuleFor(u => u.LastName, f => f.Name.LastName())
-            .RuleFor(u => u.Email, f => f.Internet.Email())
             .RuleFor(u => u.Username, f => f.Internet.UserName())
+            .RuleFor(u => u.Email, "") // email field is 'required', but not needed
             .RuleFor(u => u.Password, f => BCrypt.Net.BCrypt.HashPassword(password, 12));
     }
 }

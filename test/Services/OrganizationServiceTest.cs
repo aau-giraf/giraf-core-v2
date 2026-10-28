@@ -345,4 +345,85 @@ public class OrganizationServiceTest : TestBase
             Assert.True(fetchedClassesInOrganization[1].Name == class1.Name);
         }
     }
+    [Fact]
+    public async Task CreateOrUpdateUserRole_CreatesUserRole()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var role1 = RoleType.Employee;
+
+        Assert.NotNull(organization);
+        Assert.NotNull(seededUser);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        (int outcomeStatus, UserRole? userRole) result = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
+
+        //----- ASSERT -----\\
+        Assert.Equal(1, result.outcomeStatus); //creation outcome
+        Assert.NotNull(result.userRole);
+        Assert.Equal(seededUser.User.Id, result.userRole.NonCitizenId);
+        Assert.Equal(organization.Id, result.userRole.OrganizationId);
+        Assert.Equal(role1, result.userRole.Role);
+    }
+    [Fact]
+    public async Task CreateOrUpdateUserRole_UpdatesUserRole()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+
+        var role1 = RoleType.Employee;
+        //var role2 = RoleType.Parent;
+
+        Assert.NotNull(organization);
+        Assert.NotNull(seededUser);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        (int outcomeStatus, UserRole? userRole) initialResult = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, UserRole? userRole) secondResult = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
+
+        //----- ASSERT -----\\
+        Assert.Equal(1, initialResult.outcomeStatus);
+
+        Assert.Equal(0, secondResult.outcomeStatus);
+        Assert.Null(secondResult.userRole);
+
+    }
+    /*
+    [Fact]
+    public async Task CreateOrUpdateUserRole_CreateUserRoleFails()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var seededUser2 = await UserSeeder.SeedAsync(db, Seed);
+        var role1 = RoleType.Employee;
+
+        Assert.NotNull(seededUser);
+
+        var service = new OrganizationService(db);
+
+        //----- ACT -----\\
+        (int outcomeStatus, UserRole? userRole) initialResult = await service.CreateOrUpdateUserRole(100000000, seededUser.User.Id, role1);
+        (int outcomeStatus, UserRole? userRole) secondResult = await service.CreateOrUpdateUserRole(1234567890, seededUser2.User.Id, role1);
+
+        //----- ASSERT -----\\
+        Assert.Equal(-1, initialResult.outcomeStatus);
+        Assert.Null(initialResult.userRole);
+
+        Assert.Equal(-1, secondResult.outcomeStatus);
+        Assert.Null(secondResult.userRole);
+    }
+    */
 }

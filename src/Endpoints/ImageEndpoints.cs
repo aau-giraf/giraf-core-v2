@@ -24,7 +24,7 @@ public static class ImageEndpoints
     }
 
     // GET images with a specific Citizen id and returns a list with all images
-    private static async Task<Results<Ok<List<Image>>, NotFound>> GetImagesByCitizenId (int cit_id, ImageService imageService)
+    private static async Task<Results<Ok<List<Image>>, NotFound>> GetImagesByCitizenId(int cit_id, ImageService imageService)
     {
         var images = await imageService.GetImagesByCitizenIdAsync(cit_id);
         return images is null ? TypedResults.NotFound() : TypedResults.Ok(images);

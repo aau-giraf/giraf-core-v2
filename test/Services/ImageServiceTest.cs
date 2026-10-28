@@ -70,10 +70,10 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
         var citizen = await ImageSeeder.SeedCitizenForImageAsync(db, seed: 1);
-        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen.UserId);
+        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen.Id);
         var service = new ImageService(db);
 
-        var result = await service.GetImagesByCitizenIdAsync(citizen.UserId);
+        var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
 
         Assert.NotNull(result);
         Assert.Equal(3, result!.Count);

@@ -16,14 +16,11 @@ public class ImageService(AppDbContext db)
 
     public async Task<List<Image>?> GetImagesByCitizenIdAsync(int cit_id)
     {
-        var citizenExists = await _db.Citizens.AnyAsync(c => c.UserId == cit_id);
-        if (!citizenExists)return null;
+        var citizenExists = await _db.Citizens.AnyAsync(c => c.Id == cit_id);
 
+        var citizen = await _db.Citizens.FindAsync(cit_id);
 
-        return await _db.Images
-            .AsNoTracking()
-            .Where(i => i.CitizenId == cit_id)
-            .ToListAsync();
+        return citizen?.Images.ToList();
     }
 
     public async Task<List<Image>> GetAllImagesAsync()
