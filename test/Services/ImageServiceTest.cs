@@ -38,9 +38,9 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededImage = await ImageSeeder.SeedAsync(db, Seed);
+        var seededImage = await ImageSeeder.SeedAsync(db, Seed);
 
-        var image = SeededImage.Image;
+        var image = seededImage.Image;
 
         var service = new ImageService(db);
 
@@ -69,7 +69,7 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
     {
         await using var db = CreateDbContext();
-        var citizen = await ImageSeeder.SeedCitizenForImageAsync(db, seed: 1);
+        var citizen = await CitizenSeeder.SeedCitizenAsync(db, seed: 1);
         var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen.Id);
         var service = new ImageService(db);
 
@@ -88,8 +88,8 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededImage = await ImageSeeder.SeedAsync(db, Seed);
-        var image = SeededImage.Image;
+        var seededImage = await ImageSeeder.SeedAsync(db, Seed);
+        var image = seededImage.Image;
 
         var service = new ImageService(db);
 
@@ -107,9 +107,9 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededImages = await ImageSeeder.SeedManyAsync(db, Seed, 2);
-        var image1 = SeededImages[0].Image;
-        var image2 = SeededImages[1].Image;
+        var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 2);
+        var image1 = seededImages[0].Image;
+        var image2 = seededImages[1].Image;
 
         Assert.NotNull(image1);
         Assert.NotNull(image2);

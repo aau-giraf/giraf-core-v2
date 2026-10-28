@@ -15,27 +15,6 @@ public static class ImageSeeder
         return image;
     }
 
-    public static async Task<Citizen> SeedCitizenForImageAsync(AppDbContext db, int seed)
-    {
-        var user = (await UserSeeder.SeedAsync(db, seed)).User;
-        /* Guardian and Class is for later implementation
-        var guardian = (await UserSeeder.SeedAsync(db, seed + 1)).User;
-        var girafClass = await ClassSeeder.SeedAsync(db, seed);
-        */
-        var citizen = new Citizen
-        {
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Username = user.Username,
-            Password = user.Password,
-        };
-
-        db.Citizens.Add(citizen);
-        await db.SaveChangesAsync();
-
-        return citizen;
-    }
-
     public static async Task<SeededImage> SeededForCitizenImageAsync(AppDbContext db, int seed, int? citizenId)
     {
         var image = CreateFaker(seed)
@@ -51,7 +30,7 @@ public static class ImageSeeder
     public static async Task<List<SeededImage>> SeededManyForCitizenImagesAsync(AppDbContext db, int seed, int count, int? citizenId)
     {
         var faker = CreateFaker(seed)
-            .RuleFor(i => i.CitizenId, _ => citizenId);
+            .RuleFor(i => i.CitizenId, _ => citizenId); // Overwrites the
 
         var images = faker.Generate(count)
             .Select(i => new SeededImage(i))
