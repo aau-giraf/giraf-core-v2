@@ -88,30 +88,22 @@ public class UserService(AppDbContext db)
 
     public async Task<LoginResponseDTO?> Login(LoginRequestDTO loginRequestDTO)
     {
-        try
-        {
-            var user = await _db.Users.SingleAsync(u => u.Username == loginRequestDTO.Username);
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequestDTO.Username);
 
-            // If user doesn't exist or password is incorrect, return null.
-            if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
-            {
-                return null;
-            }
-
-            TokenProvider tokenProvider = new();
-
-            return new LoginResponseDTO
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Username = user.Username,
-                Jwt = tokenProvider.Create(user)
-            };
-        }
-        catch (Exception e) // TODO: ike slug exception, find bedre løsning
+        // If user doesn't exist or password is incorrect, return null.
+        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
         {
             return null;
         }
 
+        TokenProvider tokenProvider = new();
+
+        return new LoginResponseDTO
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Username = user.Username,
+            Jwt = tokenProvider.Create(user)
+        };
     }
 }
