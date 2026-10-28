@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
-
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -64,13 +62,12 @@ public class ImageServiceTest : TestBase
         Assert.Null(result);
     }
 
-    // Maybe have to be changed after the citizen seeder is done, or keep it in the imageseeder for imagetesting
     [Fact]
     public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
     {
         await using var db = CreateDbContext();
         var citizen = await CitizenSeeder.SeedCitizenAsync(db, seed: 1);
-        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen.Id);
+        var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, count: 3, citizen.Id);
         var service = new ImageService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
@@ -78,7 +75,38 @@ public class ImageServiceTest : TestBase
         Assert.NotNull(result);
         Assert.Equal(3, result!.Count);
         Assert.Equal(
-            seeded.Select(x => x.Image.Id).OrderBy(id => id),
+            seededImages.Select(x => x.Image.Id).OrderBy(id => id),
+            result.Select(i => i.Id).OrderBy(id => id)
+        );
+    }
+
+    [Fact]
+    public async Task GetImagesByCitizenIdAsync_UserNotFound_ReturnsNull()
+    {
+        await using var db = CreateDbContext();
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByCitizenIdAsync(42);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetImagesByCitizenIdAsync_ReturnsOnlyImagesRelatedToCitizen()
+    {
+        await using var db = CreateDbContext();
+        var citizen1 = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed + 1);
+        var citizen2 = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed + 2);
+        var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen1.Id);
+        var irrelevantImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen2.Id);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByCitizenIdAsync(citizen1.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result!.Count);
+        Assert.Equal(
+            seededImages.Select(x => x.Image.Id).OrderBy(id => id),
             result.Select(i => i.Id).OrderBy(id => id)
         );
     }
@@ -199,5 +227,6 @@ public class ImageServiceTest : TestBase
                 File.Delete(created.Path);
             }
         }
+
     }
 }
