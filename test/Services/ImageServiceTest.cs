@@ -84,6 +84,20 @@ public class ImageServiceTest : TestBase
     }
 
     [Fact]
+    public async Task GetImagesByCitizenIdAsync_UserFound_HasNoImages()
+    {
+        await using var db = CreateDbContext();
+        var citizen = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed);
+        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, 0, citizen.Id);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public async Task DeleteImageAsync_DeleteImage()
     {
         await using var db = CreateDbContext();
