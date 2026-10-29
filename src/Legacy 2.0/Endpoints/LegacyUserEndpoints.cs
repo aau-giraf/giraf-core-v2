@@ -5,7 +5,7 @@ namespace giraf_core_v2.Legacy_2._0.Endpoints;
 
 public static class LegacyUserEndpoints
 {
-    public static void MapUserEndpoints(this WebApplication app)
+    public static void MapUserLegacyEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("legacy/users");
 
