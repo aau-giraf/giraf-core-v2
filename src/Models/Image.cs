@@ -10,11 +10,11 @@ public class Image
 {
     [Key]
     public int Id { get; init; }
-    public required string name { get; set; }
+    public required string Name { get; set; }
     //Optional foreign key to the Citizen the image belongs to
     public int? CitizenId { get; set; }
     public Citizen? Citizen { get; set; }
-    public required string path { get; set; }
+    public required string Path { get; set; }
 
     //Foreign key to the Organization the image is scoped to. If connected to a citizen it should be found by though the citizen and never be NULL
     public int OrganizationId { get; set; }
@@ -48,11 +48,11 @@ public sealed class ImageConfiguration : IEntityTypeConfiguration<Image>
         });
 
         builder.HasOne(image => image.Citizen)
-            .WithMany()
+            .WithMany(citizen => citizen.Images)
             .HasForeignKey(image => image.CitizenId);
 
         builder.HasOne(image => image.Organization)
-            .WithMany()
+            .WithMany(organization => organization.Images)
             .HasForeignKey(image => image.OrganizationId);
     }
 }

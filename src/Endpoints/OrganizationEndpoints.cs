@@ -21,11 +21,11 @@ public static class OrganizationEndpoints
 
         group.MapPost("/", CreateOrganization);
 
-        group.MapPut("/{org_id:int}/members/{user_id:int}", CreateUserInOrganization);
+        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole);
 
         group.MapPatch("/{org_id:int}", UpdateOrganization);
 
-        group.MapDelete("/{org_id}/members/{user_id:int}", DeleteUserInOrganization);
+        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole);
 
         group.MapDelete("/{org_id:int}", DeleteOrganization);
 
@@ -87,16 +87,22 @@ public static class OrganizationEndpoints
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserInOrganization(int org_id, int user_id, OrganizationService organizationservice)
+    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationservice)
     {
-        var selectedClass = await organizationservice.DeleteUserInOrganizationAsync(org_id, user_id);
-        return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
+        var deletionOccurred = await organizationservice.DeleteUserRoleAsync(organizationId, nonCitizenId, role);
+        return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseCreateUserOrganizationDTO>, NotFound>> CreateUserInOrganization(int user_id, int org_id, OrganizationService organizationservice)
+    private static async Task<Results<NotFound, NoContent, Created<UserRoleResponse>>> PutUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationservice)
     {
-        var createdUserInOrganization = await organizationservice.CreateUserInOrganizationAsync(user_id, org_id);
-        return createdUserInOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdUserInOrganization);
+        (int, UserRole?) status = await organizationservice.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
+        return status switch
+        {
+            (-1, null) => TypedResults.NotFound(),
+            (0, null) => TypedResults.NoContent(),
+            (1, UserRole ur) => TypedResults.Created(
+                $"/organizations/{organizationId}/members/{nonCitizenId}/{role}",
+                new UserRoleResponse(ur.NonCitizenId, ur.OrganizationId, ur.Role))
+        };
     }
-
 }

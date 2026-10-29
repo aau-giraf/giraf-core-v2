@@ -6,6 +6,7 @@
 *.user
 *.sln.docstates
 *.env
+*.http
 
 # Build results
 
