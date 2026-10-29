@@ -1,3 +1,5 @@
+using Bogus.DataSets;
+
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -132,7 +134,8 @@ public class ImageServiceTest : TestBase
 
         var seededImage = await ImageSeeder.SeedAsync(db, Seed);
         var image = seededImage.Image;
-        Directory.CreateDirectory("images");
+        string dir = "images";
+        Directory.CreateDirectory(dir);
         File.Create(image.Path);
 
         var service = new ImageService(db);
@@ -154,28 +157,32 @@ public class ImageServiceTest : TestBase
         var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 2);
         var image1 = seededImages[0].Image;
         var image2 = seededImages[1].Image;
-        Directory.CreateDirectory("images");
-        File.Create(image1.Path);
-        File.Create(image2.Path);
 
+        var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(dir);
 
-        Assert.NotNull(image1);
-        Assert.NotNull(image2);
+        try
+        {
+            image1.Path = Path.Combine(dir, Path.GetFileName(image1.Path));
+            image2.Path = Path.Combine(dir, Path.GetFileName(image2.Path));
+            await db.SaveChangesAsync();
 
-        var service = new ImageService(db);
+            File.WriteAllBytes(image1.Path, []);
+            File.WriteAllBytes(image2.Path, []);
 
-        Assert.True(await service.DeleteImageAsync(image1.Id));
+            var service = new ImageService(db);
 
-        var deletedImage = await db.Images
-            .SingleOrDefaultAsync(c => c.Id == image1.Id);
-        Assert.Null(deletedImage);
-        Assert.False(File.Exists(image1.Path));
+            Assert.True(await service.DeleteImageAsync(image1.Id));
 
-        var remainingImage = await db.Images
-            .SingleOrDefaultAsync(i => i.Id == image2.Id);
+            Assert.Null(await db.Images.SingleOrDefaultAsync(i => i.Id == image1.Id));
+            Assert.False(File.Exists(image1.Path));
 
-        Assert.NotNull(remainingImage);
-
+            Assert.NotNull(await db.Images.SingleOrDefaultAsync(i => i.Id == image2.Id));
+            Assert.True(File.Exists(image2.Path));
+        } finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
     }
 
     [Fact]
@@ -205,6 +212,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(request.Name, created!.Name);
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
+            Assert.Equal(request.ClassId, created.ClassId);
             Assert.EndsWith(".png", created.Path);
             Assert.True(File.Exists(created.Path));
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
@@ -237,6 +245,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(request.Name, stored.Name);
             Assert.Equal(request.OrganizationId, stored.OrganizationId);
             Assert.Equal(request.CitizenId, stored.CitizenId);
+            Assert.Equal(request.ClassId, stored.ClassId);
 
             Assert.Equal(created.Path, stored.Path);
             Assert.True(File.Exists(stored.Path));

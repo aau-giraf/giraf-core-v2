@@ -68,7 +68,7 @@ public static class ImageSeeder
             .UseSeed(seed)
             .RuleFor(i => i.Name, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.Path, f => f.System.FilePath())
+            .RuleFor(i => i.Path, f => f.System.FileName())
             .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
