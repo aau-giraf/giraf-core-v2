@@ -37,32 +37,21 @@ public class NonCitizenService(AppDbContext db)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
-        // Ensure that the new values are in fact new. 
-        if (
-            nonCitizen!.FirstName == requestPatchNonCitizenDTO.FirstName ||
-            nonCitizen.LastName == requestPatchNonCitizenDTO.LastName ||
-            nonCitizen.Email == requestPatchNonCitizenDTO.Email ||
-            nonCitizen.Username == requestPatchNonCitizenDTO.Username
-        )
-        {
-            return null;
-        }
-
         if (requestPatchNonCitizenDTO.FirstName is not null)
         {
-            nonCitizen.FirstName = requestPatchNonCitizenDTO.FirstName;
+            nonCitizen!.FirstName = requestPatchNonCitizenDTO.FirstName;
         }
         if (requestPatchNonCitizenDTO.LastName is not null)
         {
-            nonCitizen.LastName = requestPatchNonCitizenDTO.LastName;
+            nonCitizen!.LastName = requestPatchNonCitizenDTO.LastName;
         }
         if (requestPatchNonCitizenDTO.Email is not null)
         {
-            nonCitizen.Email = requestPatchNonCitizenDTO.Email;
+            nonCitizen!.Email = requestPatchNonCitizenDTO.Email;
         }
         if (requestPatchNonCitizenDTO.Username is not null)
         {
-            nonCitizen.Username = requestPatchNonCitizenDTO.Username;
+            nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
         }
 
         // Save changes.
