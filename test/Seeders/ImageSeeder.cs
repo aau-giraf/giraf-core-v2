@@ -80,8 +80,8 @@ public static class ImageSeeder
             .UseSeed(seed)
             .RuleFor(i => i.Name, f => f.Lorem.Word())
             .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.CitizenId, _ => null)
-            .RuleFor(i => i.ClassId, _ => null)
+            .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.ClassId, f => f.Random.Int(1, 100))
             .RuleFor(i => i.File, f =>
             {
                 var bytes = f.Random.Bytes(32);
