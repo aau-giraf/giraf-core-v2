@@ -1,8 +1,12 @@
-﻿using System.Threading.RateLimiting;
+﻿using System.Text;
+using System.Threading.RateLimiting;
 
 using giraf_core_v2.Auth;
+using giraf_core_v2.Utils;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +21,32 @@ builder.Services.AddScoped<TokenProvider>();
 
 builder.Services.AddValidation();
 
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        // Validate signing key.
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET"]!)),
+
+        // Issuer and audience must match the ones specified in the environment variables.
+        ValidateIssuer = true,
+        ValidIssuer = Env.Get("JWT_ISSUER"),
+
+        ValidateAudience = true,
+        ValidAudience = Env.Get("JWT_AUDIENCES"),
+
+        // The JWT must not be expired.
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+
+});
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGenWithAuth();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -55,5 +83,9 @@ app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 
 app.UseRateLimiter();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.Run();
