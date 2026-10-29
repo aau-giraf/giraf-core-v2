@@ -174,7 +174,6 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostImage()
     {
         await using var db = CreateDbContext();
-        Directory.CreateDirectory("images");
         var request = ImageSeeder.CreateRequestBody(Seed);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -203,7 +202,6 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostsTheRightImage()
     {
         await using var db = CreateDbContext();
-        Directory.CreateDirectory("images");
         var request = ImageSeeder.CreateRequestBody(Seed);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -233,7 +231,6 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_requestKnowingClassId()
     {
         await using var db = CreateDbContext();
-        Directory.CreateDirectory("images");
         var request = ImageSeeder.CreateRequestBody(Seed);
         // setting citizenID and OrganizationId to null
         request.CitizenId = null;

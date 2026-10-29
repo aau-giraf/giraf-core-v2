@@ -80,6 +80,7 @@ public class ImageService(AppDbContext db)
     // stores image on core machine
     private static async Task<string> StoreImageAsync(IFormFile file)
     {
+        Directory.CreateDirectory("images");
         // gives a unique ID and keeps the extension
         string path = Path.Combine("images", $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
 
