@@ -9,6 +9,15 @@ public static class LegacyClassEndpoints
     {
         var group = app.MapGroup("legacy/class");
 
+
+        group.MapPost("/create", CreateClassInOrganization);
+
+    }
+
+    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, OrganizationService organizationservice)
+    {
+        var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClassDTO, 0); //org ID is 0, because it will always be Egebakken
+        return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
 
