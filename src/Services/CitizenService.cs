@@ -7,81 +7,97 @@ public class CitizenService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<Citizen?> GetCitizenAsync(int userId)
+    public async Task<GetCitizenDTO?> GetCitizenAsync(int userId)
     {
-        return await _db.Citizens.FindAsync(userId);
+        var citizen = await _db.Citizens.FindAsync(userId);
+
+        if (citizen is null)
+        {
+            return null;
+        }
+
+        GetCitizenDTO getCitizenDto = new GetCitizenDTO
+        {
+            UserId = citizen.Id,
+            ClassId = citizen.ClassId,
+            FirstName = citizen.FirstName,
+            LastName = citizen.LastName,
+            Username = citizen.Username,
+        };
+
+        return getCitizenDto;
     }
 
-    public async Task<List<Citizen>?> GetCitizensAsync(int orgId)
+    public async Task<CreateCitizenDTO?> CreateCitizenAsync(CreateCitizenDTO dto)
     {
-	    var org = await _db.Organizations.AnyAsync(o => o.Id == orgId);
-	    if (!org)
-	    {
-		    return null;
-	    }
-	    
-	    var citizens = await _db.Citizens
-		    .Where(c => c.Class.OrganizationId == orgId)
-		    .ToListAsync();
-	    
-	    return citizens;
+        var citizen = new Citizen
+        {
+            ClassId = dto.ClassId,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            Password = BCrypt.Net.BCrypt.HashPassword(dto.Password, 12),
+            Username = dto.Username,
+        };
+
+        _db.Citizens.Add(citizen);
+        await _db.SaveChangesAsync();
+
+        return new CreateCitizenDTO
+        {
+            ClassId = citizen.ClassId,
+            Username = citizen.Username,
+            FirstName = citizen.FirstName,
+            LastName = citizen.LastName,
+        };
     }
 
-    public async Task<Citizen?> CreateCitizenAsync(CreateCitizenDTO createCitizen)
+    public async Task<GetCitizenDTO?> PatchCitizenAsync(int userId, UpdateCitizenDTO dto)
     {
-		// 1. Look up the three entities from the IDs in the DTO
-    	var user = await _db.Users.FindAsync(createCitizen.UserId);
-    	var guardian = await _db.Users.FindAsync(createCitizen.GuardianId);
-    	var schoolClass = await _db.Classes.FindAsync(createCitizen.ClassId);
+        var citizen = await _db.Citizens.FindAsync(userId);
 
-    	// 2. If any of them doesn't exist, stop here
-    	if (user is null || guardian is null || schoolClass is null)
-      	{
-          return null;
-      	}
-		
-		var citizen = new Citizen
-		{
-			UserId = createCitizen.UserId,
-			GuardianId = createCitizen.GuardianId,
-			ClassId = createCitizen.ClassId,
-		};
-		
-		_db.Citizens.Add(citizen);
+        if (citizen is null)
+        {
+            return null;
+        }
 
-		await _db.SaveChangesAsync();  
+        if (dto.ClassId is not null)
+        {
+            var schoolClass = await _db.Classes.FindAsync(dto.ClassId.Value);
+            if (schoolClass is null)
+            {
+                return null;
+            }
+            citizen.ClassId = dto.ClassId.Value;
+        }
+        
+        if (dto.FirstName is not null) citizen.FirstName = dto.FirstName;
+        if (dto.LastName is not null) citizen.LastName = dto.LastName;
+        if (dto.Username is not null) citizen.Username = dto.Username;
 
-		return citizen;
-    }
+        await _db.SaveChangesAsync();
 
-    public async Task<Citizen?> UpdateCitizenAsync(int citizenId, UpdateCitizenDTO updateCitizen)
-    {
-        var citizen = await _db.Citizens.FindAsync(citizenId);
-
-		if (citizen is null)
-    	{
-        	return null;
-    	}
-
-		if (updateCitizen.GuardianId is not null) citizen.GuardianId = updateCitizen.GuardianId.Value;
-		if (updateCitizen.ClassId is not null) citizen.ClassId = updateCitizen.ClassId.Value;
-
-		await _db.SaveChangesAsync();
-
-		return citizen;	
+        return new GetCitizenDTO
+        {
+            UserId = citizen.Id,
+            ClassId = citizen.ClassId,
+            FirstName = citizen.FirstName,
+            LastName = citizen.LastName,
+            Username = citizen.Username,
+        };
     }
 
     public async Task<bool> DeleteCitizenAsync(int citizenId)
     {
-		var citizen = await _db.Citizens.FindAsync(citizenId);
-		if (citizen is not null)
-		{
-			_db.Citizens.Remove(citizen);	
-			await _db.SaveChangesAsync();
-			return true;	
-		} else
-		{
-			return false;
-    	}
-	}
+        var citizen = await _db.Citizens.FindAsync(citizenId);
+        if (citizen is not null)
+        {
+            _db.Citizens.Remove(citizen);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 }
