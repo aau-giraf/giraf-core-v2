@@ -24,5 +24,6 @@ public class ResponseGetNonCitizenDTO
     public required string Username { get; set; }
 
     public ICollection<UserRole> Roles { get; set; } = [];
+    public ICollection<Guardianship> Guardianships { get; set; } = [];
 
 }

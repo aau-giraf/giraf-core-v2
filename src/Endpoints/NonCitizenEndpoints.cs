@@ -10,9 +10,9 @@ public static class NonCitizenEndpoints
         var group = app.MapGroup("/nonCitizens");
 
         group.MapGet("/{id:int}", GetNonCitizen); // 200 & 404
-        group.MapPatch("/{id}", PatchNonCitizen); //200 & 404
-        group.MapDelete("/{id}", DeleteNonCitizen); //200 & 404
-        // group.MapPost("/noncitizens", CreateNonCitizen); //201 & 400 & 409
+        group.MapPatch("/{id:int}", PatchNonCitizen); //200 & 404
+        group.MapDelete("/{id:int}", DeleteNonCitizen); //200 & 404
+        group.MapPost("/{id:int}", PostNonCitizen); //200 & 404
     }
 
     private static async Task<Results<Ok<ResponseGetNonCitizenDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
@@ -21,7 +21,7 @@ public static class NonCitizenEndpoints
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
     }
 
-    private static async Task<Results<Ok<ResponseGetNonCitizenDTO>, NotFound>> PatchNonCitizen(int nonCitizenId, [FromForm] RequestPatchNonCitizenDTO requestPatchNonCitizenDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<ResponsePatchNonCitizenDTO>, NotFound>> PatchNonCitizen(int nonCitizenId, [FromForm] RequestPatchNonCitizenDTO requestPatchNonCitizenDTO, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.PatchNonCitizenAsync(nonCitizenId, requestPatchNonCitizenDTO);
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
@@ -31,6 +31,12 @@ public static class NonCitizenEndpoints
     {
         var nonCitizen = await nonCitizenService.DeleteNonCitizenAsync(nonCitizenId);
         return nonCitizen ? TypedResults.NoContent() : TypedResults.NotFound();
+    }
+
+    private static async Task<Results<Ok<ResponsePostNonCitizenDTO>, NotFound>> PostNonCitizen(int nonCitizenId, [FromForm] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
+    {
+        var nonCitizen = await nonCitizenService.PostNonCitizenAsync(nonCitizenId, requestPostNonCitizenDTO);
+        return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
     }
 
 }
