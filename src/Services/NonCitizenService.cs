@@ -133,9 +133,14 @@ public class NonCitizenService(AppDbContext db)
             _db.NonCitizens.Add(createdNonCitizen);
             await _db.SaveChangesAsync();
 
-            // Add the nonCitizens new UserRole to the db
             var organization = await _db.Organizations.FindAsync(requestPostNonCitizenDTO.OrganizationId);
 
+            if (organization is null)
+            {
+                return null;
+            }
+
+            // Add the nonCitizens new UserRole to the db
             foreach (UserRole userRole in requestPostNonCitizenDTO.Roles)
             {
                 UserRole createdUserRole = new UserRole()
