@@ -38,6 +38,7 @@ public class ImageService(AppDbContext db)
         if (removedimage is null) return false;
 
         _db.Images.Remove(removedimage);
+        File.Delete(removedimage.Path);
         await _db.SaveChangesAsync();
         return true;
     }
@@ -80,12 +81,13 @@ public class ImageService(AppDbContext db)
     // stores image on core machine
     private static async Task<string> StoreImageAsync(IFormFile file)
     {
-        Directory.CreateDirectory("images");
+        const string folder = "images";
+        Directory.CreateDirectory(folder);
+
         // gives a unique ID and keeps the extension
         string path = Path.Combine("images", $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
 
-        using var stream = File.Create(path);
-
+        await using var stream = File.Create(path);
         await file.CopyToAsync(stream);
 
         return path;

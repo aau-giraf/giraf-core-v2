@@ -1,3 +1,5 @@
+using Bogus.DataSets;
+
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -112,12 +114,29 @@ public class ImageServiceTest : TestBase
     }
 
     [Fact]
+    public async Task GetImagesByCitizenIdAsync_UserFound_HasNoImages()
+    {
+        await using var db = CreateDbContext();
+        var citizen = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed);
+        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, 0, citizen.Id);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
     public async Task DeleteImageAsync_DeleteImage()
     {
         await using var db = CreateDbContext();
 
         var seededImage = await ImageSeeder.SeedAsync(db, Seed);
         var image = seededImage.Image;
+        string dir = "images";
+        Directory.CreateDirectory(dir);
+        File.Create(image.Path);
 
         var service = new ImageService(db);
 
@@ -127,7 +146,7 @@ public class ImageServiceTest : TestBase
           .SingleOrDefaultAsync(c => c.Id == image.Id);
 
         Assert.Null(deletedImage);
-
+        Assert.False(File.Exists(image.Path));
     }
 
     [Fact]
@@ -139,22 +158,31 @@ public class ImageServiceTest : TestBase
         var image1 = seededImages[0].Image;
         var image2 = seededImages[1].Image;
 
-        Assert.NotNull(image1);
-        Assert.NotNull(image2);
+        var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(dir);
 
-        var service = new ImageService(db);
+        try
+        {
+            image1.Path = Path.Combine(dir, Path.GetFileName(image1.Path));  // Makes the paths more controlled (Only the filename from seeder in our own folder)
+            image2.Path = Path.Combine(dir, Path.GetFileName(image2.Path));
+            await db.SaveChangesAsync();
 
-        Assert.True(await service.DeleteImageAsync(image1.Id));
+            File.WriteAllBytes(image1.Path, []); // // opens and close the file
+            File.WriteAllBytes(image2.Path, []);
 
-        var deletedImage = await db.Images
-            .SingleOrDefaultAsync(c => c.Id == image1.Id);
-        Assert.Null(deletedImage);
+            var service = new ImageService(db);
 
-        var remainingImage = await db.Images
-            .SingleOrDefaultAsync(i => i.Id == image2.Id);
+            Assert.True(await service.DeleteImageAsync(image1.Id));
 
-        Assert.NotNull(remainingImage);
+            Assert.Null(await db.Images.SingleOrDefaultAsync(i => i.Id == image1.Id));
+            Assert.False(File.Exists(image1.Path));
 
+            Assert.NotNull(await db.Images.SingleOrDefaultAsync(i => i.Id == image2.Id));
+            Assert.True(File.Exists(image2.Path));
+        } finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
     }
 
     [Fact]
@@ -183,6 +211,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(request.Name, created!.Name);
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
+            Assert.Equal(request.ClassId, created.ClassId);
             Assert.EndsWith(".png", created.Path);
             Assert.True(File.Exists(created.Path));
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
@@ -214,6 +243,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(request.Name, stored.Name);
             Assert.Equal(request.OrganizationId, stored.OrganizationId);
             Assert.Equal(request.CitizenId, stored.CitizenId);
+            Assert.Equal(request.ClassId, stored.ClassId);
 
             Assert.Equal(created.Path, stored.Path);
             Assert.True(File.Exists(stored.Path));
@@ -226,6 +256,38 @@ public class ImageServiceTest : TestBase
             }
         }
     }
+
+
+    [Fact]
+    public async Task FindOrganizationAsync_FindsCitizen_When_No_OrganizationId()
+    {
+        await using var db = CreateDbContext();
+        var request = ImageSeeder.CreateRequestBody(Seed);
+        request.OrganizationId = null;
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+        try
+        {
+            Assert.NotNull(created);
+            var image = await db.Images.ToListAsync();
+            var stored = Assert.Single(image);
+            Assert.Equal(created!.Id, stored.Id);
+            Assert.Equal(request.Name, stored.Name);
+            Assert.Equal(request.OrganizationId, stored.OrganizationId);
+            Assert.Equal(request.CitizenId, stored.CitizenId);
+
+            Assert.Equal(created.Path, stored.Path);
+            Assert.True(File.Exists(stored.Path));
+        }
+        finally
+        {
+            if (created?.Path is not null && File.Exists(created.Path))
+            {
+                File.Delete(created.Path);
+            }
+        }
+    }
+
 
     [Fact]
     public async Task PostImageAsync_requestKnowingClassId()
