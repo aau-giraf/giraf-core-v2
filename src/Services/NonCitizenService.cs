@@ -96,16 +96,8 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponsePostNonCitizenDTO?> PostNonCitizenAsync(int nonCitizenId, RequestPostNonCitizenDTO requestPostNonCitizenDTO)
+    public async Task<ResponsePostNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
-        // Check if nonCitizen already exist.
-        var nonCitizenAlreadyExist = await _db.NonCitizens.AnyAsync(ncId => ncId.Id == nonCitizenId);
-
-        if (nonCitizenAlreadyExist is true)
-        {
-            return null;
-        }
-
         // Variable used to check roleType
         var roleType = requestPostNonCitizenDTO.Roles.GetType();
 
@@ -146,7 +138,7 @@ public class NonCitizenService(AppDbContext db)
                 UserRole createdUserRole = new UserRole()
                 {
                     Role = userRole.Role,
-                    NonCitizenId = nonCitizenId,
+                    NonCitizenId = createdNonCitizen.Id,
                     NonCitizen = createdNonCitizen,
                     OrganizationId = organization!.Id,
                     Organization = organization
@@ -158,7 +150,13 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Find created nonCitizen in db
-        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+        var nonCitizen = await _db.NonCitizens.FirstOrDefaultAsync(
+            nc => nc.Username == requestPostNonCitizenDTO.Username &&
+            nc.FirstName == requestPostNonCitizenDTO.FirstName &&
+            nc.LastName == requestPostNonCitizenDTO.LastName &&
+            nc.Email == requestPostNonCitizenDTO.Email &&
+            nc.Roles == requestPostNonCitizenDTO.Roles
+            );
 
         if (nonCitizen is null)
         {
