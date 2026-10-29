@@ -54,19 +54,22 @@ public class CitizenService(AppDbContext db)
     public async Task<GetCitizenDTO?> PatchCitizenAsync(int userId, UpdateCitizenDTO dto)
     {
         var citizen = await _db.Citizens.FindAsync(userId);
-        var classes = await _db.Classes.FindAsync(dto.ClassId);
-
-        if (classes is null)
-        {
-            return null;
-        }
 
         if (citizen is null)
         {
             return null;
         }
 
-        if (dto.ClassId is not null) citizen.ClassId = dto.ClassId.Value;
+        if (dto.ClassId is not null)
+        {
+            var schoolClass = await _db.Classes.FindAsync(dto.ClassId.Value);
+            if (schoolClass is null)
+            {
+                return null;
+            }
+            citizen.ClassId = dto.ClassId.Value;
+        }
+        
         if (dto.FirstName is not null) citizen.FirstName = dto.FirstName;
         if (dto.LastName is not null) citizen.LastName = dto.LastName;
         if (dto.Username is not null) citizen.Username = dto.Username;
