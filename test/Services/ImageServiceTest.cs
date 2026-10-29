@@ -163,11 +163,11 @@ public class ImageServiceTest : TestBase
 
         try
         {
-            image1.Path = Path.Combine(dir, Path.GetFileName(image1.Path));
+            image1.Path = Path.Combine(dir, Path.GetFileName(image1.Path));  // Makes the paths more controlled (Only the filename from seeder in our own folder)
             image2.Path = Path.Combine(dir, Path.GetFileName(image2.Path));
             await db.SaveChangesAsync();
 
-            File.WriteAllBytes(image1.Path, []);
+            File.WriteAllBytes(image1.Path, []); // // opens and close the file
             File.WriteAllBytes(image2.Path, []);
 
             var service = new ImageService(db);
