@@ -68,7 +68,7 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
     {
         await using var db = CreateDbContext();
-        var citizen = await CitizenSeeder.SeedCitizenAsync(db, seed: 1);
+        var citizen = await CitizenSeeder.SeedAsync(db, seed: 1);
         var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, count: 3, citizen.Id);
         var service = new ImageService(db);
 
@@ -97,8 +97,8 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_ReturnsOnlyImagesRelatedToCitizen()
     {
         await using var db = CreateDbContext();
-        var citizen1 = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed + 1);
-        var citizen2 = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed + 2);
+        var citizen1 = await CitizenSeeder.SeedAsync(db, seed: Seed + 1);
+        var citizen2 = await CitizenSeeder.SeedAsync(db, seed: Seed + 2);
         var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen1.Id);
         var irrelevantImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen2.Id);
         var service = new ImageService(db);
@@ -117,7 +117,7 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_UserFound_HasNoImages()
     {
         await using var db = CreateDbContext();
-        var citizen = await CitizenSeeder.SeedCitizenAsync(db, seed: Seed);
+        var citizen = await CitizenSeeder.SeedAsync(db, seed: Seed);
         var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, 0, citizen.Id);
         var service = new ImageService(db);
 
@@ -179,7 +179,8 @@ public class ImageServiceTest : TestBase
 
             Assert.NotNull(await db.Images.SingleOrDefaultAsync(i => i.Id == image2.Id));
             Assert.True(File.Exists(image2.Path));
-        } finally
+        }
+        finally
         {
             Directory.Delete(dir, recursive: true);
         }
@@ -259,25 +260,35 @@ public class ImageServiceTest : TestBase
 
 
     [Fact]
-    public async Task FindOrganizationAsync_FindsCitizen_When_No_OrganizationId()
+    public async Task FindOrganizationAsync_requestKnowingCitizenId()
     {
         await using var db = CreateDbContext();
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
         var request = ImageSeeder.CreateRequestBody(Seed);
+        request.CitizenId = citizen.Id;
         request.OrganizationId = null;
+        request.ClassId = null;
+
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
             Assert.NotNull(created);
-            var image = await db.Images.ToListAsync();
-            var stored = Assert.Single(image);
-            Assert.Equal(created!.Id, stored.Id);
-            Assert.Equal(request.Name, stored.Name);
-            Assert.Equal(request.OrganizationId, stored.OrganizationId);
-            Assert.Equal(request.CitizenId, stored.CitizenId);
+            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(citizen.Id, created.CitizenId);
+            Assert.Null(created.ClassId);
+            Assert.Equal(class_.Id, created.OrganizationId);
+            Assert.EndsWith(".png", created.Path);
+            Assert.True(File.Exists(created.Path));
 
-            Assert.Equal(created.Path, stored.Path);
-            Assert.True(File.Exists(stored.Path));
+            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
+            Assert.NotNull(stored);
+            Assert.Equal(created.Path, stored!.Path);
+            Assert.Null(stored.ClassId);
+            Assert.Equal(citizen.Id, stored.CitizenId);
+            Assert.Equal(class_.OrganizationId, stored.OrganizationId);
         }
         finally
         {
@@ -287,7 +298,6 @@ public class ImageServiceTest : TestBase
             }
         }
     }
-
 
     [Fact]
     public async Task PostImageAsync_requestKnowingClassId()

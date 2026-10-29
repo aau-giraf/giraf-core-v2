@@ -4,7 +4,7 @@ public static class CitizenSeeder
     public record SeededCitizen(Citizen Citizen);
 
 
-    public static async Task<Citizen> SeedCitizenAsync(AppDbContext db, int seed)
+    public static async Task<Citizen> SeedAsync(AppDbContext db, int seed, int classId = 0)
     {
         var user = (await UserSeeder.SeedAsync(db, seed)).User;
         /* Guardian and Class is for later implementation
@@ -17,6 +17,7 @@ public static class CitizenSeeder
             LastName = user.LastName,
             Username = user.Username,
             Password = user.Password,
+            ClassId = classId
         };
 
         db.Citizens.Add(citizen);
@@ -25,4 +26,3 @@ public static class CitizenSeeder
         return citizen;
     }
 }
-
