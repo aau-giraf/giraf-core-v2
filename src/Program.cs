@@ -52,5 +52,7 @@ app.UseHttpsRedirection();
 app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
+app.MapLegacyClassEndpoints();
+app.MapLegacyUserEndpoints();
 
 app.Run();
