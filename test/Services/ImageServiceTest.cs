@@ -231,24 +231,31 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_requestKnowingClassId()
     {
         await using var db = CreateDbContext();
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
         var request = ImageSeeder.CreateRequestBody(Seed);
-        // setting citizenID and OrganizationId to null
         request.CitizenId = null;
         request.OrganizationId = null;
+        request.ClassId = class_.Id;
+
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
             Assert.NotNull(created);
-            var image = await db.Images.ToListAsync();
-            var stored = Assert.Single(image);
-            Assert.Equal(created!.Id, stored.Id);
-            Assert.Equal(request.Name, stored.Name);
-            Assert.Equal(request.OrganizationId, stored.OrganizationId);
-            Assert.Equal(request.CitizenId, stored.CitizenId);
+            Assert.Equal(request.Name, created!.Name);
+            Assert.Null(created.CitizenId);
+            Assert.Equal(class_.Id, created.ClassId);
+            Assert.Equal(organization.Id, created.OrganizationId);
+            Assert.EndsWith(".png", created.Path);
+            Assert.True(File.Exists(created.Path));
 
-            Assert.Equal(created.Path, stored.Path);
-            Assert.True(File.Exists(stored.Path));
+            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
+            Assert.NotNull(stored);
+            Assert.Equal(created.Path, stored!.Path);
+            Assert.Equal(class_.Id, stored.ClassId);
+            Assert.Null(stored.CitizenId);
+            Assert.Equal(organization.Id, stored.OrganizationId);
         }
         finally
         {

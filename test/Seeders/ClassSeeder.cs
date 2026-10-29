@@ -3,14 +3,14 @@ public static class ClassSeeder
 {
 
     // Create a random class and add it to mock database.
-    public static async Task<Class> SeedAsync(AppDbContext db, int seed)
+    public static async Task<Class> SeedAsync(AppDbContext db, int seed, int orgId = 0)
     {
-        var girafClass = Create(seed);
+        var class_ = Create(seed, orgId);
 
-        db.Classes.Add(girafClass);
+        db.Classes.Add(class_);
         await db.SaveChangesAsync();
 
-        return girafClass;
+        return class_;
     }
 
     // Create x random classes and add them to mock database.
@@ -25,9 +25,9 @@ public static class ClassSeeder
     }
 
     // Generate a random class.
-    private static Class Create(int seed)
+    private static Class Create(int seed, int orgId)
     {
-        return CreateFaker(seed).Generate();
+        return CreateFaker(seed, orgId).Generate();
     }
 
     // Create x random classes.
@@ -37,10 +37,12 @@ public static class ClassSeeder
     }
 
     // Create a random test class using bogus.
-    private static Faker<Class> CreateFaker(int seed)
+    private static Faker<Class> CreateFaker(int seed, int orgId = 0)
     {
         return new Faker<Class>()
             .UseSeed(seed)
-            .RuleFor(c => c.Name, f => f.Name.FirstName());
+            .RuleFor(c => c.Name, f => f.Name.FirstName())
+            .RuleFor(c => c.OrganizationId, f => orgId);
     }
+
 }

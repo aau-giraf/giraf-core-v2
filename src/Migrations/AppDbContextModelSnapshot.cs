@@ -85,10 +85,6 @@ namespace giraf_core_v2.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int>("OrganizationId")
                         .HasColumnType("integer");
 

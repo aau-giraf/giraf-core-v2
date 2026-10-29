@@ -60,16 +60,6 @@ namespace giraf_core_v2.Migrations
                 newName: "NonCitizenId");
 
             migrationBuilder.RenameColumn(
-                name: "path",
-                table: "Image",
-                newName: "Path");
-
-            migrationBuilder.RenameColumn(
-                name: "name",
-                table: "Image",
-                newName: "Name");
-
-            migrationBuilder.RenameColumn(
                 name: "GuardianId",
                 table: "Citizen",
                 newName: "Id");
@@ -241,16 +231,6 @@ namespace giraf_core_v2.Migrations
                 name: "NonCitizenId",
                 table: "UserRole",
                 newName: "UserId");
-
-            migrationBuilder.RenameColumn(
-                name: "Path",
-                table: "Image",
-                newName: "path");
-
-            migrationBuilder.RenameColumn(
-                name: "Name",
-                table: "Image",
-                newName: "name");
 
             migrationBuilder.RenameColumn(
                 name: "Id",
