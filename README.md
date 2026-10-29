@@ -1,17 +1,26 @@
 ## Guide
+First, ensure that Docker is running on your machine.
 
-Run
+Then ensure you have a `.env` file in the project's root folder with the following variables set:
+```
+JWT_SECRET=<INSERT_SUPER_SECRET_KEY_HERE>
+JWT_MAX_AGE_MS=3600000 # 1 Hour
+JWT_AUDIENCES=giraf-foodplanner,giraf-weekplanner,giraf-vta
+JWT_ISSUER=giraf-core
+```
+
+For development purposes, any random string of characters will work as the `JWT_SECRET`.
+
+Now run
 `docker compose up --build`
 
 Then check the following endpoint:
 `localhost:8080/health`
 
-To add entries to tables, run:
-`docker exec -it giraf-core-v2-db-1 psql -U postgres -d defaultdb`
+To access the docker database, run:
+`docker exec -it giraf-core-v2-db-1 psql -U postgres -d defaultdb` * TODO UPDATE
 
-Now you can run `INSERT INTO ...;`
-
-E.g., `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
+Now you can run SQL queries.
 
 ### Linux
 
