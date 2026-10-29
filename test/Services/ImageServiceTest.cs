@@ -132,6 +132,8 @@ public class ImageServiceTest : TestBase
 
         var seededImage = await ImageSeeder.SeedAsync(db, Seed);
         var image = seededImage.Image;
+        Directory.CreateDirectory("images");
+        File.Create(image.Path);
 
         var service = new ImageService(db);
 
@@ -141,7 +143,7 @@ public class ImageServiceTest : TestBase
           .SingleOrDefaultAsync(c => c.Id == image.Id);
 
         Assert.Null(deletedImage);
-
+        Assert.False(File.Exists(image.Path));
     }
 
     [Fact]
@@ -152,6 +154,10 @@ public class ImageServiceTest : TestBase
         var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 2);
         var image1 = seededImages[0].Image;
         var image2 = seededImages[1].Image;
+        Directory.CreateDirectory("images");
+        File.Create(image1.Path);
+        File.Create(image2.Path);
+
 
         Assert.NotNull(image1);
         Assert.NotNull(image2);
@@ -163,6 +169,7 @@ public class ImageServiceTest : TestBase
         var deletedImage = await db.Images
             .SingleOrDefaultAsync(c => c.Id == image1.Id);
         Assert.Null(deletedImage);
+        Assert.False(File.Exists(image1.Path));
 
         var remainingImage = await db.Images
             .SingleOrDefaultAsync(i => i.Id == image2.Id);
@@ -247,7 +254,31 @@ public class ImageServiceTest : TestBase
     [Fact]
     public async Task FindOrganizationAsync_FindsCitizen_When_No_OrganizationId()
     {
+        await using var db = CreateDbContext();
+        var request = ImageSeeder.CreateRequestBody(Seed);
+        request.OrganizationId = null;
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+        try
+        {
+            Assert.NotNull(created);
+            var image = await db.Images.ToListAsync();
+            var stored = Assert.Single(image);
+            Assert.Equal(created!.Id, stored.Id);
+            Assert.Equal(request.Name, stored.Name);
+            Assert.Equal(request.OrganizationId, stored.OrganizationId);
+            Assert.Equal(request.CitizenId, stored.CitizenId);
 
+            Assert.Equal(created.Path, stored.Path);
+            Assert.True(File.Exists(stored.Path));
+        }
+        finally
+        {
+            if (created?.Path is not null && File.Exists(created.Path))
+            {
+                File.Delete(created.Path);
+            }
+        }
     }
 
 

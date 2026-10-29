@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 
-
 public static class ImageSeeder
 {
     public record SeededImage(Image Image);

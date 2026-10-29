@@ -38,6 +38,7 @@ public class ImageService(AppDbContext db)
         if (removedimage is null) return false;
 
         _db.Images.Remove(removedimage);
+        File.Delete(removedimage.Path);
         await _db.SaveChangesAsync();
         return true;
     }
