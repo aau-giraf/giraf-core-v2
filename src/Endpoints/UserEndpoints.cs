@@ -31,7 +31,7 @@ public static class UserEndpoints
         //     return TypedResults.BadRequest();
         // }
         var result = await userService.DeleteCurrentUserAsync(1);
-        return result ? TypedResults.NoContent() : TypedResults.NotFound();
+        return result ? TypedResults.NoContent() : TypedResults.NotFound(); //inkl. user
     }
 
     private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUser(

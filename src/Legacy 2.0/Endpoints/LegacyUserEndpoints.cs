@@ -9,6 +9,8 @@ public static class LegacyUserEndpoints
     {
         var group = app.MapGroup("legacy/users");
 
+        group.MapDelete("/delete", DeleteCurrentUser);
+
     }
 
     private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService)
@@ -22,6 +24,7 @@ public static class LegacyUserEndpoints
     private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUser(UserService userService)
     {
         // TODO: Get ID when authentication is enabled.
+        // int id = ;
         // if (id is null)
         // {
         //     return TypedResults.BadRequest();
