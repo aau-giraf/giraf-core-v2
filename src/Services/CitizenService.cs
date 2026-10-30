@@ -38,6 +38,12 @@ public class CitizenService(AppDbContext db)
             Password = BCrypt.Net.BCrypt.HashPassword(dto.Password, 12),
             Username = dto.Username,
         };
+        
+        var schoolClass = await _db.Classes.FindAsync(dto.ClassId);
+        if (schoolClass is null)
+        {
+            return null;
+        }
 
         _db.Citizens.Add(citizen);
         await _db.SaveChangesAsync();
