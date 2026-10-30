@@ -27,5 +27,21 @@ public class PostImageDTO : IValidatableObject
                 new[] { nameof(CitizenId), nameof(ClassId), nameof(Organization) }
             );
         }
+
+        HashSet<string> allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "jpeg", "jpg", "png", "heic", "webp"
+        };
+        string ext = Path.GetExtension(File.FileName);
+
+        // Returns error if DTO isn't the right type
+        if (!string.IsNullOrEmpty(ext) && allowedExtensions.Contains(ext))
+        {
+            yield return new ValidationResult(
+                "Filen, som er blevet uploadet har ikke den rigtige filtype", //maybe in english
+                new[] { nameof(ext) }
+            );
+        }
+
     }
 }

@@ -16,12 +16,43 @@ public class PostImageDTOTest : TestBase
     {
         var dto = new PostImageDTO
         {
-            Name = "photo",
-            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "photo.png"),
+            Name = "aName",
+            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
             CitizenId = citizen ? 1 : null,
             ClassId = class_ ? 1 : null,
             OrganizationId = organization ? 1 : null
         };
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
+
+    [Fact]
+    public void Validate_FailsWhenNoOwnerIDIsSet()
+    {
+        var dto = new PostImageDTO
+        {
+            Name = "noName",
+            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png")
+        };
+        Assert.Single(dto.Validate(new ValidationContext(dto)));
+    }
+
+    [Theory]
+    [InlineData("jpeg")]
+    [InlineData("jpg")]
+    [InlineData("png")]
+    [InlineData("heic")]
+    [InlineData("webp")]
+    public void Validate_PassesWithCorrectFileExt(string ext)
+    {
+        var dto = new PostImageDTO
+        {
+            Name = "noget",
+            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", $"timmyTurner.{ext}"),
+            CitizenId = null,
+            ClassId = null,
+            OrganizationId = 1
+        };
+        Assert.Empty(dto.Validate(new ValidationContext(dto)));
+    }
+
 }
