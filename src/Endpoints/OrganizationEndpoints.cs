@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -102,7 +104,8 @@ public static class OrganizationEndpoints
             (0, null) => TypedResults.NoContent(),
             (1, UserRole ur) => TypedResults.Created(
                 $"/organizations/{organizationId}/members/{nonCitizenId}/{role}",
-                new UserRoleResponse(ur.NonCitizenId, ur.OrganizationId, ur.Role))
+                new UserRoleResponse(ur.NonCitizenId, ur.OrganizationId, ur.Role)),
+            _ => throw new UnreachableException()
         };
     }
 }
