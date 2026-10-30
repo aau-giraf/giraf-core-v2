@@ -27,8 +27,6 @@ public class RequestPostNonCitizenDTO
     public required string Password { get; set; }
 
     [Required]
-    public required int OrganizationId { get; set; }
-
-    public ICollection<UserRole> Roles { get; set; } = [];
+    public ICollection<(RoleType, int)> RoleOrganizationTuples { get; set; } = [];
 
 }

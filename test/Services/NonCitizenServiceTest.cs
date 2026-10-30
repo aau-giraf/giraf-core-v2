@@ -128,7 +128,6 @@ public class NonCitizenServiceTest : TestBase
 
         // Faker nonCitizen
         NonCitizen nonCitizenFaker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(nc => nc.Id, f => f.Random.Int())
                                     .RuleFor(nc => nc.FirstName, f => f.Name.FirstName())
                                     .RuleFor(nc => nc.LastName, f => f.Name.LastName())
                                     .RuleFor(nc => nc.Username, f => f.Internet.UserName())
@@ -137,7 +136,6 @@ public class NonCitizenServiceTest : TestBase
 
         // Faker userRole
         UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(ur => ur.NonCitizenId, nonCitizenFaker.Id)
                                     .RuleFor(ur => ur.OrganizationId, f => organization1.Id)
                                     .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
 
@@ -150,18 +148,16 @@ public class NonCitizenServiceTest : TestBase
                 Username = nonCitizenFaker.Username,
                 Email = nonCitizenFaker.Email,
                 Password = nonCitizenFaker.Password,
-                Roles = [userRoleFaker],
-                OrganizationId = organization1.Id
+                RoleOrganizationTuples = [(userRoleFaker.Role, userRoleFaker.OrganizationId)],
             });
 
         //----- ASSERT -----\\
+        Assert.NotNull(fetchedNonCitizen);
         Assert.Equal(nonCitizenFaker.FirstName, fetchedNonCitizen!.FirstName);
         Assert.Equal(nonCitizenFaker.LastName, fetchedNonCitizen!.LastName);
         Assert.Equal(nonCitizenFaker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
         Assert.Equal(userRoleFaker.Role, fetchedNonCitizen.Roles.Last().Role);
         Assert.Equal(userRoleFaker.OrganizationId, fetchedNonCitizen.Roles.Last().OrganizationId);
-        Assert.Equal(userRoleFaker.NonCitizenId, fetchedNonCitizen.Roles.Last().NonCitizenId);
-
     }
 }

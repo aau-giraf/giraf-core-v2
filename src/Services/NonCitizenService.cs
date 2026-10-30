@@ -103,16 +103,19 @@ public class NonCitizenService(AppDbContext db)
 
     public async Task<ResponseGetNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
-        // Variable used to check roleType
-        var roleType = requestPostNonCitizenDTO.Roles.GetType();
+        // Get all roles from RoleOrganizationTuples
+        List<RoleType> roleTypes = new List<RoleType>();
+        foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
+        {
+            roleTypes.Add(roleOrganizationTuples.Item1);
+        }
 
         if (
             requestPostNonCitizenDTO.FirstName is not null &&
             requestPostNonCitizenDTO.LastName is not null &&
             requestPostNonCitizenDTO.Email is not null &&
             requestPostNonCitizenDTO.Username is not null &&
-            requestPostNonCitizenDTO.Roles is not null &&
-            roleType == typeof(RoleType) &&
+            requestPostNonCitizenDTO.RoleOrganizationTuples is not null &&
             requestPostNonCitizenDTO.Password is not null
         )
         {
@@ -130,23 +133,16 @@ public class NonCitizenService(AppDbContext db)
             _db.NonCitizens.Add(createdNonCitizen);
             await _db.SaveChangesAsync();
 
-            var organization = await _db.Organizations.FindAsync(requestPostNonCitizenDTO.OrganizationId);
-
-            if (organization is null)
-            {
-                return null;
-            }
-
             // Add the nonCitizens new UserRole to the db
-            foreach (UserRole userRole in requestPostNonCitizenDTO.Roles)
+            foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
             {
                 UserRole createdUserRole = new UserRole()
                 {
-                    Role = userRole.Role,
+                    Role = roleOrganizationTuples.Item1,
                     NonCitizenId = createdNonCitizen.Id,
                     NonCitizen = createdNonCitizen,
-                    OrganizationId = organization!.Id,
-                    Organization = organization
+                    OrganizationId = roleOrganizationTuples.Item2,
+                    Organization = await _db.Organizations.FindAsync(roleOrganizationTuples.Item2)
                 };
 
                 _db.UserRoles.Add(createdUserRole);
