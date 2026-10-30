@@ -329,14 +329,4 @@ public class ImageServiceTest : TestBase
             }
         }
     }
-
-    [Fact]
-    public async Task PostImageAsync_unableToConnectToOrganizationId_ExpectErrorThrown()
-    {
-        await using var db = CreateDbContext();
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-
-    }
-
 }
