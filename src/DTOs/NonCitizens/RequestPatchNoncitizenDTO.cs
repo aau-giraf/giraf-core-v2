@@ -6,19 +6,22 @@ using Microsoft.Extensions.Validation;
 [ValidatableType]
 public class RequestPatchNonCitizenDTO
 {
-    [Required]
     [Length(3, 255)]
     public required string FirstName { get; set; }
-    [Required]
+
     [Length(3, 255)]
     public required string LastName { get; set; }
 
-    [Required]
     [EmailAddress]
     public required string Email { get; set; }
 
-    [Required]
     [Length(3, 255)]
     public required string Username { get; set; }
+
+    [Length(3, 255)]
+    public required string newPassword { get; set; }
+
+    [Length(3, 255)]
+    public required string oldPassword { get; set; }
 
 }

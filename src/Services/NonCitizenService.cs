@@ -53,6 +53,10 @@ public class NonCitizenService(AppDbContext db)
         {
             nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
         }
+        if (requestPatchNonCitizenDTO.newPassword is not null && BCrypt.Net.BCrypt.Verify(requestPatchNonCitizenDTO.oldPassword, nonCitizen!.Password))
+        {
+            nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(requestPatchNonCitizenDTO.newPassword, 12);
+        }
 
         // Save changes.
         await _db.SaveChangesAsync();
@@ -155,10 +159,9 @@ public class NonCitizenService(AppDbContext db)
             nc => nc.Username == requestPostNonCitizenDTO.Username &&
             nc.FirstName == requestPostNonCitizenDTO.FirstName &&
             nc.LastName == requestPostNonCitizenDTO.LastName &&
-            nc.Email == requestPostNonCitizenDTO.Email // &&
-            // nc.Roles == requestPostNonCitizenDTO.Roles
-
-            );
+            nc.Email == requestPostNonCitizenDTO.Email &&
+            BCrypt.Net.BCrypt.Verify(requestPostNonCitizenDTO.Password, nc.Password) == true
+        );
 
         if (nonCitizen is null)
         {
