@@ -48,9 +48,9 @@ public static class ImageSeeder
         return new SeededImage(image);
     }
 
-    public static PostImageDTO CreateRequestBody(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0)
+    public static PostImageDTO CreateRequestBody(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0, string ext = "")
     {
-        return CreateFakerRequest(seed, organizationId, citizenId, classId).Generate();
+        return CreateFakerRequest(seed, organizationId, citizenId, classId, ext).Generate();
     }
     public static async Task<List<SeededImage>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
@@ -73,7 +73,7 @@ public static class ImageSeeder
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
-    private static Faker<PostImageDTO> CreateFakerRequest(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0)
+    private static Faker<PostImageDTO> CreateFakerRequest(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0, string ext = "")
     {
         return new Faker<PostImageDTO>()
             .UseSeed(seed)
@@ -85,9 +85,28 @@ public static class ImageSeeder
             {
                 var bytes = f.Random.Bytes(32);
                 var stream = new MemoryStream(bytes);
-                return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.png");
+                var chosen = ext != "" ? ext : RandomCommonFileExt(f);
+                return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.{chosen}");
             });
     }
+
+    private static readonly HashSet<string> BlockedFileExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".jpeg", ".jpg", ".png", ".heic", ".webp"
+    };
+
+    private static string RandomCommonFileExt(Faker f)
+    {
+        string extension;
+        do
+        {
+            extension = f.System.CommonFileExt();
+        }
+        while (BlockedFileExtensions.Contains(extension));
+
+        return extension;
+    }
+
     private static List<SeededImage> CreateManyFakers(int seed, int count)
     {
         var ImageFaker = CreateFaker(seed);

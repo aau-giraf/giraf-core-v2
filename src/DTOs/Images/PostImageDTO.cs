@@ -30,12 +30,12 @@ public class PostImageDTO : IValidatableObject
 
         HashSet<string> allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "jpeg", "jpg", "png", "heic", "webp"
+            ".jpeg", ".jpg", ".png", ".heic", ".webp"
         };
         string ext = Path.GetExtension(File.FileName);
 
         // Returns error if DTO isn't the right type
-        if (!string.IsNullOrEmpty(ext) && allowedExtensions.Contains(ext))
+        if (!string.IsNullOrEmpty(ext) && !allowedExtensions.Contains(ext))
         {
             yield return new ValidationResult(
                 "Filen, som er blevet uploadet har ikke den rigtige filtype", //maybe in english

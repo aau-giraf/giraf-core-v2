@@ -211,7 +211,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
             Assert.Equal(request.ClassId, created.ClassId);
-            Assert.EndsWith(".png", created.Path);
+            Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
             Assert.NotNull(stored);
@@ -275,7 +275,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(citizen.Id, created.CitizenId);
             Assert.Null(created.ClassId);
             Assert.Equal(class_.Id, created.OrganizationId);
-            Assert.EndsWith(".png", created.Path);
+            Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
@@ -311,7 +311,7 @@ public class ImageServiceTest : TestBase
             Assert.Null(created.CitizenId);
             Assert.Equal(class_.Id, created.ClassId);
             Assert.Equal(organization.Id, created.OrganizationId);
-            Assert.EndsWith(".png", created.Path);
+            Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);

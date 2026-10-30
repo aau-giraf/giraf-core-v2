@@ -37,22 +37,21 @@ public class PostImageDTOTest : TestBase
     }
 
     [Theory]
-    [InlineData("jpeg")]
-    [InlineData("jpg")]
-    [InlineData("png")]
-    [InlineData("heic")]
-    [InlineData("webp")]
+    [InlineData(".jpeg")]
+    [InlineData(".jpg")]
+    [InlineData(".png")]
+    [InlineData(".heic")]
+    [InlineData(".webp")]
     public void Validate_PassesWithCorrectFileExt(string ext)
     {
-        var dto = new PostImageDTO
-        {
-            Name = "noget",
-            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", $"timmyTurner.{ext}"),
-            CitizenId = null,
-            ClassId = null,
-            OrganizationId = 1
-        };
+        var dto = ImageSeeder.CreateRequestBody(Seed, ext: ext);
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
 
+    [Fact]
+    public void Validate_FailsWithIncorrectFileExt()
+    {
+        var dto = ImageSeeder.CreateRequestBody(Seed);
+        Assert.Single(dto.Validate(new ValidationContext(dto)));
+    }
 }
