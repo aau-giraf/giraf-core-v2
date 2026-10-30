@@ -12,7 +12,7 @@ public static class NonCitizenEndpoints
         group.MapGet("/{id:int}", GetNonCitizen); // 200 & 404
         group.MapPatch("/{id:int}", PatchNonCitizen); //200 & 404
         group.MapDelete("/{id:int}", DeleteNonCitizen); //200 & 404
-        group.MapPost("/{id:int}", PostNonCitizen); //200 & 404
+        group.MapPost("/", PostNonCitizen); //200 & 404
     }
 
     private static async Task<Results<Ok<ResponseGetNonCitizenDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
@@ -35,7 +35,7 @@ public static class NonCitizenEndpoints
 
     private static async Task<Results<Ok<ResponsePostNonCitizenDTO>, NotFound>> PostNonCitizen(int nonCitizenId, [FromForm] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
     {
-        var nonCitizen = await nonCitizenService.PostNonCitizenAsync(nonCitizenId, requestPostNonCitizenDTO);
+        var nonCitizen = await nonCitizenService.PostNonCitizenAsync(requestPostNonCitizenDTO);
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
     }
 

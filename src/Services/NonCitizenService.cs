@@ -37,32 +37,21 @@ public class NonCitizenService(AppDbContext db)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
-        // Ensure that the new values are in fact new. 
-        if (
-            nonCitizen!.FirstName == requestPatchNonCitizenDTO.FirstName ||
-            nonCitizen.LastName == requestPatchNonCitizenDTO.LastName ||
-            nonCitizen.Email == requestPatchNonCitizenDTO.Email ||
-            nonCitizen.Username == requestPatchNonCitizenDTO.Username
-        )
-        {
-            return null;
-        }
-
         if (requestPatchNonCitizenDTO.FirstName is not null)
         {
-            nonCitizen.FirstName = requestPatchNonCitizenDTO.FirstName;
+            nonCitizen!.FirstName = requestPatchNonCitizenDTO.FirstName;
         }
         if (requestPatchNonCitizenDTO.LastName is not null)
         {
-            nonCitizen.LastName = requestPatchNonCitizenDTO.LastName;
+            nonCitizen!.LastName = requestPatchNonCitizenDTO.LastName;
         }
         if (requestPatchNonCitizenDTO.Email is not null)
         {
-            nonCitizen.Email = requestPatchNonCitizenDTO.Email;
+            nonCitizen!.Email = requestPatchNonCitizenDTO.Email;
         }
         if (requestPatchNonCitizenDTO.Username is not null)
         {
-            nonCitizen.Username = requestPatchNonCitizenDTO.Username;
+            nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
         }
 
         // Save changes.
@@ -107,16 +96,8 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponsePostNonCitizenDTO?> PostNonCitizenAsync(int nonCitizenId, RequestPostNonCitizenDTO requestPostNonCitizenDTO)
+    public async Task<ResponsePostNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
-        // Check if nonCitizen already exist.
-        var nonCitizenAlreadyExist = await _db.NonCitizens.AnyAsync(ncId => ncId.Id == nonCitizenId);
-
-        if (nonCitizenAlreadyExist is true)
-        {
-            return null;
-        }
-
         // Variable used to check roleType
         var roleType = requestPostNonCitizenDTO.Roles.GetType();
 
@@ -144,15 +125,20 @@ public class NonCitizenService(AppDbContext db)
             _db.NonCitizens.Add(createdNonCitizen);
             await _db.SaveChangesAsync();
 
-            // Add the nonCitizens new UserRole to the db
             var organization = await _db.Organizations.FindAsync(requestPostNonCitizenDTO.OrganizationId);
 
+            if (organization is null)
+            {
+                return null;
+            }
+
+            // Add the nonCitizens new UserRole to the db
             foreach (UserRole userRole in requestPostNonCitizenDTO.Roles)
             {
                 UserRole createdUserRole = new UserRole()
                 {
                     Role = userRole.Role,
-                    NonCitizenId = nonCitizenId,
+                    NonCitizenId = createdNonCitizen.Id,
                     NonCitizen = createdNonCitizen,
                     OrganizationId = organization!.Id,
                     Organization = organization
@@ -164,7 +150,13 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Find created nonCitizen in db
-        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+        var nonCitizen = await _db.NonCitizens.FirstOrDefaultAsync(
+            nc => nc.Username == requestPostNonCitizenDTO.Username &&
+            nc.FirstName == requestPostNonCitizenDTO.FirstName &&
+            nc.LastName == requestPostNonCitizenDTO.LastName &&
+            nc.Email == requestPostNonCitizenDTO.Email &&
+            nc.Roles == requestPostNonCitizenDTO.Roles
+            );
 
         if (nonCitizen is null)
         {
