@@ -1,5 +1,3 @@
-using Bogus.DataSets;
-
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -266,10 +264,7 @@ public class ImageServiceTest : TestBase
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
         var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
-        var request = ImageSeeder.CreateRequestBody(Seed);
-        request.CitizenId = citizen.Id;
-        request.OrganizationId = null;
-        request.ClassId = null;
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, classId: null, citizenId: citizen.Id);
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -305,10 +300,7 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var request = ImageSeeder.CreateRequestBody(Seed);
-        request.CitizenId = null;
-        request.OrganizationId = null;
-        request.ClassId = class_.Id;
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, citizenId: null, classId: class_.Id);
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -337,4 +329,14 @@ public class ImageServiceTest : TestBase
             }
         }
     }
+
+    [Fact]
+    public async Task PostImageAsync_unableToConnectToOrganizationId_ExpectErrorThrown()
+    {
+        await using var db = CreateDbContext();
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+
+    }
+
 }

@@ -48,9 +48,9 @@ public static class ImageSeeder
         return new SeededImage(image);
     }
 
-    public static PostImageDTO CreateRequestBody(int seed)
+    public static PostImageDTO CreateRequestBody(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0)
     {
-        return CreateFakerRequest(seed).Generate();
+        return CreateFakerRequest(seed, organizationId, citizenId, classId).Generate();
     }
     public static async Task<List<SeededImage>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
@@ -73,14 +73,14 @@ public static class ImageSeeder
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
-    private static Faker<PostImageDTO> CreateFakerRequest(int seed)
+    private static Faker<PostImageDTO> CreateFakerRequest(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0)
     {
         return new Faker<PostImageDTO>()
             .UseSeed(seed)
             .RuleFor(i => i.Name, f => f.Lorem.Word())
-            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.ClassId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.OrganizationId, f => organizationId != 0 ? organizationId : f.Random.Int(1, 100))
+            .RuleFor(i => i.CitizenId, f => citizenId != 0 ? citizenId : f.Random.Int(1, 100))
+            .RuleFor(i => i.ClassId, f => classId != 0 ? classId : f.Random.Int(1, 100))
             .RuleFor(i => i.File, f =>
             {
                 var bytes = f.Random.Bytes(32);
