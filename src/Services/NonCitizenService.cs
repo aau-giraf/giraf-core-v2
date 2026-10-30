@@ -154,8 +154,9 @@ public class NonCitizenService(AppDbContext db)
             nc => nc.Username == requestPostNonCitizenDTO.Username &&
             nc.FirstName == requestPostNonCitizenDTO.FirstName &&
             nc.LastName == requestPostNonCitizenDTO.LastName &&
-            nc.Email == requestPostNonCitizenDTO.Email &&
-            nc.Roles == requestPostNonCitizenDTO.Roles
+            nc.Email == requestPostNonCitizenDTO.Email // &&
+            // nc.Roles == requestPostNonCitizenDTO.Roles
+
             );
 
         if (nonCitizen is null)

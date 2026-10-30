@@ -1,5 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 
+using DotNet.Testcontainers.Configurations;
+
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+
 using Xunit.Abstractions;
 
 public class NonCitizenServiceTest : TestBase
@@ -12,6 +17,7 @@ public class NonCitizenServiceTest : TestBase
     [Fact]
     public async Task GetNonCitizenById_GetsCorrectNonCitizenId()
     {
+        //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
         var SeededNonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
@@ -19,8 +25,10 @@ public class NonCitizenServiceTest : TestBase
 
         var service = new NonCitizenService(db);
 
+        //----- ACT -----\\
         var fetchedNonCitizen = await service.GetNonCitizenByIdAsync(nonCitizen.Id);
 
+        //----- ASSERT -----\\
         Assert.Equal(fetchedNonCitizen!.Id, nonCitizen.Id);
         Assert.Equal(fetchedNonCitizen!.FirstName, nonCitizen.FirstName);
         Assert.Equal(fetchedNonCitizen!.LastName, nonCitizen.LastName);
@@ -31,6 +39,7 @@ public class NonCitizenServiceTest : TestBase
     [Fact]
     public async Task PatchNonCitizen_PatchesCorrectNonCitizen()
     {
+        //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
         var SeededNonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
@@ -54,6 +63,7 @@ public class NonCitizenServiceTest : TestBase
 
         var service = new NonCitizenService(db);
 
+        //----- ACT -----\\
         var fetchedNonCitizen = await service.PatchNonCitizenAsync(
             nonCitizen.Id,
             new RequestPatchNonCitizenDTO
@@ -64,6 +74,7 @@ public class NonCitizenServiceTest : TestBase
                 Email = faker.Email
             });
 
+        //----- ASSERT -----\\
         Assert.Equal(ogId, fetchedNonCitizen!.Id);
         Assert.Equal(faker.FirstName, fetchedNonCitizen!.FirstName);
         Assert.Equal(faker.LastName, fetchedNonCitizen!.LastName);
@@ -102,6 +113,7 @@ public class NonCitizenServiceTest : TestBase
     [Fact]
     public async Task PostNonCitizen_PostsCorrectNonCitizen()
     {
+        //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
         var SeededNonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
@@ -111,6 +123,10 @@ public class NonCitizenServiceTest : TestBase
         var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
+
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 2);
+        var userRole1 = userRoles[0];
+        var userRole2 = userRoles[1];
 
         string password = "jdewjkfewjf21";
 
@@ -125,6 +141,7 @@ public class NonCitizenServiceTest : TestBase
 
         var service = new NonCitizenService(db);
 
+        //----- ACT -----\\
         var fetchedNonCitizen = await service.PostNonCitizenAsync(
             new RequestPostNonCitizenDTO
             {
@@ -133,13 +150,18 @@ public class NonCitizenServiceTest : TestBase
                 Username = faker.Username,
                 Email = faker.Email,
                 Password = faker.Password,
+                Roles = [userRole1],
                 OrganizationId = organization1.Id
             });
 
+        //----- ASSERT -----\\
         Assert.Equal(faker.FirstName, fetchedNonCitizen!.FirstName);
         Assert.Equal(faker.LastName, fetchedNonCitizen!.LastName);
         Assert.Equal(faker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(faker.Email, fetchedNonCitizen!.Email);
+        Assert.Equal(userRole1.Role, fetchedNonCitizen.Roles.Last().Role);
+        Assert.Equal(userRole1.OrganizationId, fetchedNonCitizen.Roles.Last().OrganizationId);
+        Assert.Equal(userRole1.NonCitizenId, fetchedNonCitizen.Roles.Last().NonCitizenId);
 
     }
 }
