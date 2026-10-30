@@ -128,6 +128,7 @@ public class NonCitizenServiceTest : TestBase
 
         // Faker nonCitizen
         NonCitizen nonCitizenFaker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(nc => nc.Id, f => f.Random.Int())
                                     .RuleFor(nc => nc.FirstName, f => f.Name.FirstName())
                                     .RuleFor(nc => nc.LastName, f => f.Name.LastName())
                                     .RuleFor(nc => nc.Username, f => f.Internet.UserName())
