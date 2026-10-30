@@ -13,12 +13,15 @@ public static class LegacyClassEndpoints
         group.MapGet("/GetAll", GetAllClassrooms);
 
     }
-    private static ClassroomResponseDTO GetAllClassrooms(OrganizationService organizationService)
+    private static async Task<List<ClassroomResponseDTO>> GetAllClassrooms(OrganizationService organizationService)
     {
-        return new ClassroomResponseDTO{
-            ClassId = 1,
-            ClassName = "1.A"
-            };
+        // as of now, there only exists a single organization, so org_id = 1 is hardcoded. The tests for this method is structured to fail if there suddenly exists additional organizations
+        var classrooms = await organizationService.GetClassesInOrganizationAsync(1); 
+        return classrooms.Select(c => new ClassroomResponseDTO
+        {
+            ClassId = c.Id,
+            ClassName = c.Name
+        }).ToList();
     }
 
 
