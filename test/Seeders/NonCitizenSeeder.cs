@@ -8,7 +8,7 @@ public static class NonCitizenSeeder
     {
         var nonCitizen = Create(seed);
 
-        // add user to db
+        // add nonCitizen to db
         db.NonCitizens.Add(nonCitizen.NonCitizen);
         await db.SaveChangesAsync();
 
@@ -20,7 +20,7 @@ public static class NonCitizenSeeder
     {
         var nonCitizens = CreateMany(seed, count);
 
-        // add all User classes to db.
+        // add all nonCitizen classes to db.
         db.NonCitizens.AddRange(nonCitizens.Select(x => x.NonCitizen));
         await db.SaveChangesAsync();
 
@@ -36,7 +36,7 @@ public static class NonCitizenSeeder
 
         var nonCitizen = CreateFaker(seed, password).Generate();
 
-        return new SeededNonCitizen(nonCitizen, password); // returns hashed password in user and unhashed for itself
+        return new SeededNonCitizen(nonCitizen, password); // returns hashed password in nonCitizen and unhashed for itself
     }
 
     // Create x random nonCitizens.
@@ -77,6 +77,5 @@ public static class NonCitizenSeeder
             .RuleFor(nc => nc.Username, f => f.Internet.UserName())
             .RuleFor(nc => nc.Email, f => f.Internet.Email())
             .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(password, 12));
-
     }
 }
