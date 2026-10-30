@@ -33,7 +33,7 @@ public class NonCitizenService(AppDbContext db)
         return responseNonCitizen;
     }
 
-    public async Task<ResponsePatchNonCitizenDTO?> PatchNonCitizenAsync(int nonCitizenId, RequestPatchNonCitizenDTO requestPatchNonCitizenDTO)
+    public async Task<ResponseGetNonCitizenDTO?> PatchNonCitizenAsync(int nonCitizenId, RequestPatchNonCitizenDTO requestPatchNonCitizenDTO)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
@@ -65,14 +65,15 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
-        ResponsePatchNonCitizenDTO responseNonCitizen = new ResponsePatchNonCitizenDTO
+        ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
         {
             Id = updatedNonCitizen!.Id,
             FirstName = updatedNonCitizen.FirstName!,
             LastName = updatedNonCitizen.LastName!,
             Email = updatedNonCitizen.Email!,
             Username = updatedNonCitizen.Username!,
-            Roles = updatedNonCitizen.Roles
+            Roles = updatedNonCitizen.Roles,
+            Guardianships = updatedNonCitizen.Guardianships
         };
 
         return responseNonCitizen;
@@ -96,7 +97,7 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponsePostNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
+    public async Task<ResponseGetNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
         // Variable used to check roleType
         var roleType = requestPostNonCitizenDTO.Roles.GetType();
@@ -164,14 +165,15 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
-        ResponsePostNonCitizenDTO responseNonCitizen = new ResponsePostNonCitizenDTO
+        ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
         {
             Id = nonCitizen!.Id,
             FirstName = requestPostNonCitizenDTO.FirstName!,
             LastName = requestPostNonCitizenDTO.LastName!,
             Email = requestPostNonCitizenDTO.Email!,
             Username = requestPostNonCitizenDTO.Username!,
-            Roles = nonCitizen.Roles
+            Roles = nonCitizen.Roles,
+            Guardianships = nonCitizen.Guardianships
         };
 
         return responseNonCitizen;
