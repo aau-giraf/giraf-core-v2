@@ -52,13 +52,17 @@ public class NonCitizenServiceTest : TestBase
         string ogLastname = nonCitizen.LastName;
         string ogUsername = nonCitizen.Username;
         string ogEmail = nonCitizen.Email;
+        string ogPassword = nonCitizen.Password;
+
+        string Password = "fjkewkf21w121";
 
         // Generate different nonCitizen with another seed
         NonCitizen faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(nc => nc.FirstName, f => f.Name.FirstName())
                                     .RuleFor(nc => nc.LastName, f => f.Name.LastName())
                                     .RuleFor(nc => nc.Username, f => f.Internet.UserName())
-                                    .RuleFor(nc => nc.Email, f => f.Internet.Email());
+                                    .RuleFor(nc => nc.Email, f => f.Internet.Email())
+                                    .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(Password, 12));
 
 
         var service = new NonCitizenService(db);
@@ -71,7 +75,9 @@ public class NonCitizenServiceTest : TestBase
                 FirstName = faker.FirstName,
                 LastName = faker.LastName,
                 Username = faker.Username,
-                Email = faker.Email
+                Email = faker.Email,
+                OldPassword = ogPassword,
+                NewPassword = faker.Password
             });
 
         //----- ASSERT -----\\
@@ -80,6 +86,7 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(faker.LastName, fetchedNonCitizen!.LastName);
         Assert.Equal(faker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(faker.Email, fetchedNonCitizen!.Email);
+        Assert.True(BCrypt.Net.BCrypt.Verify(Password, faker.Password));
     }
 
     [Fact]

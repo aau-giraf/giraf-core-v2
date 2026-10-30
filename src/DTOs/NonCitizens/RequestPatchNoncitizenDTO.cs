@@ -19,9 +19,9 @@ public class RequestPatchNonCitizenDTO
     public required string Username { get; set; }
 
     [Length(3, 255)]
-    public required string newPassword { get; set; }
+    public required string NewPassword { get; set; }
 
     [Length(3, 255)]
-    public required string oldPassword { get; set; }
+    public required string OldPassword { get; set; }
 
 }

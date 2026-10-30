@@ -53,9 +53,9 @@ public class NonCitizenService(AppDbContext db)
         {
             nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
         }
-        if (requestPatchNonCitizenDTO.newPassword is not null && BCrypt.Net.BCrypt.Verify(requestPatchNonCitizenDTO.oldPassword, nonCitizen!.Password))
+        if (requestPatchNonCitizenDTO.NewPassword is not null && BCrypt.Net.BCrypt.Verify(requestPatchNonCitizenDTO.OldPassword, nonCitizen!.Password))
         {
-            nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(requestPatchNonCitizenDTO.newPassword, 12);
+            nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(requestPatchNonCitizenDTO.NewPassword, 12);
         }
 
         // Save changes.
