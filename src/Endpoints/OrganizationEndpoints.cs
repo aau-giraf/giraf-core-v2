@@ -13,25 +13,25 @@ public static class OrganizationEndpoints
 
         group.MapGet("/", GetOrganizations);
 
-        group.MapGet("/{org_id:int}", GetOrganizationById);
+        group.MapGet("/{orgId:int}", GetOrganizationById);
 
-        group.MapGet("/{org_id:int}/classes/{class_id:int}", GetClassInOrganization);
+        group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization);
 
         group.MapGet("/{org_id:int}/classes", GetClassesInOrganization);
 
-        group.MapPost("/{org_id:int}/classes", CreateClassInOrganization);
+        group.MapPost("/{orgId:int}/classes", CreateClassInOrganization);
 
         group.MapPost("/", CreateOrganization);
 
         group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole);
 
-        group.MapPatch("/{org_id:int}", UpdateOrganization);
+        group.MapPatch("/{orgId:int}", UpdateOrganization);
 
         group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole);
 
-        group.MapDelete("/{org_id:int}", DeleteOrganization);
+        group.MapDelete("/{orgId:int}", DeleteOrganization);
 
-        group.MapDelete("/{org_id:int}/classes/{class_id:int}", DeleteClassInOrganization);
+        group.MapDelete("/{orgId:int}/classes/{classId:int}", DeleteClassInOrganization);
 
     }
 
@@ -41,63 +41,63 @@ public static class OrganizationEndpoints
         return organizations == null ? TypedResults.NotFound() : TypedResults.Ok(organizations);
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> GetOrganizationById(int org_id, OrganizationService organizationService)
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> GetOrganizationById(int orgId, OrganizationService organizationService)
     {
-        var organization = await organizationService.GetOrganizationByIdAsync(org_id);
+        var organization = await organizationService.GetOrganizationByIdAsync(orgId);
         return organization == null ? TypedResults.NotFound() : TypedResults.Ok(organization);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteOrganization(int org_id, OrganizationService organizationservice)
+    private static async Task<Results<NoContent, NotFound>> DeleteOrganization(int orgId, OrganizationService organizationService)
     {
-        var organization = await organizationservice.DeleteOrganizationAsync(org_id);
+        var organization = await organizationService.DeleteOrganizationAsync(orgId);
         return organization ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseGetClassInOrganizationDTO>, NotFound>> GetClassInOrganization(int org_id, int class_id, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseGetClassInOrganizationDTO>, NotFound>> GetClassInOrganization(int orgId, int classId, OrganizationService organizationService)
     {
-        var selectedClass = await organizationservice.GetClassInOrganizationAsync(org_id, class_id);
+        var selectedClass = await organizationService.GetClassInOrganizationAsync(orgId, classId);
         return selectedClass == null ? TypedResults.NotFound() : TypedResults.Ok(selectedClass);
     }
 
-    private static async Task<Results<Ok<List<ResponseGetClassInOrganizationDTO>>, NotFound>> GetClassesInOrganization(int org_id, OrganizationService organizationservice)
+    private static async Task<Results<Ok<List<ResponseGetClassInOrganizationDTO>>, NotFound>> GetClassesInOrganization(int orgId, OrganizationService organizationService)
     {
-        var classes = await organizationservice.GetClassesInOrganizationAsync(org_id);
+        var classes = await organizationService.GetClassesInOrganizationAsync(orgId);
         return classes == null ? TypedResults.NotFound() : TypedResults.Ok(classes);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(int org_id, int class_id, OrganizationService organizationservice)
+    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(int orgId, int classId, OrganizationService organizationService)
     {
-        var selectedClass = await organizationservice.DeleteClassInOrganizationAsync(org_id, class_id);
+        var selectedClass = await organizationService.DeleteClassInOrganizationAsync(orgId, classId);
         return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, int org_id, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, int orgId, OrganizationService organizationService)
     {
-        var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClassDTO, org_id);
+        var createdClass = await organizationService.CreateClassInOrganizationAsync(requestCreateClassDTO, orgId);
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationService)
     {
-        var createdOrganization = await organizationservice.CreateOrganizationAsync(requestCreateOrganizationDTO);
+        var createdOrganization = await organizationService.CreateOrganizationAsync(requestCreateOrganizationDTO);
         return createdOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdOrganization);
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int org_id, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int orgId, OrganizationService organizationService)
     {
-        var updatedOrganization = await organizationservice.UpdateOrganizationAsync(requestCreateOrganizationDTO, org_id);
+        var updatedOrganization = await organizationService.UpdateOrganizationAsync(requestCreateOrganizationDTO, orgId);
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationservice)
+    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        var deletionOccurred = await organizationservice.DeleteUserRoleAsync(organizationId, nonCitizenId, role);
+        var deletionOccurred = await organizationService.DeleteUserRoleAsync(organizationId, nonCitizenId, role);
         return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<NotFound, NoContent, Created<UserRoleResponse>>> PutUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationservice)
+    private static async Task<Results<NotFound, NoContent, Created<UserRoleResponse>>> PutUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        (int, UserRole?) status = await organizationservice.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
+        (int, UserRole?) status = await organizationService.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
         return status switch
         {
             (-1, null) => TypedResults.NotFound(),
