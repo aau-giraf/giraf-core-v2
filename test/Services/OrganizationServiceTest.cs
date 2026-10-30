@@ -1,13 +1,6 @@
 using System.Data;
-using System.Security.Cryptography.X509Certificates;
-
-using Bogus.DataSets;
-
-using Microsoft.OpenApi;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 public class OrganizationServiceTest : TestBase
 {

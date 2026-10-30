@@ -6,6 +6,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: TEST_SECRETS
 
     steps:
       - uses: actions/checkout@v4
@@ -17,6 +18,20 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: build-output
+
+      - name: Create .env to use in tests
+        env:
+          JWT_AUDIENCES: ${{ secrets.JWT_AUDIENCES }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_MAX_AGE_MS: ${{ secrets.JWT_MAX_AGE_MS }}
+        run: |
+              {
+                printf 'JWT_AUDIENCES=%s\n' "$JWT_AUDIENCES"
+                printf 'JWT_ISSUER=%s\n' "$JWT_ISSUER"
+                printf 'JWT_SECRET=%s\n' "$JWT_SECRET"
+                printf 'JWT_MAX_AGE_MS=%s\n' "$JWT_MAX_AGE_MS"
+              } > .env
 
       - name: Run tests with coverage
         run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
