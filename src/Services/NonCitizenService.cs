@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography.X509Certificates;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -35,6 +36,7 @@ public class NonCitizenService(AppDbContext db)
 
     public async Task<ResponseGetNonCitizenDTO?> PatchNonCitizenAsync(int nonCitizenId, RequestPatchNonCitizenDTO requestPatchNonCitizenDTO)
     {
+        //----- Changes to NonCitizen relation -----\\
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
         if (requestPatchNonCitizenDTO.FirstName is not null)
@@ -58,8 +60,63 @@ public class NonCitizenService(AppDbContext db)
             nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(requestPatchNonCitizenDTO.NewPassword, 12);
         }
 
-        // Save changes.
+        // Save changes made to nonCitizen relation
         await _db.SaveChangesAsync();
+
+        //----- Changes to userRole relation -----\\
+        if (requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples is not null)
+        {
+            // Find the current list of userRoles tied to the nonCitizen
+            var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizenId).ToListAsync();
+
+            /* Add case:
+                For each entry in updatedRoleOrganizationTuples: If said entry does not already exist as a UserRole
+                Then Add it as a UserRole to the db 
+            */
+            foreach ((RoleType, int) updatedRoleOrganizationTuple in requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples!)
+            {
+                // Check if there exists and userRole corresponding to element in 
+                var userRoleExists = userRoles.Any(
+                    ur => ur.NonCitizenId == nonCitizenId &&
+                    ur.Role == updatedRoleOrganizationTuple.Item1 &&
+                    ur.OrganizationId == updatedRoleOrganizationTuple.Item2);
+
+                // If a userRoleExists is false -> 
+                if (userRoleExists is false)
+                {
+                    UserRole createdUserRole = new UserRole
+                    {
+                        NonCitizenId = nonCitizenId,
+                        NonCitizen = nonCitizen,
+                        Role = updatedRoleOrganizationTuple.Item1,
+                        OrganizationId = updatedRoleOrganizationTuple.Item2,
+                        Organization = await _db.Organizations.FindAsync(updatedRoleOrganizationTuple.Item2)
+                    };
+
+                    _db.UserRoles.Add(createdUserRole);
+                    await _db.SaveChangesAsync();
+                }
+            }
+
+            /* Remove case:
+                For each element in userRoles: If said element is not part of the new updatedRoleOrganizationTuples
+                Then Remove that UserRole from the db 
+            */
+            foreach (UserRole userRole in userRoles)
+            {
+                var UpdatedRoleOrganizationTupleContains = requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples.Any(
+                    urot => urot.Item1 == userRole.Role &&
+                    urot.Item2 == userRole.OrganizationId
+                );
+
+                if (UpdatedRoleOrganizationTupleContains is false)
+                {
+                    _db.UserRoles.Remove(userRole);
+                    await _db.SaveChangesAsync();
+                }
+            }
+        }
+
 
         // Find the updated nonCitizen in db
         var updatedNonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
