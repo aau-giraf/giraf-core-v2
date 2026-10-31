@@ -134,19 +134,22 @@ public class ImageServiceTest : TestBase
 
         var seededImage = await ImageSeeder.SeedAsync(db, Seed);
         var image = seededImage.Image;
-        string dir = "images";
+        var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(dir);
-        File.Create(image.Path);
+        try
+        {
+            image.Path = Path.Combine(dir, Path.GetFileName(image.Path));
+            await db.SaveChangesAsync();
+            File.WriteAllBytes(image.Path, []);
+            var service = new ImageService(db);
 
-        var service = new ImageService(db);
-
-        Assert.True(await service.DeleteImageAsync(image.Id));
-
-        var deletedImage = await db.Images
-          .SingleOrDefaultAsync(c => c.Id == image.Id);
-
-        Assert.Null(deletedImage);
-        Assert.False(File.Exists(image.Path));
+            Assert.True(await service.DeleteImageAsync(image.Id));
+            Assert.Null(await db.Images.SingleOrDefaultAsync(i => i.Id == image.Id));
+            Assert.False(File.Exists(image.Path));
+        } finally
+        {
+            Directory.Delete(dir, recursive: true);
+        }
     }
 
     [Fact]
@@ -334,6 +337,53 @@ public class ImageServiceTest : TestBase
             if (created?.Path is not null && File.Exists(created.Path))
             {
                 File.Delete(created.Path);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MultipleServiceComponentsTest()
+    {
+        await using var db = CreateDbContext();
+        var request = ImageSeeder.CreateRequestBody(Seed);
+        var service = new ImageService(db);
+        string? path = null;
+
+        try
+        {
+            // POST
+            var created = await service.CreateImagesAsync(request);
+            Assert.NotNull(created);
+            path = created.Path;
+            Assert.True(File.Exists(path));
+            db.ChangeTracker.Clear();
+
+            // GET
+            var fetched = await service.GetImageByIdAsync(created.Id);
+            Assert.NotNull(fetched);
+            Assert.Equal(created.Id, fetched.Id);
+            Assert.Equal(request.Name, fetched.Name);
+            Assert.Equal(request.OrganizationId, fetched.OrganizationId);
+            Assert.Equal(request.CitizenId, fetched.CitizenId);
+            Assert.Equal(request.ClassId, fetched.ClassId);
+            Assert.Equal(created.Path, fetched.Path);
+            db.ChangeTracker.Clear();
+
+            // Delete
+            Assert.True(await service.DeleteImageAsync(created.Id));
+            db.ChangeTracker.Clear();
+
+            // GET after Delete
+            Assert.Null(await service.GetImageByIdAsync(created.Id));
+            Assert.Empty(await db.Images.ToListAsync());
+            Assert.False(File.Exists(path));
+
+        }
+        finally
+        {
+            if (path is not null && File.Exists(path))
+            {
+                File.Delete(path);
             }
         }
     }
