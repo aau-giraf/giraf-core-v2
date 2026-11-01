@@ -43,6 +43,10 @@ public class NonCitizenServiceTest : TestBase
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
 
+        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organization1 = organizations[0];
+        var organization2 = organizations[1];
+
         // Save original data, because nonCitizen cannot be a constant entity.
         int ogId = nonCitizen.Id;
         string ogFirstname = nonCitizen.FirstName;
@@ -50,9 +54,23 @@ public class NonCitizenServiceTest : TestBase
         string ogUsername = nonCitizen.Username;
         string ogEmail = nonCitizen.Email;
         string ogPassword = nonCitizen.Password;
+        List<UserRole> ogUserRoles = nonCitizen.Roles.ToList();
+
+        List<int> ogOrgIds = new List<int>();
+
+        foreach (var userRole in ogUserRoles)
+        {
+            ogOrgIds.Add(userRole.OrganizationId);
+        }
 
         // New password
         string Password = "fjkewkf21w121";
+
+        // Generate different userRole with another seed
+        UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(ur => ur.NonCitizenId, ogId)
+                                    .RuleFor(ur => ur.OrganizationId, f => ogOrgIds.Max() + 1)
+                                    .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
 
         // Generate different nonCitizen with another seed
         NonCitizen faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
@@ -60,7 +78,8 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(nc => nc.LastName, f => f.Name.LastName())
                                     .RuleFor(nc => nc.Username, f => f.Internet.UserName())
                                     .RuleFor(nc => nc.Email, f => f.Internet.Email())
-                                    .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(Password, 12));
+                                    .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(Password, 12))
+                                    .RuleFor(nc => nc.Roles, f => ogUserRoles.Add(userRoleFaker));
 
         var service = new NonCitizenService(db);
 
@@ -74,7 +93,8 @@ public class NonCitizenServiceTest : TestBase
                 Username = faker.Username,
                 Email = faker.Email,
                 OldPassword = ogPassword,
-                NewPassword = faker.Password
+                NewPassword = faker.Password,
+                UpdatedRoleOrganizationTuples = [(userRoleFaker.Role, userRoleFaker.OrganizationId)],
             });
 
         //----- ASSERT -----\\

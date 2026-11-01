@@ -41,6 +41,12 @@ public static class NonCitizenSeeder
     // Create a random test nonCitizen using bogus.
     private static Faker<NonCitizen> CreateFaker(int seed)
     {
+        var userRoleFaker = new Faker<UserRole>()
+            .UseSeed(seed)
+            .RuleFor(ur => ur.NonCitizenId, f => f.Random.Int())
+            .RuleFor(ur => ur.OrganizationId, f => f.Random.Int())
+            .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
+
         return new Faker<NonCitizen>()
             .UseSeed(seed)
             .RuleFor(nc => nc.Id, f => f.Random.Int())
@@ -48,6 +54,8 @@ public static class NonCitizenSeeder
             .RuleFor(nc => nc.LastName, f => f.Name.LastName())
             .RuleFor(nc => nc.Username, f => f.Internet.UserName())
             .RuleFor(nc => nc.Email, f => f.Internet.Email())
-            .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(f.Internet.Password(), 12));
+            .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(f.Internet.Password(), 12))
+            .RuleFor(nc => nc.Roles, f => userRoleFaker.Generate(f.PickRandom(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)));
     }
+
 }
