@@ -42,10 +42,7 @@ public class NonCitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
-
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
-        var organization1 = organizations[0];
-        var organization2 = organizations[1];
+        Assert.NotEmpty(nonCitizen.Roles); // FAILS
 
         // Save original data, because nonCitizen cannot be a constant entity.
         int ogId = nonCitizen.Id;
@@ -56,17 +53,14 @@ public class NonCitizenServiceTest : TestBase
         string ogPassword = nonCitizen.Password;
         List<UserRole> ogUserRoles = nonCitizen.Roles.ToList();
 
-
-        List<UserRole> CopyOfOgUserRoles = nonCitizen.Roles.ToList();
+        // The UserRole list that will be updated
+        List<UserRole> updatedUserRoles = nonCitizen.Roles.ToList();
 
         // A list containing the organizationId's of the ogUserRoles: Used for filtering with max().
         List<int> ogOrgIds = new List<int>();
-
-        List<(RoleType, int)> updatedRoleOrganizationTuples = new List<(RoleType, int)>();
-
-        foreach (var userRole in ogUserRoles)
+        foreach (var ogUserRole in ogUserRoles)
         {
-            updatedRoleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+            ogOrgIds.Add(ogUserRole.OrganizationId);
         }
 
         // New password
@@ -74,34 +68,30 @@ public class NonCitizenServiceTest : TestBase
 
         // Generate different userRole with another seed
         UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(ur => ur.OrganizationId, f => ogOrgIds.Max() + 1)
+                                    .RuleFor(ur => ur.NonCitizenId, f => nonCitizen.Id)
+                                    .RuleFor(ur => ur.OrganizationId, f => ogUserRoles.Max(our => our.OrganizationId) + 1)
                                     .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
 
-        // Add the new userRole to updated list of userRoles
-        updatedRoleOrganizationTuples.Add((userRoleFaker.Role, userRoleFaker.OrganizationId));
-
-        // Add the new userRole to a list containing the original userRoles before patch. 
-        var updatedUs.Add(userRoleFaker);
+       
+        // Add the new userRole to a list containing the original userRoles. 
+        updatedUserRoles.Add(userRoleFaker);
 
         // Generate different nonCitizen with another seed
-        NonCitizen faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
+        NonCitizen nonCitizenFaker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(nc => nc.FirstName, f => f.Name.FirstName())
                                     .RuleFor(nc => nc.LastName, f => f.Name.LastName())
                                     .RuleFor(nc => nc.Username, f => f.Internet.UserName())
                                     .RuleFor(nc => nc.Email, f => f.Internet.Email())
                                     .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(Password, 12))
-                                    .RuleFor(nc => nc.Roles, f => CopyOfOgUserRoles.Add(userRoleFaker));
+                                    .RuleFor(nc => nc.Roles, updatedUserRoles);
 
-        List<(RoleType, int)> updatedRoleOrganizationTuple = new List<(RoleType, int)>();
-
-        foreach (var in ogUserRoles)
+        // The updated userRole list but in OrganizationTuple format
+        List<(RoleType, int)> updatedRoleOrganizationTuples = new List<(RoleType, int)>();
+        
+        foreach (var userRole in nonCitizenFaker.Roles.ToList())
         {
-            ogOrgIds.Add(userRole.OrganizationId);
-        }
-
-
-
-
+            updatedRoleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        } 
 
         var service = new NonCitizenService(db);
 
@@ -110,22 +100,23 @@ public class NonCitizenServiceTest : TestBase
             nonCitizen.Id,
             new RequestPatchNonCitizenDTO
             {
-                FirstName = faker.FirstName,
-                LastName = faker.LastName,
-                Username = faker.Username,
-                Email = faker.Email,
+                FirstName = nonCitizenFaker.FirstName,
+                LastName = nonCitizenFaker.LastName,
+                Username = nonCitizenFaker.Username,
+                Email = nonCitizenFaker.Email,
                 OldPassword = ogPassword,
-                NewPassword = faker.Password,
-                UpdatedRoleOrganizationTuples = [(userRoleFaker.Role, userRoleFaker.OrganizationId)],
+                NewPassword = nonCitizenFaker.Password,
+                UpdatedRoleOrganizationTuples = updatedRoleOrganizationTuples,
             });
 
         //----- ASSERT -----\\
         Assert.Equal(ogId, fetchedNonCitizen!.Id);
-        Assert.Equal(faker.FirstName, fetchedNonCitizen!.FirstName);
-        Assert.Equal(faker.LastName, fetchedNonCitizen!.LastName);
-        Assert.Equal(faker.Username, fetchedNonCitizen!.Username);
-        Assert.Equal(faker.Email, fetchedNonCitizen!.Email);
-        Assert.True(BCrypt.Net.BCrypt.Verify(Password, faker.Password));
+        Assert.Equal(nonCitizenFaker.FirstName, fetchedNonCitizen!.FirstName);
+        Assert.Equal(nonCitizenFaker.LastName, fetchedNonCitizen!.LastName);
+        Assert.Equal(nonCitizenFaker.Username, fetchedNonCitizen!.Username);
+        Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
+        Assert.True(BCrypt.Net.BCrypt.Verify(Password, nonCitizenFaker.Password));
+        Assert.Equal(ogUserRoles.Count, fetchedNonCitizen.Roles.Count);
     }
 
     [Fact]

@@ -40,8 +40,8 @@ public static class UserRoleSeeder
     {
         return new Faker<UserRole>()
             .UseSeed(seed)
-            .RuleFor(ur => ur.NonCitizenId, f => f.Random.Int())
-            .RuleFor(ur => ur.OrganizationId, f => f.Random.Int())
+            .RuleFor(ur => ur.NonCitizenId, f => f.Random.Int(1,1000000))
+            .RuleFor(ur => ur.OrganizationId, f => f.Random.Int(1,100000))
             .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
     }
 }
