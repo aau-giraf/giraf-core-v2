@@ -56,11 +56,17 @@ public class NonCitizenServiceTest : TestBase
         string ogPassword = nonCitizen.Password;
         List<UserRole> ogUserRoles = nonCitizen.Roles.ToList();
 
+
+        List<UserRole> CopyOfOgUserRoles = nonCitizen.Roles.ToList();
+
+        // A list containing the organizationId's of the ogUserRoles: Used for filtering with max().
         List<int> ogOrgIds = new List<int>();
+
+        List<(RoleType, int)> updatedRoleOrganizationTuples = new List<(RoleType, int)>();
 
         foreach (var userRole in ogUserRoles)
         {
-            ogOrgIds.Add(userRole.OrganizationId);
+            updatedRoleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
         }
 
         // New password
@@ -68,9 +74,14 @@ public class NonCitizenServiceTest : TestBase
 
         // Generate different userRole with another seed
         UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(ur => ur.NonCitizenId, ogId)
                                     .RuleFor(ur => ur.OrganizationId, f => ogOrgIds.Max() + 1)
                                     .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
+
+        // Add the new userRole to updated list of userRoles
+        updatedRoleOrganizationTuples.Add((userRoleFaker.Role, userRoleFaker.OrganizationId));
+
+        // Add the new userRole to a list containing the original userRoles before patch. 
+        var updatedUs.Add(userRoleFaker);
 
         // Generate different nonCitizen with another seed
         NonCitizen faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
@@ -79,7 +90,18 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(nc => nc.Username, f => f.Internet.UserName())
                                     .RuleFor(nc => nc.Email, f => f.Internet.Email())
                                     .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(Password, 12))
-                                    .RuleFor(nc => nc.Roles, f => ogUserRoles.Add(userRoleFaker));
+                                    .RuleFor(nc => nc.Roles, f => CopyOfOgUserRoles.Add(userRoleFaker));
+
+        List<(RoleType, int)> updatedRoleOrganizationTuple = new List<(RoleType, int)>();
+
+        foreach (var in ogUserRoles)
+        {
+            ogOrgIds.Add(userRole.OrganizationId);
+        }
+
+
+
+
 
         var service = new NonCitizenService(db);
 
