@@ -26,6 +26,6 @@ public class RequestPostNonCitizenDTO
     [Length(8, 255)]
     public required string Password { get; set; }
 
-    public ICollection<(RoleType, int)> RoleOrganizationTuples { get; set; } = [];
+    public ICollection<(RoleType, int)>? RoleOrganizationTuples { get; set; } = [];
 
 }

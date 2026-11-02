@@ -71,13 +71,13 @@ public class NonCitizenService(AppDbContext db)
             */
             foreach ((RoleType, int) updatedRoleOrganizationTuple in requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples!)
             {
-                // Check if there exists and userRole corresponding to element in 
+                // Check if there exists an userRole corresponding to the element in updatedRoleOrganizationTuple
                 var userRoleExists = userRoles.Any(
                     ur => ur.NonCitizenId == nonCitizenId &&
                     ur.Role == updatedRoleOrganizationTuple.Item1 &&
                     ur.OrganizationId == updatedRoleOrganizationTuple.Item2);
 
-                // If a userRoleExists is false -> 
+                // If the userRole does not exist in the db then add it
                 if (userRoleExists is false)
                 {
                     UserRole createdUserRole = new UserRole
@@ -100,12 +100,12 @@ public class NonCitizenService(AppDbContext db)
             */
             foreach (UserRole userRole in userRoles)
             {
-                var UpdatedRoleOrganizationTupleContains = requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples.Any(
+                var UpdatedRoleOrganizationTupleContainsUserRole = requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples.Any(
                     urot => urot.Item1 == userRole.Role &&
                     urot.Item2 == userRole.OrganizationId
                 );
 
-                if (UpdatedRoleOrganizationTupleContains is false)
+                if (UpdatedRoleOrganizationTupleContainsUserRole is false)
                 {
                     _db.UserRoles.Remove(userRole);
                     await _db.SaveChangesAsync();
@@ -156,12 +156,6 @@ public class NonCitizenService(AppDbContext db)
 
     public async Task<ResponseGetNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
-        // Get all roles from RoleOrganizationTuples
-        List<RoleType> roleTypes = new List<RoleType>();
-        foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
-        {
-            roleTypes.Add(roleOrganizationTuples.Item1);
-        }
 
         if (
             requestPostNonCitizenDTO.FirstName is not null &&
@@ -185,7 +179,8 @@ public class NonCitizenService(AppDbContext db)
             _db.NonCitizens.Add(createdNonCitizen);
             await _db.SaveChangesAsync();
 
-            // Add the nonCitizens new UserRole to the db
+            // If userRoles is specified add also those instances to the db
+            if (requestPostNonCitizenDTO.RoleOrganizationTuples is not null) {
             foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
             {
                 UserRole createdUserRole = new UserRole()
@@ -199,6 +194,7 @@ public class NonCitizenService(AppDbContext db)
 
                 _db.UserRoles.Add(createdUserRole);
                 await _db.SaveChangesAsync();
+            }
             }
         }
 
@@ -215,7 +211,7 @@ public class NonCitizenService(AppDbContext db)
         {
             return null;
         }
-
+        
         ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
         {
             Id = nonCitizen!.Id,
