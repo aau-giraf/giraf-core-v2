@@ -144,7 +144,8 @@ public class ImageServiceTest : TestBase
             Assert.True(await service.DeleteImageAsync(image.Id));
             Assert.Null(await db.Images.SingleOrDefaultAsync(i => i.Id == image.Id));
             Assert.False(File.Exists(image.Path));
-        } finally
+        }
+        finally
         {
             Directory.Delete(dir, recursive: true);
         }
@@ -339,7 +340,8 @@ public class ImageServiceTest : TestBase
     public async Task MultipleServiceComponentsTest()
     {
         await using var db = CreateDbContext();
-        var request = ImageSeeder.CreateRequestBody(Seed);
+        var organization = OrganizationSeeder.SeedAsync(db, Seed);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
         var service = new ImageService(db);
         string? path = null;
 
