@@ -3,7 +3,7 @@ public static class ClassSeeder
 {
 
     // Create a random class and add it to mock database.
-    public static async Task<Class> SeedAsync(AppDbContext db, int seed, int orgId = 0)
+    public static async Task<Class> SeedAsync(AppDbContext db, int seed, int? orgId = 0)
     {
         var class_ = Create(seed, orgId);
 
@@ -25,7 +25,7 @@ public static class ClassSeeder
     }
 
     // Generate a random class.
-    private static Class Create(int seed, int orgId)
+    private static Class Create(int seed, int? orgId)
     {
         return CreateFaker(seed, orgId).Generate();
     }
@@ -37,12 +37,12 @@ public static class ClassSeeder
     }
 
     // Create a random test class using bogus.
-    private static Faker<Class> CreateFaker(int seed, int orgId = 0)
+    private static Faker<Class> CreateFaker(int seed, int? orgId = 0)
     {
         return new Faker<Class>()
             .UseSeed(seed)
             .RuleFor(c => c.Name, f => f.Name.FirstName())
-            .RuleFor(c => c.OrganizationId, f => orgId);
+            .RuleFor(c => c.OrganizationId, f => orgId != 0 ? orgId : f.Random.Int(1, 100));
     }
 
 }

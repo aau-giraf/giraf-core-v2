@@ -43,26 +43,33 @@ public class ImageService(AppDbContext db)
         return true;
     }
 
-    private async Task<int> FindOrganizationAsync(PostImageDTO imageRequest)
+    private async Task<Organization?> FindOrganizationAsync(PostImageDTO imageRequest)
     {
+        int orgId;
         if (imageRequest.CitizenId == null)
         {
             var class_ = await _db.Classes.FindAsync(imageRequest.ClassId);
-            return class_!.OrganizationId;
+            orgId = class_!.OrganizationId;
         }
         else
         {
             var citizen = await _db.Citizens.FindAsync(imageRequest.CitizenId);
             var class_ = await _db.Classes.FindAsync(citizen!.ClassId);
-            return class_!.OrganizationId;
+            orgId = class_!.OrganizationId;
         }
+        return await _db.Organizations.FindAsync(orgId);
     }
 
     public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
 
-        var organizationId = imageRequest.OrganizationId ?? await FindOrganizationAsync(imageRequest);
+        var organization = imageRequest.OrganizationId != null ? await _db.Organizations.FindAsync(imageRequest.OrganizationId) : await FindOrganizationAsync(imageRequest);
+
+        if (organization == null)
+        { // If it is not possible to connect the request to an org return null
+            return null;
+        }
 
         var image = new Image
         {
@@ -70,7 +77,7 @@ public class ImageService(AppDbContext db)
             Path = stringPath,
             CitizenId = imageRequest.CitizenId,
             ClassId = imageRequest.ClassId,
-            OrganizationId = organizationId,
+            OrganizationId = organization!.Id,
         };
 
         _db.Images.Add(image);

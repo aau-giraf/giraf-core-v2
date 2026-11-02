@@ -1,5 +1,3 @@
-using Bogus.DataSets;
-
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -206,7 +204,8 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostImage()
     {
         await using var db = CreateDbContext();
-        var request = ImageSeeder.CreateRequestBody(Seed);
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -216,7 +215,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
             Assert.Equal(request.ClassId, created.ClassId);
-            Assert.EndsWith(".png", created.Path);
+            Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
             Assert.NotNull(stored);
@@ -235,7 +234,8 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostsTheRightImage()
     {
         await using var db = CreateDbContext();
-        var request = ImageSeeder.CreateRequestBody(Seed);
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -269,10 +269,7 @@ public class ImageServiceTest : TestBase
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
         var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
-        var request = ImageSeeder.CreateRequestBody(Seed);
-        request.CitizenId = citizen.Id;
-        request.OrganizationId = null;
-        request.ClassId = null;
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, classId: null, citizenId: citizen.Id);
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -283,7 +280,7 @@ public class ImageServiceTest : TestBase
             Assert.Equal(citizen.Id, created.CitizenId);
             Assert.Null(created.ClassId);
             Assert.Equal(class_.Id, created.OrganizationId);
-            Assert.EndsWith(".png", created.Path);
+            Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
@@ -308,10 +305,7 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var request = ImageSeeder.CreateRequestBody(Seed);
-        request.CitizenId = null;
-        request.OrganizationId = null;
-        request.ClassId = class_.Id;
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, citizenId: null, classId: class_.Id);
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -322,7 +316,7 @@ public class ImageServiceTest : TestBase
             Assert.Null(created.CitizenId);
             Assert.Equal(class_.Id, created.ClassId);
             Assert.Equal(organization.Id, created.OrganizationId);
-            Assert.EndsWith(".png", created.Path);
+            Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
