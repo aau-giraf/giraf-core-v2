@@ -16,7 +16,7 @@ public static class LegacyClassEndpoints
 
     }
 
-    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] LegacyRequestCreateClassDTO requestCreateClassDTO, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromBody] LegacyRequestCreateClassDTO requestCreateClassDTO, OrganizationService organizationservice)
     {
         var requestCreateClass = new RequestCreateClassDTO { Name = requestCreateClassDTO.ClassName }; //Service vil geren have specifikke klasser så vil skal ændre dem hvis der skal ske noget andet 
         var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClass, 1); //org ID is 0, because it will always be Egebakken

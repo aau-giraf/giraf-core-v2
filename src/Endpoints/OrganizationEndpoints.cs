@@ -69,7 +69,7 @@ public static class OrganizationEndpoints
         return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, int org_id, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromBody] RequestCreateClassDTO requestCreateClassDTO, int org_id, OrganizationService organizationservice)
     {
         var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClassDTO, org_id);
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
