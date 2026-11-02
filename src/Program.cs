@@ -46,23 +46,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
 {
     o.RequireHttpsMetadata = false;
-    o.TokenValidationParameters = new TokenValidationParameters
-    {
-        // Validate signing key.
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET"]!)),
-
-        // Issuer and audience must match the ones specified in the environment variables.
-        ValidateIssuer = true,
-        ValidIssuer = Env.Get("JWT_ISSUER"),
-
-        ValidateAudience = true,
-        ValidAudience = Env.Get("JWT_AUDIENCES"),
-
-        // The JWT must not be expired.
-        ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-
+    o.TokenValidationParameters = TokenParameters.Get();
 });
 
 builder.Services.AddEndpointsApiExplorer();
