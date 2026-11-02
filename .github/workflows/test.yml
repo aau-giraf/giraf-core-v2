@@ -32,9 +32,6 @@ jobs:
                 printf 'JWT_SECRET=%s\n' "$JWT_SECRET"
                 printf 'JWT_MAX_AGE_MS=%s\n' "$JWT_MAX_AGE_MS"
               } > .env
-              
-              echo "Created .env:"
-              cut -d= -f1 .env
 
       - name: Run tests with coverage
         run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
