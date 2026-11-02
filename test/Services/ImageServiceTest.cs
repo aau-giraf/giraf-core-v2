@@ -201,7 +201,8 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostImage()
     {
         await using var db = CreateDbContext();
-        var request = ImageSeeder.CreateRequestBody(Seed);
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -230,7 +231,8 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostsTheRightImage()
     {
         await using var db = CreateDbContext();
-        var request = ImageSeeder.CreateRequestBody(Seed);
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
