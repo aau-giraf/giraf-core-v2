@@ -47,10 +47,6 @@ public class NonCitizenService(AppDbContext db)
         {
             nonCitizen!.LastName = requestPatchNonCitizenDTO.LastName;
         }
-        if (requestPatchNonCitizenDTO.Email is not null)
-        {
-            nonCitizen!.Email = requestPatchNonCitizenDTO.Email;
-        }
         if (requestPatchNonCitizenDTO.Username is not null)
         {
             nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
@@ -131,7 +127,7 @@ public class NonCitizenService(AppDbContext db)
             Id = updatedNonCitizen!.Id,
             FirstName = updatedNonCitizen.FirstName!,
             LastName = updatedNonCitizen.LastName!,
-            Email = updatedNonCitizen.Email!,
+            Email = nonCitizen!.Email!,
             Username = updatedNonCitizen.Username!,
             Roles = updatedNonCitizen.Roles,
             Guardianships = updatedNonCitizen.Guardianships
@@ -172,7 +168,6 @@ public class NonCitizenService(AppDbContext db)
             requestPostNonCitizenDTO.LastName is not null &&
             requestPostNonCitizenDTO.Email is not null &&
             requestPostNonCitizenDTO.Username is not null &&
-            requestPostNonCitizenDTO.RoleOrganizationTuples is not null &&
             requestPostNonCitizenDTO.Password is not null
         )
         {
