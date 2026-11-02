@@ -36,12 +36,13 @@ public static class UserRoleSeeder
     }
 
     // Create a random test userRole using bogus.
-    private static Faker<UserRole> CreateFaker(int seed)
+    private static Faker<UserRole> CreateFaker(int seed, int? nonCitizen = 0)
     {
+
         return new Faker<UserRole>()
             .UseSeed(seed)
-            .RuleFor(ur => ur.NonCitizenId, f => f.Random.Int(1,1000000))
-            .RuleFor(ur => ur.OrganizationId, f => f.Random.Int(1,100000))
+            .RuleFor(ur => ur.NonCitizenId, f => nonCitizen != 0 ? nonCitizen : f.Random.Int(1, 1000000))
+            .RuleFor(ur => ur.OrganizationId, f => f.Random.Int(1, 100000))
             .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
     }
 }
