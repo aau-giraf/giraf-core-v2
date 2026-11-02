@@ -34,6 +34,9 @@ services:
       dockerfile: Dockerfile
       target: test
     working_dir: /source
-    command: dotnet test --logger "console;verbosity=detailed"
+    command: dotnet test
+    env_file:
+      - .env
+
 volumes:
   pgdata:
