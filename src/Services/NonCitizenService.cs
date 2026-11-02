@@ -2,6 +2,7 @@
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography.X509Certificates;
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
@@ -20,6 +21,13 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
+        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        List<(RoleType, int)> roleOrganizationTuples = [];
+        foreach (UserRole userRole in nonCitizen.Roles)
+        {
+            roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        }
+
         ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
         {
             Id = nonCitizen!.Id,
@@ -27,8 +35,7 @@ public class NonCitizenService(AppDbContext db)
             LastName = nonCitizen.LastName,
             Email = nonCitizen.Email,
             Username = nonCitizen.Username,
-            Roles = nonCitizen.Roles,
-            Guardianships = nonCitizen.Guardianships
+            RoleOrganizationTuples = roleOrganizationTuples,
         };
 
         return responseNonCitizen;
@@ -121,6 +128,12 @@ public class NonCitizenService(AppDbContext db)
         {
             return null;
         }
+        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        List<(RoleType, int)> updatedRoleOrganizationTuples = [];
+        foreach (UserRole userRole in updatedNonCitizen.Roles)
+        {
+            updatedRoleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        }
 
         ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
         {
@@ -129,8 +142,7 @@ public class NonCitizenService(AppDbContext db)
             LastName = updatedNonCitizen.LastName!,
             Email = nonCitizen!.Email!,
             Username = updatedNonCitizen.Username!,
-            Roles = updatedNonCitizen.Roles,
-            Guardianships = updatedNonCitizen.Guardianships
+            RoleOrganizationTuples = updatedRoleOrganizationTuples,
         };
 
         return responseNonCitizen;
@@ -156,6 +168,12 @@ public class NonCitizenService(AppDbContext db)
 
     public async Task<ResponseGetNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
+        var isNotUnique = _db.NonCitizens.Any(nc => nc.Email == requestPostNonCitizenDTO.Email);
+
+        if (isNotUnique == true)
+        {
+            return null;
+        }
 
         if (
             requestPostNonCitizenDTO.FirstName is not null &&
@@ -164,7 +182,7 @@ public class NonCitizenService(AppDbContext db)
             requestPostNonCitizenDTO.Username is not null &&
             requestPostNonCitizenDTO.Password is not null
         )
-        {
+        {   
             // Create new instance of NonCitizen
             NonCitizen createdNonCitizen = new NonCitizen
             {
@@ -181,15 +199,15 @@ public class NonCitizenService(AppDbContext db)
 
             // If userRoles is specified add also those instances to the db
             if (requestPostNonCitizenDTO.RoleOrganizationTuples is not null) {
-            foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
+            foreach ((RoleType, int) roleOrganizationTuple in requestPostNonCitizenDTO.RoleOrganizationTuples)
             {
                 UserRole createdUserRole = new UserRole()
                 {
-                    Role = roleOrganizationTuples.Item1,
+                    Role = roleOrganizationTuple.Item1,
                     NonCitizenId = createdNonCitizen.Id,
                     NonCitizen = createdNonCitizen,
-                    OrganizationId = roleOrganizationTuples.Item2,
-                    Organization = await _db.Organizations.FindAsync(roleOrganizationTuples.Item2)
+                    OrganizationId = roleOrganizationTuple.Item2,
+                    Organization = await _db.Organizations.FindAsync(roleOrganizationTuple.Item2)
                 };
 
                 _db.UserRoles.Add(createdUserRole);
@@ -211,7 +229,14 @@ public class NonCitizenService(AppDbContext db)
         {
             return null;
         }
-        
+
+        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        List<(RoleType, int)> roleOrganizationTuples = [];
+        foreach (UserRole userRole in nonCitizen.Roles)
+        {
+            roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        }
+
         ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
         {
             Id = nonCitizen!.Id,
@@ -219,8 +244,7 @@ public class NonCitizenService(AppDbContext db)
             LastName = requestPostNonCitizenDTO.LastName!,
             Email = requestPostNonCitizenDTO.Email!,
             Username = requestPostNonCitizenDTO.Username!,
-            Roles = nonCitizen.Roles,
-            Guardianships = nonCitizen.Guardianships
+            RoleOrganizationTuples = roleOrganizationTuples,
         };
 
         return responseNonCitizen;

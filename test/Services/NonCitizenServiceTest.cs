@@ -29,12 +29,16 @@ public class NonCitizenServiceTest : TestBase
         var fetchedNonCitizen = await service.GetNonCitizenByIdAsync(nonCitizen.Id);
 
         //----- ASSERT -----\\
-        Assert.Equal(fetchedNonCitizen!.Id, nonCitizen.Id);
-        Assert.Equal(fetchedNonCitizen!.FirstName, nonCitizen.FirstName);
-        Assert.Equal(fetchedNonCitizen!.LastName, nonCitizen.LastName);
-        Assert.Equal(fetchedNonCitizen!.Username, nonCitizen.Username);
-        Assert.Equal(fetchedNonCitizen!.Email, nonCitizen.Email);
-        Assert.Equal(fetchedNonCitizen!.Roles.Count, nonCitizen.Roles.Count);
+        Assert.Equal(nonCitizen.Id, fetchedNonCitizen!.Id);
+        Assert.Equal(nonCitizen.FirstName, fetchedNonCitizen!.FirstName);
+        Assert.Equal(nonCitizen.LastName, fetchedNonCitizen!.LastName);
+        Assert.Equal(nonCitizen.Username, fetchedNonCitizen!.Username);
+        Assert.Equal(nonCitizen.Email, fetchedNonCitizen!.Email);
+        Assert.Equal(nonCitizen.Roles.Count, fetchedNonCitizen!.RoleOrganizationTuples.Count);
+        foreach (var userRole in nonCitizen.Roles)
+        {
+            Assert.Contains((userRole.Role,userRole.OrganizationId), fetchedNonCitizen.RoleOrganizationTuples);
+        }
     }
 
     [Fact]
@@ -116,13 +120,12 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizenFaker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
         Assert.True(BCrypt.Net.BCrypt.Verify(Password, nonCitizenFaker.Password));
-        Assert.Equal(ogUserRoles.Count + 1, fetchedNonCitizen.Roles.Count);
-        Assert.Distinct(updatedUserRoles);
-        Assert.Distinct(fetchedNonCitizen.Roles);
+        Assert.Equal(ogUserRoles.Count + 1, fetchedNonCitizen.RoleOrganizationTuples.Count);
+        Assert.Distinct(fetchedNonCitizen.RoleOrganizationTuples);
         Assert.DoesNotContain(userRoleFaker, ogUserRoles);  
         foreach (var ogUserRole in ogUserRoles)
         {
-            Assert.Contains(ogUserRole, updatedUserRoles);
+            Assert.Contains((ogUserRole.Role, ogUserRole.OrganizationId), fetchedNonCitizen.RoleOrganizationTuples);
         }
     }
 
@@ -198,7 +201,6 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizenFaker.LastName, fetchedNonCitizen!.LastName);
         Assert.Equal(nonCitizenFaker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
-        Assert.Equal(userRoleFaker.Role, fetchedNonCitizen.Roles.Last().Role);
-        Assert.Equal(userRoleFaker.OrganizationId, fetchedNonCitizen.Roles.Last().OrganizationId);
+        Assert.Equal(fetchedNonCitizen.RoleOrganizationTuples.First(), (userRoleFaker.Role, userRoleFaker.OrganizationId));
     }
 }
