@@ -42,6 +42,5 @@ public class PostImageDTO : IValidatableObject
                 new[] { nameof(ext) }
             );
         }
-
     }
 }
