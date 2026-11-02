@@ -3,7 +3,6 @@ using Xunit.Abstractions;
 // Base test class for creating in memory db for tests.
 public abstract class TestBase
 {
-
     protected int Seed { get; }
 
     // Create a seed for the tests
@@ -22,7 +21,4 @@ public abstract class TestBase
 
         return new AppDbContext(options);
     }
-
-
-
 }
