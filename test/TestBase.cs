@@ -8,6 +8,7 @@ public abstract class TestBase
     // Create a seed for the tests
     protected TestBase(ITestOutputHelper output)
     {
+        DotNetEnv.Env.TraversePath().Load();
         Seed = Random.Shared.Next();
         output.WriteLine($"Test seed: {Seed}");
     }
