@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 using giraf_core_v2.Auth;
@@ -8,7 +7,9 @@ using giraf_core_v2.Utils;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+
+// Load environment variables
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +41,6 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<TokenProvider>();
 
 builder.Services.AddValidation();
-
-
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
 {
@@ -74,9 +73,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
-
-// Load environment variables
-DotNetEnv.Env.Load();
 
 app.UseSwagger();
 app.UseSwaggerUI();
