@@ -10,7 +10,7 @@ public static class LegacyUserEndpoints
         var group = app.MapGroup("legacy/users");
 
         group.MapDelete("/delete", DeleteCurrentUser);
-        group.MapGet("/getLoggedIn",GetCurrentUser);
+        group.MapGet("/getLoggedIn", GetCurrentUser);
 
 
     }
