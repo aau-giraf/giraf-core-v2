@@ -208,4 +208,44 @@ public class NonCitizenServiceTest : TestBase
         Assert.NotNull(remainingUserRoles);
     }
 
+    
+    [Fact]
+    public async Task PostUserRole_PostsCorrectUserRole()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 3, nonCitizen.Id);
+
+        // Used to ensure the new userRoleFaker does not hit one of the 3 generated userRoles. (Create a test for that instance)
+        List<int> userRoleOrgIds = new List<int>();
+        foreach (var userRole in userRoles)
+        {
+            userRoleOrgIds.Add(userRole.OrganizationId);
+        } 
+
+        // Faker userRole
+        UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(urf => urf.NonCitizenId,f => nonCitizen.Id)
+                                    .RuleFor(urf => urf.Role,f => f.PickRandom<RoleType>())
+                                    .RuleFor(urf => urf.OrganizationId, userRoleOrgIds.Max() + 1);
+
+        //----- ACT -----\\              
+        var service = new NonCitizenService(db);
+
+        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
+        {
+            RoleOrganizationTuple = (userRoleFaker.Role, userRoleFaker.OrganizationId)
+        });
+
+         //----- ASSERT -----\\  
+        Assert.NotNull(fetchedUserRoles);
+        Assert.Equal(4, fetchedUserRoles.RoleOrganizationTuples.Count);
+        Assert.Contains((userRoleFaker.Role, userRoleFaker.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+       
+    }
+
+
+
 }
