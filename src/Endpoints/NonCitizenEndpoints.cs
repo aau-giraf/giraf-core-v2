@@ -21,13 +21,13 @@ public static class NonCitizenEndpoints
 
     }
 
-    private static async Task<Results<Ok<ResponseGetNonCitizenDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<ResponseNonCitizenDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(nonCitizenId);
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
     }
 
-    private static async Task<Results<Ok<ResponseGetNonCitizenDTO>, NotFound>> PatchNonCitizen(int nonCitizenId, [FromBody] RequestPatchNonCitizenDTO requestPatchNonCitizenDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<ResponseNonCitizenDTO>, NotFound>> PatchNonCitizen(int nonCitizenId, [FromBody] RequestPatchNonCitizenDTO requestPatchNonCitizenDTO, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.PatchNonCitizenAsync(nonCitizenId, requestPatchNonCitizenDTO);
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
@@ -39,7 +39,7 @@ public static class NonCitizenEndpoints
         return nonCitizen ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseGetNonCitizenDTO>, NotFound>> PostNonCitizen(int nonCitizenId, [FromBody] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<ResponseNonCitizenDTO>, NotFound>> PostNonCitizen(int nonCitizenId, [FromBody] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.PostNonCitizenAsync(requestPostNonCitizenDTO);
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
