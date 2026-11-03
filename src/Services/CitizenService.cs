@@ -38,7 +38,7 @@ public class CitizenService(AppDbContext db)
             Password = BCrypt.Net.BCrypt.HashPassword(dto.Password, 12),
             Username = dto.Username,
         };
-        
+
         var schoolClass = await _db.Classes.FindAsync(dto.ClassId);
         if (schoolClass is null)
         {
@@ -75,7 +75,7 @@ public class CitizenService(AppDbContext db)
             }
             citizen.ClassId = dto.ClassId.Value;
         }
-        
+
         if (dto.FirstName is not null) citizen.FirstName = dto.FirstName;
         if (dto.LastName is not null) citizen.LastName = dto.LastName;
         if (dto.Username is not null) citizen.Username = dto.Username;
