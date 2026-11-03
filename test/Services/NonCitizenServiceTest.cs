@@ -21,7 +21,6 @@ public class NonCitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
-        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 2, nonCitizen.Id);
 
         var service = new NonCitizenService(db);
 
@@ -34,7 +33,6 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizen.LastName, fetchedNonCitizen!.LastName);
         Assert.Equal(nonCitizen.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizen.Email, fetchedNonCitizen!.Email);
-
     }
 
     [Fact]
@@ -151,4 +149,63 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizenFaker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
     }
+    
+    [Fact]
+    public async Task GetUserRoles_GetsCorrectUserRoles()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 3, nonCitizen.Id);
+
+        var service = new NonCitizenService(db);
+
+        //----- ACT -----\\
+        var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
+
+        //----- ASSERT -----\\
+        Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
+        foreach (var userRole in nonCitizen.Roles)
+        {
+            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteUserRole_DeletesCorrectUserRole()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 3, nonCitizen.Id);
+        List<(RoleType, int)> ogUserRoles = new List<(RoleType, int)>();
+
+        foreach (var userRole in userRoles)
+        {
+            ogUserRoles.Add((userRole.Role, userRole.OrganizationId));
+        }
+
+        // Format useRole to Request format
+        (RoleType, int) roleOrganizationTuple = (userRoles.First().Role, userRoles.First().OrganizationId);
+
+        var service = new NonCitizenService(db);
+
+        Assert.True(await service.DeleteUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
+        {
+            RoleOrganizationTuple = roleOrganizationTuple
+        }));
+
+        var deletedUserRole = await db.UserRoles
+            .SingleOrDefaultAsync(ur => ur.NonCitizenId == nonCitizen.Id && ur.Role == roleOrganizationTuple.Item1 && ur.OrganizationId == roleOrganizationTuple.Item2);
+
+        Assert.Null(deletedUserRole);
+
+        // Make sure the other userRoles was not accidentally deleted
+        var remainingUserRoles = await db.UserRoles.ToListAsync();
+        Assert.Equal(2,remainingUserRoles.Count);
+        Assert.NotNull(remainingUserRoles);
+    }
+
 }
