@@ -183,7 +183,7 @@ public class CitizenServiceTest : TestBase
             .RuleFor(u => u.ClassId, schoolClass.Id)
             .RuleFor(u => u.Username, f => f.Person.UserName)
             .RuleFor(u => u.Password, f => f.Random.Word());
-        
+
         var service = new CitizenService(db);
         var created = await service.CreateCitizenAsync(request);
 
@@ -194,19 +194,19 @@ public class CitizenServiceTest : TestBase
         Assert.Equal(request.Username, created.Username);
         Assert.Equal(request.ClassId, created.ClassId);
         Assert.Null(created.Password);
-        
+
         // Assert the citizen was actually saved
         var saved = await db.Citizens.SingleAsync(c => c.Username == request.Username);
         Assert.Equal(request.FirstName, saved.FirstName);
         Assert.Equal(request.LastName, saved.LastName);
         Assert.Equal(schoolClass.Id, saved.ClassId);
-        
+
         // Assert the password was hashed, not stored as plain text
         Assert.NotEqual(request.Password, saved.Password);
         Assert.True(BCrypt.Net.BCrypt.Verify(request.Password, saved.Password));
     }
-    
-    
 
-    
+
+
+
 }

@@ -37,7 +37,7 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizen.Roles.Count, fetchedNonCitizen!.RoleOrganizationTuples.Count);
         foreach (var userRole in nonCitizen.Roles)
         {
-            Assert.Contains((userRole.Role,userRole.OrganizationId), fetchedNonCitizen.RoleOrganizationTuples);
+            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedNonCitizen.RoleOrganizationTuples);
         }
     }
 
@@ -122,7 +122,7 @@ public class NonCitizenServiceTest : TestBase
         Assert.True(BCrypt.Net.BCrypt.Verify(Password, nonCitizenFaker.Password));
         Assert.Equal(ogUserRoles.Count + 1, fetchedNonCitizen.RoleOrganizationTuples.Count);
         Assert.Distinct(fetchedNonCitizen.RoleOrganizationTuples);
-        Assert.DoesNotContain(userRoleFaker, ogUserRoles);  
+        Assert.DoesNotContain(userRoleFaker, ogUserRoles);
         foreach (var ogUserRole in ogUserRoles)
         {
             Assert.Contains((ogUserRole.Role, ogUserRole.OrganizationId), fetchedNonCitizen.RoleOrganizationTuples);

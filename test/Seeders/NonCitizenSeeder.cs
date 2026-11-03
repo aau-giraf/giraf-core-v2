@@ -47,11 +47,11 @@ public static class NonCitizenSeeder
     {
         return new Faker<NonCitizen>()
             .UseSeed(seed)
-            .RuleFor(nc => nc.Id, f => f.Random.Int(1,1000000))
+            .RuleFor(nc => nc.Id, f => f.Random.Int(1, 1000000))
             .RuleFor(nc => nc.FirstName, f => f.Name.FirstName())
             .RuleFor(nc => nc.LastName, f => f.Name.LastName())
             .RuleFor(nc => nc.Username, f => f.Internet.UserName())
             .RuleFor(nc => nc.Email, f => f.Internet.Email())
             .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(f.Internet.Password(), 12));
-        }
+    }
 }
