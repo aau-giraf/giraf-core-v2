@@ -16,8 +16,8 @@ public static class NonCitizenEndpoints
 
         group.MapGet("/{id:int}/userRoles", GetUserRoles); // 200 & 404
         // No patch - All fields of UserRoles models are without setters. (Use PostUserRole instead)
-        group.MapDelete("/{id:int}/userRoles", DeleteUserRoles); //200 & 404
-        group.MapPost("/{id:int}/userRoles", PostUserRoles); //200 & 404
+        group.MapDelete("/{id:int}/userRoles", DeleteUserRole); //200 & 404
+        group.MapPost("/{id:int}/userRoles", PostUserRole); //200 & 404
 
     }
 
@@ -60,7 +60,7 @@ public static class NonCitizenEndpoints
     private static async Task<Results<Ok<ResponseNonCitizenUserRolesDTO>, NotFound>> PostUserRole(int nonCitizenId, [FromBody] RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO, NonCitizenService nonCitizenService)
     {
         var userRoles = await nonCitizenService.PostUserRoleAsync(nonCitizenId, requestNonCitizenUserRoleDTO);
-        return userRoles == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
+        return userRoles == null ? TypedResults.NotFound() : TypedResults.Ok(userRoles);
     }
 
 

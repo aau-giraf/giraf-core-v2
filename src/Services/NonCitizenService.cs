@@ -316,7 +316,7 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check if userRole exists
-        var userRoleExists = await _db.UserRoles.AnyAsync(ur =>
+        var userRoleExists = nonCitizen.Roles.Any(ur =>
              ur.NonCitizenId == nonCitizenId &&
              ur.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1 &&
              ur.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2
@@ -333,14 +333,14 @@ public class NonCitizenService(AppDbContext db)
             NonCitizenId = nonCitizen.Id,
             NonCitizen = nonCitizen,
             OrganizationId = requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2,
-            Organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1)
+            Organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2)
         };
 
         _db.UserRoles.Add(createdUserRole);
         await _db.SaveChangesAsync();
 
         // Find the updated list of userRoles
-        var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizen.Id).AsNoTracking().ToListAsync();
+        var userRoles = nonCitizen.Roles.ToList();
 
         // Select only the needed from userRole or else it would eagerly fetch FK fields. 
         List<(RoleType, int)> roleOrganizationTuples = [];
