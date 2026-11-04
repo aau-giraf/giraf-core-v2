@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+using Bogus.DataSets;
+
 using DotNet.Testcontainers.Configurations;
 
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -13,6 +15,8 @@ public class NonCitizenServiceTest : TestBase
 
     // Used to offset seed for different results.
     private readonly int SEED_OFFSET = 123;
+
+    // ---------- /nonCitizens ---------- \\
 
     [Fact]
     public async Task GetNonCitizenById_GetsCorrectNonCitizenId()
@@ -150,6 +154,8 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
     }
 
+    // ---------- /userRoles ---------- \\
+
     [Fact]
     public async Task GetUserRoles_GetsCorrectUserRoles()
     {
@@ -157,8 +163,12 @@ public class NonCitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
-        int? organizationId = null;
-        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 4, organizationId, nonCitizen.Id);
+
+        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organization1 = organizations[0];
+        var organization2 = organizations[1];
+
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, [(organization1.Id, nonCitizen.Id), (organization2.Id, nonCitizen.Id)]);
 
         var service = new NonCitizenService(db);
 
@@ -180,8 +190,13 @@ public class NonCitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
-        int? organizationId = null;
-        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 3, organizationId, nonCitizen.Id);
+
+        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 3);
+        var organization1 = organizations[0];
+        var organization2 = organizations[1];
+        var organization3 = organizations[2];
+
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, [(organization1.Id, nonCitizen.Id), (organization2.Id, nonCitizen.Id), (organization3.Id, nonCitizen.Id)]);
 
         List<(RoleType, int)> ogUserRoles = new List<(RoleType, int)>();
 
@@ -219,14 +234,19 @@ public class NonCitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 1, organization.Id, nonCitizen.Id);
+
+        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 3);
+        var organization1 = organizations[0];
+        var organization2 = organizations[1];
+        var organization3 = organizations[2];
+
+        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, [(organization1.Id, nonCitizen.Id), (organization2.Id, nonCitizen.Id)]);
 
         // Faker userRole
         UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
-                                    .RuleFor(urf => urf.OrganizationId, organization.Id);
+                                    .RuleFor(urf => urf.OrganizationId, organization3.Id);
 
         //----- ACT -----\\              
         var service = new NonCitizenService(db);
@@ -238,10 +258,40 @@ public class NonCitizenServiceTest : TestBase
 
         //----- ASSERT -----\\  
         Assert.NotNull(fetchedUserRoles);
-        Assert.Equal(2, fetchedUserRoles.RoleOrganizationTuples.Count);
+        Assert.Equal(3, fetchedUserRoles.RoleOrganizationTuples.Count);
         Assert.Contains((userRoleFaker.Role, userRoleFaker.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
 
     }
 
+    // ---------- /guardianships ---------- \\
+
+    [Fact]
+    public async Task GetGuardianships_GetsCorrectguardianships()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+
+        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 4);
+        var citizen1 = citizens[0];
+        var citizen2 = citizens[1];
+
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(nonCitizen.Id, citizen1.citizen.Id), (nonCitizen.Id, citizen2.citizen.Id)]);
+        var guardianship1 = guardianships[0];
+        var guardianship2 = guardianships[1];
+
+        var service = new NonCitizenService(db);
+
+        //----- ACT -----\\
+        var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
+
+        //----- ASSERT -----\\
+        Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
+        foreach (var userRole in nonCitizen.Roles)
+        {
+            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+        }
+    }
 
 }

@@ -12,6 +12,8 @@ public class NonCitizenService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
+    // ---------- /nonCitizens ---------- \\
+
     // Fetch the NonCitizen by NonCitizenId from Route parameter
     public async Task<ResponseNonCitizenDTO?> GetNonCitizenByIdAsync(int nonCitizenId)
     {
@@ -153,7 +155,7 @@ public class NonCitizenService(AppDbContext db)
     }
 
 
-    // ---------- /UserRoles ---------- \\
+    // ---------- /userRoles ---------- \\
 
     public async Task<ResponseNonCitizenUserRolesDTO?> GetUserRolesAsync(int nonCitizenId)
     {
@@ -264,7 +266,7 @@ public class NonCitizenService(AppDbContext db)
         };
     }
 
-    // ---------- /Guardianships ---------- \\
+    // ---------- /guardianships ---------- \\
     public async Task<ResponseGuardianshipsDTO?> GetGuardianshipsAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
