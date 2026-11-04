@@ -92,7 +92,7 @@ public static class ImageSeeder
 
     private static readonly HashSet<string> BlockedFileExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".jpeg", ".jpg", ".png", ".heic", ".webp"
+        "jpeg", "jpg", "png", "heic", "webp"
     };
 
     private static string RandomCommonFileExt(Faker f)

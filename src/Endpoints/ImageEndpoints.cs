@@ -13,7 +13,7 @@ public static class ImageEndpoints
         group.MapGet("/{image_id}", GetImageById);
         group.MapGet("/", GetAllImages);
         group.MapGet("/Citizen/{cit_id}", GetImagesByCitizenId);
-        group.MapPost("/", PostImage);
+        group.MapPost("/", PostImage).DisableAntiforgery(); // needed for us to sent a Form via Postman/bruno
         group.MapDelete("/{image_id}", DeleteImage);
     }
     // GET imagees by ID
@@ -46,7 +46,8 @@ public static class ImageEndpoints
     }
 
     // POST image
-    private static async Task<Results<Created<Image>, BadRequest>> PostImage([FromBody] PostImageDTO? imageRequest, ImageService imageService)
+    // Needs to be from form for us to upload pictures
+    private static async Task<Results<Created<Image>, BadRequest>> PostImage([FromForm] PostImageDTO? imageRequest, ImageService imageService)
     {
         if (imageRequest is null)
         {

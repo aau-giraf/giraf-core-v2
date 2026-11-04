@@ -37,11 +37,11 @@ public class PostImageDTOTest : TestBase
     }
 
     [Theory]
-    [InlineData(".jpeg")]
-    [InlineData(".jpg")]
-    [InlineData(".png")]
-    [InlineData(".heic")]
-    [InlineData(".webp")]
+    [InlineData("jpeg")]
+    [InlineData("jpg")]
+    [InlineData("png")]
+    [InlineData("heic")]
+    [InlineData("webp")]
     public void Validate_PassesWithCorrectFileExt(string ext)
     {
         var dto = ImageSeeder.CreateRequestBody(Seed, ext: ext);

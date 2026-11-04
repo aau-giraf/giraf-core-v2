@@ -206,7 +206,7 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -236,7 +236,7 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -336,12 +336,30 @@ public class ImageServiceTest : TestBase
         }
     }
 
+    [Theory]
+    [InlineData(1, 0, false)] // mismatch between orgId and classId in request
+    [InlineData(0, 1, true)]  // mismatch between classId and citizenId in request
+    [InlineData(1, 0, true)]  // mismatch between orgId and classId in request
+    public async Task PostImageAsync_mismatchInRequest(int orgOffset, int classOffset, bool isClassNull)
+    {
+        await using var db = CreateDbContext();
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id + orgOffset);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, classId: class_.Id + classOffset);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: isClassNull ? null : class_.Id, citizenId: citizen.Id);
+
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+
+        Assert.Null(created);
+    }
+
     [Fact]
     public async Task MultipleServiceComponentsTest()
     {
         await using var db = CreateDbContext();
         var organization = OrganizationSeeder.SeedAsync(db, Seed);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id);
+        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
         var service = new ImageService(db);
         string? path = null;
 

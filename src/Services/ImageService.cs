@@ -60,14 +60,41 @@ public class ImageService(AppDbContext db)
         return await _db.Organizations.FindAsync(orgId);
     }
 
+    private async Task<bool> ConsistencyCheck(int orgId, int? classId, int? citizenId)
+    {
+        if (classId == null && citizenId == null)
+        {
+            return true;
+        }
+
+        if (classId == null)
+        {
+            var citizen = await _db.Citizens.FindAsync(citizenId);
+            var class_ = await _db.Classes.FindAsync(citizen?.ClassId);
+            return class_?.OrganizationId == orgId;
+        }
+        else
+        {
+            var class_ = await _db.Classes.FindAsync(classId);
+            return class_?.OrganizationId == orgId;
+        }
+    }
+
     public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
 
-        var organization = imageRequest.OrganizationId != null ? await _db.Organizations.FindAsync(imageRequest.OrganizationId) : await FindOrganizationAsync(imageRequest);
 
+        var organization = imageRequest.OrganizationId != null ? await _db.Organizations.FindAsync(imageRequest.OrganizationId) : await FindOrganizationAsync(imageRequest);
         if (organization == null)
         { // If it is not possible to connect the request to an org return null
+            return null;
+        }
+
+        bool are_consistent = await ConsistencyCheck(organization.Id, imageRequest.ClassId, imageRequest.CitizenId);
+
+        if (!are_consistent)
+        {
             return null;
         }
 
