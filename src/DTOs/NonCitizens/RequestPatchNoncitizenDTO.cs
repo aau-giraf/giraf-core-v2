@@ -24,6 +24,4 @@ public class RequestPatchNonCitizenDTO
     [Length(3, 255)]
     public required string? OldPassword { get; set; }
 
-    public ICollection<(RoleType, int)>? UpdatedRoleOrganizationTuples { get; set; } = [];
-
 }

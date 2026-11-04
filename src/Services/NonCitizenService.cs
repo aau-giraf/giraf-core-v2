@@ -2,7 +2,9 @@
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography.X509Certificates;
 
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 
 namespace giraf_core_v2.Services;
 
@@ -10,8 +12,8 @@ public class NonCitizenService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    // Fetch the NonCitizen by NoncitizenId from Route parameter
-    public async Task<ResponseGetNonCitizenDTO?> GetNonCitizenByIdAsync(int nonCitizenId)
+    // Fetch the NonCitizen by NonCitizenId from Route parameter
+    public async Task<ResponseNonCitizenDTO?> GetNonCitizenByIdAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
@@ -20,21 +22,19 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
-        ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
+        ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
         {
             Id = nonCitizen!.Id,
             FirstName = nonCitizen.FirstName,
             LastName = nonCitizen.LastName,
             Email = nonCitizen.Email,
             Username = nonCitizen.Username,
-            Roles = nonCitizen.Roles,
-            Guardianships = nonCitizen.Guardianships
         };
 
         return responseNonCitizen;
     }
 
-    public async Task<ResponseGetNonCitizenDTO?> PatchNonCitizenAsync(int nonCitizenId, RequestPatchNonCitizenDTO requestPatchNonCitizenDTO)
+    public async Task<ResponseNonCitizenDTO?> PatchNonCitizenAsync(int nonCitizenId, RequestPatchNonCitizenDTO requestPatchNonCitizenDTO)
     {
         //----- Changes to NonCitizen relation -----\\
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
@@ -46,10 +46,6 @@ public class NonCitizenService(AppDbContext db)
         if (requestPatchNonCitizenDTO.LastName is not null)
         {
             nonCitizen!.LastName = requestPatchNonCitizenDTO.LastName;
-        }
-        if (requestPatchNonCitizenDTO.Email is not null)
-        {
-            nonCitizen!.Email = requestPatchNonCitizenDTO.Email;
         }
         if (requestPatchNonCitizenDTO.Username is not null)
         {
@@ -63,78 +59,18 @@ public class NonCitizenService(AppDbContext db)
         // Save changes made to nonCitizen relation
         await _db.SaveChangesAsync();
 
-        //----- Changes to userRole relation -----\\
-        if (requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples is not null)
-        {
-            // Find the current list of userRoles tied to the nonCitizen
-            var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizenId).ToListAsync();
-
-            /* Add case:
-                For each entry in updatedRoleOrganizationTuples: If said entry does not already exist as a UserRole
-                Then Add it as a UserRole to the db 
-            */
-            foreach ((RoleType, int) updatedRoleOrganizationTuple in requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples!)
-            {
-                // Check if there exists and userRole corresponding to element in 
-                var userRoleExists = userRoles.Any(
-                    ur => ur.NonCitizenId == nonCitizenId &&
-                    ur.Role == updatedRoleOrganizationTuple.Item1 &&
-                    ur.OrganizationId == updatedRoleOrganizationTuple.Item2);
-
-                // If a userRoleExists is false -> 
-                if (userRoleExists is false)
-                {
-                    UserRole createdUserRole = new UserRole
-                    {
-                        NonCitizenId = nonCitizenId,
-                        NonCitizen = nonCitizen,
-                        Role = updatedRoleOrganizationTuple.Item1,
-                        OrganizationId = updatedRoleOrganizationTuple.Item2,
-                        Organization = await _db.Organizations.FindAsync(updatedRoleOrganizationTuple.Item2)
-                    };
-
-                    _db.UserRoles.Add(createdUserRole);
-                    await _db.SaveChangesAsync();
-                }
-            }
-
-            /* Remove case:
-                For each element in userRoles: If said element is not part of the new updatedRoleOrganizationTuples
-                Then Remove that UserRole from the db 
-            */
-            foreach (UserRole userRole in userRoles)
-            {
-                var UpdatedRoleOrganizationTupleContains = requestPatchNonCitizenDTO.UpdatedRoleOrganizationTuples.Any(
-                    urot => urot.Item1 == userRole.Role &&
-                    urot.Item2 == userRole.OrganizationId
-                );
-
-                if (UpdatedRoleOrganizationTupleContains is false)
-                {
-                    _db.UserRoles.Remove(userRole);
-                    await _db.SaveChangesAsync();
-                }
-            }
-        }
-
-
-        // Find the updated nonCitizen in db
-        var updatedNonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
-
-        if (updatedNonCitizen is null)
+        if (nonCitizen is null)
         {
             return null;
         }
 
-        ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
+        ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
         {
-            Id = updatedNonCitizen!.Id,
-            FirstName = updatedNonCitizen.FirstName!,
-            LastName = updatedNonCitizen.LastName!,
-            Email = updatedNonCitizen.Email!,
-            Username = updatedNonCitizen.Username!,
-            Roles = updatedNonCitizen.Roles,
-            Guardianships = updatedNonCitizen.Guardianships
+            Id = nonCitizen!.Id,
+            FirstName = nonCitizen.FirstName!,
+            LastName = nonCitizen.LastName!,
+            Email = nonCitizen!.Email!,
+            Username = nonCitizen.Username!,
         };
 
         return responseNonCitizen;
@@ -158,13 +94,13 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseGetNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
+    public async Task<ResponseNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
-        // Get all roles from RoleOrganizationTuples
-        List<RoleType> roleTypes = new List<RoleType>();
-        foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
+        var isNotUnique = await _db.NonCitizens.AnyAsync(nc => nc.Email == requestPostNonCitizenDTO.Email);
+
+        if (isNotUnique == true)
         {
-            roleTypes.Add(roleOrganizationTuples.Item1);
+            return null;
         }
 
         if (
@@ -172,7 +108,6 @@ public class NonCitizenService(AppDbContext db)
             requestPostNonCitizenDTO.LastName is not null &&
             requestPostNonCitizenDTO.Email is not null &&
             requestPostNonCitizenDTO.Username is not null &&
-            requestPostNonCitizenDTO.RoleOrganizationTuples is not null &&
             requestPostNonCitizenDTO.Password is not null
         )
         {
@@ -189,22 +124,6 @@ public class NonCitizenService(AppDbContext db)
             // Add the new nonCitizen instance to the db
             _db.NonCitizens.Add(createdNonCitizen);
             await _db.SaveChangesAsync();
-
-            // Add the nonCitizens new UserRole to the db
-            foreach ((RoleType, int) roleOrganizationTuples in requestPostNonCitizenDTO.RoleOrganizationTuples)
-            {
-                UserRole createdUserRole = new UserRole()
-                {
-                    Role = roleOrganizationTuples.Item1,
-                    NonCitizenId = createdNonCitizen.Id,
-                    NonCitizen = createdNonCitizen,
-                    OrganizationId = roleOrganizationTuples.Item2,
-                    Organization = await _db.Organizations.FindAsync(roleOrganizationTuples.Item2)
-                };
-
-                _db.UserRoles.Add(createdUserRole);
-                await _db.SaveChangesAsync();
-            }
         }
 
         // Find created nonCitizen in db
@@ -221,18 +140,228 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
-        ResponseGetNonCitizenDTO responseNonCitizen = new ResponseGetNonCitizenDTO
+        ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
         {
             Id = nonCitizen!.Id,
-            FirstName = requestPostNonCitizenDTO.FirstName!,
-            LastName = requestPostNonCitizenDTO.LastName!,
-            Email = requestPostNonCitizenDTO.Email!,
-            Username = requestPostNonCitizenDTO.Username!,
-            Roles = nonCitizen.Roles,
-            Guardianships = nonCitizen.Guardianships
+            FirstName = nonCitizen.FirstName!,
+            LastName = nonCitizen.LastName!,
+            Email = nonCitizen.Email!,
+            Username = nonCitizen.Username!,
         };
 
         return responseNonCitizen;
     }
+
+
+    // ---------- /UserRoles ---------- \\
+
+    public async Task<ResponseNonCitizenUserRolesDTO?> GetUserRolesAsync(int nonCitizenId)
+    {
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+
+        if (nonCitizen is null)
+        {
+            return null;
+        }
+
+        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        List<(RoleType, int)> roleOrganizationTuples = [];
+        foreach (UserRole userRole in nonCitizen.Roles)
+        {
+            roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        }
+
+        return new ResponseNonCitizenUserRolesDTO
+        {
+            NonCitizenId = nonCitizen!.Id,
+            RoleOrganizationTuples = roleOrganizationTuples,
+        };
+    }
+
+    public async Task<bool> DeleteUserRoleAsync(int nonCitizenId, RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO)
+    {
+        if (await _db.UserRoles.AnyAsync(ur =>
+             ur.NonCitizenId == nonCitizenId &&
+             ur.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2 &&
+             ur.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1
+             ))
+        {
+            var userRole = await _db.UserRoles
+            .FindAsync(nonCitizenId, requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1, requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2);
+
+            if (
+                userRole!.NonCitizenId == nonCitizenId &&
+                userRole.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2 &&
+                userRole.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1 &&
+                userRole is not null
+                )
+            {
+                _db.UserRoles.Remove(userRole);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public async Task<ResponseNonCitizenUserRolesDTO?> PostUserRoleAsync(int nonCitizenId, RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO)
+    {
+
+        // Check nonCitizen exists
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+
+        if (nonCitizen is null)
+        {
+            return null;
+        }
+
+        var organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2);
+        if (organization is null)
+        {
+            return null;
+        }
+
+        // Check if userRole exists
+        var userRoleExists = await _db.UserRoles.AnyAsync(ur =>
+             ur.NonCitizenId == nonCitizenId &&
+             ur.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1 &&
+             ur.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2
+            );
+
+        if (userRoleExists is true)
+        {
+            return null;
+        }
+
+        var createdUserRole = new UserRole()
+        {
+            Role = requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1,
+            NonCitizenId = nonCitizen.Id,
+            NonCitizen = nonCitizen,
+            OrganizationId = requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2,
+            Organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2)
+        };
+
+        _db.UserRoles.Add(createdUserRole);
+        await _db.SaveChangesAsync();
+
+        // Find the updated list of userRoles
+        var userRoles = nonCitizen.Roles.ToList();
+
+        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        List<(RoleType, int)> roleOrganizationTuples = [];
+
+        foreach (var userRole in userRoles)
+        {
+            roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        }
+
+        // Return in correct format
+        return new ResponseNonCitizenUserRolesDTO()
+        {
+            NonCitizenId = nonCitizen.Id,
+            RoleOrganizationTuples = roleOrganizationTuples
+        };
+    }
+
+    // ---------- /Guardianships ---------- \\
+    public async Task<ResponseGuardianshipsDTO?> GetGuardianshipsAsync(int nonCitizenId)
+    {
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+
+        if (nonCitizen is null)
+        {
+            return null;
+        }
+
+        // Select the citizens belonging to the specified guardian
+        List<int> citizens = [];
+        foreach (var guardian in nonCitizen.Guardianships)
+        {
+            citizens.Add(guardian.CitizenId);
+        }
+
+        return new ResponseGuardianshipsDTO
+        {
+            CitizenIds = citizens,
+            NonCitizenId = nonCitizen!.Id
+        };
+    }
+
+    public async Task<bool> DeleteGuardianshipAsync(int nonCitizenId, RequestGuardianshipDTO requestGuardianshipDTO)
+    {
+        if (await _db.Guardianships.AnyAsync(gs =>
+             gs.CitizenId == requestGuardianshipDTO.CitizenId &&
+             gs.GuardianId == nonCitizenId
+             ))
+        {
+            var guardianship = await _db.Guardianships
+            .FindAsync(requestGuardianshipDTO.CitizenId, nonCitizenId);
+
+            if (
+                guardianship!.GuardianId == nonCitizenId &&
+                guardianship.CitizenId == requestGuardianshipDTO.CitizenId &&
+                guardianship is not null
+                )
+            {
+                _db.Guardianships.Remove(guardianship);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public async Task<ResponseGuardianshipsDTO?> PostGuardianshipAsync(int nonCitizenId, RequestGuardianshipDTO requestGuardianshipDTO)
+    {
+
+        // Check nonCitizen exists
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+
+        if (nonCitizen is null)
+        {
+            return null;
+        }
+
+        // Check if guardianship exists
+        var guardianshipExists = await _db.Guardianships.AnyAsync(
+            gs => gs.CitizenId == requestGuardianshipDTO.CitizenId &&
+            gs.GuardianId == nonCitizenId);
+
+        if (guardianshipExists is true)
+        {
+            return null;
+        }
+
+        var createdGuardianship = new Guardianship()
+        {
+            CitizenId = requestGuardianshipDTO.CitizenId,
+            Citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId),
+            GuardianId = nonCitizenId,
+            Guardian = nonCitizen
+        };
+
+        _db.Guardianships.Add(createdGuardianship);
+        await _db.SaveChangesAsync();
+
+        // Find the updated list of citizens
+        var guardianships = nonCitizen.Guardianships.ToList();
+
+        // Select only the needed from guardianships
+        List<int> citizens = [];
+
+        foreach (var guardian in guardianships)
+        {
+            citizens.Add(guardian.CitizenId);
+        }
+
+        // Return in correct format
+        return new ResponseGuardianshipsDTO()
+        {
+            NonCitizenId = nonCitizen.Id,
+            CitizenIds = citizens,
+        };
+    }
+
 
 }
