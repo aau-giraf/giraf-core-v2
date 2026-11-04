@@ -23,7 +23,7 @@ public class PostImageDTO : IValidatableObject
         {
             yield return new ValidationResult(
                 "Enten CitizenId, ClassId eller Organization skal være udfyldt.",//maybe in english
-                new[] { nameof(CitizenId), nameof(ClassId), nameof(Organization) }
+                new[] { nameof(PostImageDTO) }
             );
         }
 
