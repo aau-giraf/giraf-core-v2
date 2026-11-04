@@ -1,40 +1,38 @@
-// using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+namespace giraf_core_v2.Legacy_2.DTOs.LegacyUserDTO;
 
-// using Microsoft.EntityFrameworkCore;
-// using Microsoft.EntityFrameworkCore.Metadata.Builders;
+public enum LegacyUserRole
+{
+    Admin = 1 << 0,    // 1
+    Child = 1 << 1,    // 2
+    Teacher = 1 << 2,    // 4
+    Parent = 1 << 3     // 8
+}
+// User DTO - pretty much copied from foodplanner 
+public class LegacyUserDTO
+{
+    [Key]
+    public int Id { get; set; }
 
-// namespace giraf_core_v2.Models;
+    [Required(ErrorMessage = "Fornavn er påkrævet")]
+    [StringLength(100, ErrorMessage = "Fornavn er for langt")]
+    public required string FirstName { get; set; }
 
-// enum Roles
-// {
-//     Child,
-//     Teacher,
-//     Parent,
-//     Admin
-// }
+    [Required(ErrorMessage = "Efternavn er påkrævet")]
+    [StringLength(100, ErrorMessage = "Efternavn er for langt")]
+    public required string LastName { get; set; }
 
-// [Index(nameof(Username), IsUnique = true)] //To enforce UNIQUE constraint
-// public abstract class LegacyUserDTO
-// {
-//     [Key]
-//     public int Id { get; init; }
-//     public required string FirstName { get; set; }
-//     public required string LastName { get; set; }
-//     public required string Email { get; set; }
-//     public required Roles Role { get; set; } //Issue her? Idk hvad problemet er? 
+    [Required(ErrorMessage = "Email er påkrævet")]
+    [EmailAddress(ErrorMessage = "Email er ikke gyldig")]
+    [StringLength(100, ErrorMessage = "Email er for langt")]
+    public required string Email { get; set; }
 
-//     public required Boolean roleApproved { get; set; }
+    [Required(ErrorMessage = "Role er påkrævet")]
+    public required LegacyUserRole Role { get; set; }
 
-//     public required Boolean archived { get; set; }
+    public required bool RoleApproved { get; set; }
 
-// }
+    public bool Archived { get; set; }
+}
 
-// // public class LegacyUserConfiguration : IEntityTypeConfiguration<User>
-// // {
-// //     public void Configure(EntityTypeBuilder<User> builder)
-// //     {
-// //         /* TPT (Table-per-Type): all types in the User hierarchy mapped to individual db tables, joined by PK/FK Id
-// //         Allows polymorphism in user handling, maintaining shared constraints - e.g. UNIQUE Username.*/
-// //         builder.UseTptMappingStrategy();
-// //     }
-// // }
+
