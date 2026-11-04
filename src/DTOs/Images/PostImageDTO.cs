@@ -22,8 +22,8 @@ public class PostImageDTO : IValidatableObject
         if (CitizenId == null && ClassId == null && OrganizationId == null)
         {
             yield return new ValidationResult(
-                "Enten CitizenId, ClassId eller Organization skal være udfyldt.",//maybe in english
-                new[] { nameof(CitizenId), nameof(ClassId), nameof(Organization) }
+                "CitizenId, ClassId and Organization cannot be null the same time",
+                new[] { nameof(PostImageDTO) }
             );
         }
 
@@ -37,8 +37,8 @@ public class PostImageDTO : IValidatableObject
         if (!string.IsNullOrEmpty(ext) && !allowedExtensions.Contains(ext))
         {
             yield return new ValidationResult(
-                "Filen, som er blevet uploadet har ikke den rigtige filtype", //maybe in english
-                new[] { nameof(ext) }
+                "The file extension needs to be either '.jpeg', '.jpg', '.png', '.heic' or '.webp' ",
+                new[] { nameof(File) }
             );
         }
     }

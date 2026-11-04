@@ -30,7 +30,6 @@ public static class ImageEndpoints
         return images is null ? TypedResults.NotFound() : TypedResults.Ok(images);
     }
 
-
     // GET all images
     private static async Task<Ok<List<Image>>> GetAllImages(ImageService imageService)
     {
