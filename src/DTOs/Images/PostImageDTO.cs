@@ -22,7 +22,7 @@ public class PostImageDTO : IValidatableObject
         if (CitizenId == null && ClassId == null && OrganizationId == null)
         {
             yield return new ValidationResult(
-                "CitizenId, ClassId and Organization cannot be null the same time",
+                "CitizenId, ClassId and Organization cannot be null at the same time",
                 new[] { nameof(PostImageDTO) }
             );
         }
