@@ -1,3 +1,5 @@
+using Microsoft.IdentityModel.JsonWebTokens;
+
 using Xunit.Abstractions;
 
 public class UserServiceTest : TestBase
@@ -363,5 +365,101 @@ public class UserServiceTest : TestBase
 
 
         Assert.False(BCrypt.Net.BCrypt.Verify(newPassword, user2!.Password));
+    }
+
+    [Fact]
+    public async Task Login_ReturnsExpectedDTOWithCorrectCredentials()
+    {
+        await using var db = CreateDbContext();
+
+        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+
+        Assert.NotNull(userInformation.User);
+        Assert.NotNull(userInformation.PlainPassword);
+
+        var service = new UserService(db);
+
+        LoginResponseDTO? result = await service.Login(
+            new LoginRequestDTO
+            {
+                Username = userInformation.User.Username,
+                Password = userInformation.PlainPassword
+            });
+
+        Assert.NotNull(result);
+        Assert.Equal(userInformation.User.FirstName, result.FirstName);
+        Assert.Equal(userInformation.User.LastName, result.LastName);
+        Assert.Equal(userInformation.User.Username, result.Username);
+        Assert.NotEmpty(result.Jwt);
+    }
+
+    [Fact]
+    public async Task Login_ReturnsNullWithIncorrectPassword()
+    {
+        await using var db = CreateDbContext();
+
+        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+
+        var service = new UserService(db);
+
+        LoginResponseDTO? result = await service.Login(
+            new LoginRequestDTO
+            {
+                Username = userInformation.User.Username,
+                Password = userInformation.PlainPassword + "incorrect-password"
+            });
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task Login_ReturnsNullWithIncorrectUsername()
+    {
+        await using var db = CreateDbContext();
+
+        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+
+        var service = new UserService(db);
+
+        LoginResponseDTO? result = await service.Login(
+            new LoginRequestDTO
+            {
+                Username = userInformation.User.Username + "wrong-name",
+                Password = userInformation.PlainPassword
+            });
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task Login_CorrectCredentialsReturnsValidJwt()
+    {
+        await using var db = CreateDbContext();
+
+        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+
+        var service = new UserService(db);
+
+        LoginResponseDTO? result = await service.Login(
+            new LoginRequestDTO
+            {
+                Username = userInformation.User.Username,
+                Password = userInformation.PlainPassword
+            });
+
+        // Verify result contains a JWT.
+        Assert.NotNull(result);
+        Assert.NotEmpty(result.Jwt);
+
+        // Validate JWT using environment variables.
+        var tokenHandler = new JsonWebTokenHandler();
+
+        var validationResult = await tokenHandler.ValidateTokenAsync(
+            result.Jwt,
+            TokenParameters.Get());
+
+        Assert.True(
+            validationResult.IsValid,
+            validationResult.Exception?.ToString());
     }
 }

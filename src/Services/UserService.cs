@@ -1,3 +1,7 @@
+using giraf_core_v2.Auth;
+
+using Microsoft.EntityFrameworkCore;
+
 public class UserService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
@@ -75,5 +79,26 @@ public class UserService(AppDbContext db)
 
         // Return 2 on successful password change.
         return 2;
+    }
+
+    public async Task<LoginResponseDTO?> Login(LoginRequestDTO loginRequestDTO)
+    {
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequestDTO.Username);
+
+        // If user doesn't exist or password is incorrect, return null.
+        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
+        {
+            return null;
+        }
+
+        TokenProvider tokenProvider = new();
+
+        return new LoginResponseDTO
+        {
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Username = user.Username,
+            Jwt = tokenProvider.Create(user)
+        };
     }
 }
