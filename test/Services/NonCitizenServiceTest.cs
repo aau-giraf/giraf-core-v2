@@ -273,7 +273,7 @@ public class NonCitizenServiceTest : TestBase
 
         var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
 
-        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 4);
+        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 2);
         var citizen1 = citizens[0];
         var citizen2 = citizens[1];
 
@@ -284,13 +284,13 @@ public class NonCitizenServiceTest : TestBase
         var service = new NonCitizenService(db);
 
         //----- ACT -----\\
-        var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
+        var fetchedGuardianships = await service.GetGuardianshipsAsync(nonCitizen.Id);
 
         //----- ASSERT -----\\
-        Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
-        foreach (var userRole in nonCitizen.Roles)
+        Assert.Equal(nonCitizen.Guardianships.Count, fetchedGuardianships!.CitizenIds.Count);
+        foreach (var guardianship in nonCitizen.Guardianships)
         {
-            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+            Assert.Contains(guardianship.CitizenId, fetchedGuardianships.CitizenIds);
         }
     }
 
