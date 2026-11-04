@@ -1,5 +1,3 @@
-using giraf_core_v2.Models;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 

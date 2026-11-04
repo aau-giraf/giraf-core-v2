@@ -7,11 +7,11 @@ using Microsoft.Extensions.Validation;
 public class RegisterUserDTO
 {
     [Required]
-    [Length(3, 255)]
+    [Length(2, 255)]
     public required string FirstName { get; set; }
 
     [Required]
-    [Length(3, 255)]
+    [Length(2, 255)]
     public required string LastName { get; set; }
 
     [Required]

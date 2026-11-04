@@ -8,6 +8,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
 
   db:
     image: postgres
@@ -33,5 +35,8 @@ services:
       target: test
     working_dir: /source
     command: dotnet test
+    env_file:
+      - .env
+
 volumes:
   pgdata:
