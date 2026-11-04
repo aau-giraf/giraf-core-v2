@@ -1,8 +1,8 @@
-using Xunit.Abstractions;
-
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.AspNetCore.Http;
+
+using Xunit.Abstractions;
 
 public class PostImageDTOTest : TestBase
 {
