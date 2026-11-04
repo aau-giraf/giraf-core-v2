@@ -118,7 +118,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -172,7 +172,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -262,7 +262,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -301,7 +301,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1);
         var class1 = classes[0];
         var class2 = classes[1];
 
