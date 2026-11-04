@@ -215,6 +215,12 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
+        var organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2);
+        if (organization is null)
+        {
+            return null;
+        }
+
         // Check if userRole exists
         var userRoleExists = nonCitizen.Roles.Any(ur =>
              ur.NonCitizenId == nonCitizenId &&
