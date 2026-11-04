@@ -33,49 +33,35 @@ public class ImageService(AppDbContext db)
 
     public async Task<bool> DeleteImageAsync(int image_id)
     {
-        var removedimage = await _db.Images.FindAsync(image_id);
-        if (removedimage is null) return false;
+        var removedImage = await _db.Images.FindAsync(image_id);
+        if (removedImage is null) return false;
 
-        _db.Images.Remove(removedimage);
-        File.Delete(removedimage.Path);
+        _db.Images.Remove(removedImage);
+        File.Delete(removedImage.Path);
         await _db.SaveChangesAsync();
         return true;
     }
 
     private async Task<Organization?> FindOrganizationAsync(PostImageDTO imageRequest)
     {
-        int orgId;
         if (imageRequest.CitizenId == null)
         {
-            var class_ = await _db.Classes.FindAsync(imageRequest.ClassId);
-            orgId = class_!.OrganizationId;
+            var class_ = await _db.Classes
+            .AsNoTracking()
+            .Include(c => c.Organization)
+            .FirstOrDefaultAsync();
+
+            return class_?.Organization;
         }
         else
         {
-            var citizen = await _db.Citizens.FindAsync(imageRequest.CitizenId);
-            var class_ = await _db.Classes.FindAsync(citizen!.ClassId);
-            orgId = class_!.OrganizationId;
-        }
-        return await _db.Organizations.FindAsync(orgId);
-    }
+            var citizen = await _db.Citizens
+            .AsNoTracking()
+            .Include(c => c.Class)
+            .ThenInclude(c => c!.Organization)
+            .FirstOrDefaultAsync();
 
-    private async Task<bool> ConsistencyCheck(int orgId, int? classId, int? citizenId)
-    {
-        if (classId == null && citizenId == null)
-        {
-            return true;
-        }
-
-        if (classId == null)
-        {
-            var citizen = await _db.Citizens.FindAsync(citizenId);
-            var class_ = await _db.Classes.FindAsync(citizen?.ClassId);
-            return class_?.OrganizationId == orgId;
-        }
-        else
-        {
-            var class_ = await _db.Classes.FindAsync(classId);
-            return class_?.OrganizationId == orgId;
+            return citizen?.Class?.Organization;
         }
     }
 
@@ -87,13 +73,6 @@ public class ImageService(AppDbContext db)
         var organization = imageRequest.OrganizationId != null ? await _db.Organizations.FindAsync(imageRequest.OrganizationId) : await FindOrganizationAsync(imageRequest);
         if (organization == null)
         { // If it is not possible to connect the request to an org return null
-            return null;
-        }
-
-        bool are_consistent = await ConsistencyCheck(organization.Id, imageRequest.ClassId, imageRequest.CitizenId);
-
-        if (!are_consistent)
-        {
             return null;
         }
 
