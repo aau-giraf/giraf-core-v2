@@ -354,4 +354,42 @@ public class NonCitizenServiceTest : TestBase
         }
     }
 
+    [Fact]
+    public async Task PostGuardianship_PostsGuardianship()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+
+        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 3);
+        var citizen1 = citizens[0];
+        var citizen2 = citizens[1];
+        var citizen3 = citizens[2];
+
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id)]);
+
+        // Faker guardianship
+        Guardianship guardianshipFaker = new Faker<Guardianship>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(gs => gs.GuardianId, f => nonCitizen.Id)
+                                    .RuleFor(gs => gs.CitizenId, f => citizen3.citizen.Id);
+
+        //----- ACT -----\\              
+        var service = new NonCitizenService(db);
+
+        var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
+        {
+            CitizenId = citizen3.citizen.Id
+        });
+
+        //----- ASSERT -----\\  
+        Assert.NotNull(fetchedGuardianships);
+        Assert.Equal(3, fetchedGuardianships.CitizenIds.Count);
+        Assert.Contains(guardianshipFaker.CitizenId, fetchedGuardianships.CitizenIds);
+        foreach (var guardianship in guardianships)
+        {
+            Assert.Contains(guardianship.CitizenId, fetchedGuardianships.CitizenIds);
+        }
+    }
+
 }
