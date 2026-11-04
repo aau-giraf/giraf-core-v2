@@ -3,12 +3,12 @@ using Xunit.Abstractions;
 // Base test class for creating in memory db for tests.
 public abstract class TestBase
 {
-
     protected int Seed { get; }
 
     // Create a seed for the tests
     protected TestBase(ITestOutputHelper output)
     {
+        DotNetEnv.Env.TraversePath().Load();
         Seed = Random.Shared.Next();
         output.WriteLine($"Test seed: {Seed}");
     }
@@ -22,7 +22,4 @@ public abstract class TestBase
 
         return new AppDbContext(options);
     }
-
-
-
 }
