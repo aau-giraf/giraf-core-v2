@@ -38,6 +38,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<TokenProvider>();
 
 builder.Services.AddValidation();
@@ -81,6 +82,7 @@ app.UseHttpsRedirection();
 app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
+app.MapImageEndpoints();
 
 app.UseRateLimiter();
 
