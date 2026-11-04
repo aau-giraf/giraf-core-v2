@@ -9,7 +9,9 @@ JWT_AUDIENCES=giraf-foodplanner,giraf-weekplanner,giraf-vta
 JWT_ISSUER=giraf-core
 ```
 
-For development purposes, any random string of characters will work as the `JWT_SECRET`.
+For development purposes, any random 256bit string will work as the `JWT_SECRET`.
+
+You can generate one here: [Secret Generator](https://jwtsecretkeygenerator.com/)
 
 Now run
 `docker compose up --build`
