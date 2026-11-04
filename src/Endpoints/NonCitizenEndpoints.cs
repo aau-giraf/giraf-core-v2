@@ -15,9 +15,16 @@ public static class NonCitizenEndpoints
         group.MapPost("/", PostNonCitizen); //200 & 404
 
         group.MapGet("/{id:int}/userRoles", GetUserRoles); // 200 & 404
-        // No patch - All fields of UserRoles models are without setters. (Use PostUserRole instead)
+        // No patch - All fields of UserRoles model are without setters. (Use PostUserRole instead)
         group.MapDelete("/{id:int}/userRoles", DeleteUserRole); //200 & 404
         group.MapPost("/{id:int}/userRoles", PostUserRole); //200 & 404
+
+        group.MapGet("/{id:int}/guardianships", GetGuardianships); // 200 & 404
+        // No patch - All fields of Guardianship model are without setters. (Use PostUserGuardianship instead)
+        group.MapDelete("/{id:int}/guardianship", DeleteGuardianship); //200 & 404
+        group.MapPost("/{id:int}/guardianship", PostGuardianship); //200 & 404
+
+
 
     }
 
@@ -63,6 +70,23 @@ public static class NonCitizenEndpoints
         return userRoles == null ? TypedResults.NotFound() : TypedResults.Ok(userRoles);
     }
 
+    private static async Task<Results<Ok<ResponseGuardianshipsDTO>, NotFound>> GetGuardianships(int nonCitizenId, NonCitizenService nonCitizenService)
+    {
+        var guardianships = await nonCitizenService.GetGuardianshipsAsync(nonCitizenId);
+        return guardianships == null ? TypedResults.NotFound() : TypedResults.Ok(guardianships);
+    }
+
+    private static async Task<Results<NoContent, NotFound>> DeleteGuardianship(int nonCitizenId, [FromBody] RequestGuardianshipDTO requestGuardianshipDTO, NonCitizenService nonCitizenService)
+    {
+        var guardianship = await nonCitizenService.DeleteGuardianshipAsync(nonCitizenId, requestGuardianshipDTO);
+        return guardianship ? TypedResults.NoContent() : TypedResults.NotFound();
+    }
+
+    private static async Task<Results<Ok<ResponseGuardianshipsDTO>, NotFound>> PostGuardianship(int nonCitizenId, [FromBody] RequestGuardianshipDTO requestGuardianshipDTO, NonCitizenService nonCitizenService)
+    {
+        var guardianships = await nonCitizenService.PostGuardianshipAsync(nonCitizenId, requestGuardianshipDTO);
+        return guardianships == null ? TypedResults.NotFound() : TypedResults.Ok(guardianships);
+    }
 
 
 }

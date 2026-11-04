@@ -96,7 +96,7 @@ public class NonCitizenService(AppDbContext db)
 
     public async Task<ResponseNonCitizenDTO?> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
     {
-        var isNotUnique = _db.NonCitizens.Any(nc => nc.Email == requestPostNonCitizenDTO.Email);
+        var isNotUnique = await _db.NonCitizens.AnyAsync(nc => nc.Email == requestPostNonCitizenDTO.Email);
 
         if (isNotUnique == true)
         {
@@ -222,7 +222,7 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check if userRole exists
-        var userRoleExists = nonCitizen.Roles.Any(ur =>
+        var userRoleExists = await _db.UserRoles.AnyAsync(ur =>
              ur.NonCitizenId == nonCitizenId &&
              ur.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1 &&
              ur.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2
@@ -262,7 +262,106 @@ public class NonCitizenService(AppDbContext db)
             NonCitizenId = nonCitizen.Id,
             RoleOrganizationTuples = roleOrganizationTuples
         };
-
     }
+
+    // ---------- /Guardianships ---------- \\
+    public async Task<ResponseGuardianshipsDTO?> GetGuardianshipsAsync(int nonCitizenId)
+    {
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+
+        if (nonCitizen is null)
+        {
+            return null;
+        }
+
+        // Select the citizens belonging to the specified guardian
+        List<int> citizens = [];
+        foreach (var guardian in nonCitizen.Guardianships)
+        {
+            citizens.Add(guardian.CitizenId);
+        }
+
+        return new ResponseGuardianshipsDTO
+        {
+            CitizenIds = citizens,
+            NonCitizenId = nonCitizen!.Id
+        };
+    }
+
+    public async Task<bool> DeleteGuardianshipAsync(int nonCitizenId, RequestGuardianshipDTO requestGuardianshipDTO)
+    {
+        if (await _db.Guardianships.AnyAsync(gs =>
+             gs.CitizenId == requestGuardianshipDTO.CitizenId &&
+             gs.GuardianId == nonCitizenId
+             ))
+        {
+            var guardianship = await _db.Guardianships
+            .FindAsync(requestGuardianshipDTO.CitizenId, nonCitizenId);
+
+            if (
+                guardianship!.GuardianId == nonCitizenId &&
+                guardianship.CitizenId == requestGuardianshipDTO.CitizenId &&
+                guardianship is not null
+                )
+            {
+                _db.Guardianships.Remove(guardianship);
+                await _db.SaveChangesAsync();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public async Task<ResponseGuardianshipsDTO?> PostGuardianshipAsync(int nonCitizenId, RequestGuardianshipDTO requestGuardianshipDTO)
+    {
+
+        // Check nonCitizen exists
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+
+        if (nonCitizen is null)
+        {
+            return null;
+        }
+
+        // Check if guardianship exists
+        var guardianshipExists = await _db.Guardianships.AnyAsync(
+            gs => gs.CitizenId == requestGuardianshipDTO.CitizenId &&
+            gs.GuardianId == nonCitizenId);
+
+        if (guardianshipExists is true)
+        {
+            return null;
+        }
+
+        var createdGuardianship = new Guardianship()
+        {
+            CitizenId = requestGuardianshipDTO.CitizenId,
+            Citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId),
+            GuardianId = nonCitizenId,
+            Guardian = nonCitizen
+        };
+
+        _db.Guardianships.Add(createdGuardianship);
+        await _db.SaveChangesAsync();
+
+        // Find the updated list of citizens
+        var guardianships = nonCitizen.Guardianships.ToList();
+
+        // Select only the needed from guardianships
+        List<int> citizens = [];
+
+        foreach (var guardian in guardianships)
+        {
+            citizens.Add(guardian.CitizenId);
+        }
+
+        // Return in correct format
+        return new ResponseGuardianshipsDTO()
+        {
+            NonCitizenId = nonCitizen.Id,
+            CitizenIds = citizens,
+        };
+    }
+
 
 }
