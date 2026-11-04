@@ -30,7 +30,7 @@ public class NonCitizenService(AppDbContext db)
             FirstName = nonCitizen.FirstName,
             LastName = nonCitizen.LastName,
             Email = nonCitizen.Email,
-            Username = nonCitizen.Username,
+            Username = nonCitizen.Username
         };
 
         return responseNonCitizen;
@@ -53,10 +53,14 @@ public class NonCitizenService(AppDbContext db)
         {
             nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
         }
+        if (requestPatchNonCitizenDTO.Email is not null && await _db.NonCitizens.AnyAsync(nc => nc.Email == requestPatchNonCitizenDTO.Email) == false)
+        {
+            nonCitizen!.Email = requestPatchNonCitizenDTO.Email;
+        }
         if (requestPatchNonCitizenDTO.NewPassword is not null && BCrypt.Net.BCrypt.Verify(requestPatchNonCitizenDTO.OldPassword, nonCitizen!.Password))
         {
             nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(requestPatchNonCitizenDTO.NewPassword, 12);
-        }
+        } 
 
         // Save changes made to nonCitizen relation
         await _db.SaveChangesAsync();
@@ -72,7 +76,7 @@ public class NonCitizenService(AppDbContext db)
             FirstName = nonCitizen.FirstName!,
             LastName = nonCitizen.LastName!,
             Email = nonCitizen!.Email!,
-            Username = nonCitizen.Username!,
+            Username = nonCitizen.Username!
         };
 
         return responseNonCitizen;
@@ -148,7 +152,7 @@ public class NonCitizenService(AppDbContext db)
             FirstName = nonCitizen.FirstName!,
             LastName = nonCitizen.LastName!,
             Email = nonCitizen.Email!,
-            Username = nonCitizen.Username!,
+            Username = nonCitizen.Username!
         };
 
         return responseNonCitizen;
@@ -176,7 +180,7 @@ public class NonCitizenService(AppDbContext db)
         return new ResponseNonCitizenUserRolesDTO
         {
             NonCitizenId = nonCitizen!.Id,
-            RoleOrganizationTuples = roleOrganizationTuples,
+            RoleOrganizationTuples = roleOrganizationTuples
         };
     }
 
@@ -217,6 +221,7 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
+        // Check organization exists
         var organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2);
         if (organization is null)
         {
@@ -361,7 +366,7 @@ public class NonCitizenService(AppDbContext db)
         return new ResponseGuardianshipsDTO()
         {
             NonCitizenId = nonCitizen.Id,
-            CitizenIds = citizens,
+            CitizenIds = citizens
         };
     }
 
