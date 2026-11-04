@@ -18,7 +18,10 @@ Then check the following endpoint:
 `localhost:8080/health`
 
 To access the docker database, run:
-`docker exec -it giraf-core-v2-db-1 psql -U postgres -d defaultdb` * TODO UPDATE
+`docker exec -it [container-name] psql -U [pg-user] -d [pg-db]`
+
+For example:
+`docker exec -it db_dev psql -U postgres -d defaultdb`
 
 Now you can run SQL queries.
 
