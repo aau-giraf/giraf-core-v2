@@ -1,8 +1,15 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
+using giraf_core_v2.Auth;
 using giraf_core_v2.Data.Seeding;
+using giraf_core_v2.Utils;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+
+// Load environment variables
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,12 +49,34 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<CitizenService>();
 
 builder.Services.AddValidation();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.TokenValidationParameters = TokenParameters.Get();
+});
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGenWithAuth();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("rateLimitByIp", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+            factory: f => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromSeconds(10)
+            }
+    ));
+});
 
 var app = builder.Build();
 
@@ -65,5 +94,11 @@ app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 app.MapCitizenEndpoints();
+
+app.UseRateLimiter();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.Run();

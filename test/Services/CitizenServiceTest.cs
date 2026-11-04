@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-
-using Xunit.Abstractions;
+﻿using Xunit.Abstractions;
 
 namespace giraf_core_v2.Tests.Services;
 

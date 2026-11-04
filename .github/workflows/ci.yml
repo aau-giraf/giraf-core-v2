@@ -12,5 +12,6 @@ jobs:
   test:
     needs: build
     uses: ./.github/workflows/test.yml
+    secrets: inherit
   format:
     uses: ./.github/workflows/format.yml

@@ -1,10 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
-using DotNet.Testcontainers.Configurations;
-
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-
 using Xunit.Abstractions;
 
 public class NonCitizenServiceTest : TestBase

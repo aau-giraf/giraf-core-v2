@@ -16,15 +16,18 @@ public class GirafApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     // Runs before Program.cs builds the app.
     // Replaces "defaultConnection" so the app talks to the container, never a real database.
+    [Obsolete]
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:defaultConnection", _db.GetConnectionString());
     }
 
     // xUnit calls this before the first test in the class: start the container.
+    [Obsolete]
     public Task InitializeAsync() => _db.StartAsync();
 
     // xUnit calls this after the last test in the class: stop and delete the container.
+    [Obsolete]
     public new Task DisposeAsync() => _db.DisposeAsync().AsTask();
 
     // Gives the test a DbContext against the container, so it can insert its own data.

@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 namespace giraf_core_v2.Endpoints;
 

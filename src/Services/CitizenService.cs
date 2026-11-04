@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-
-namespace giraf_core_v2.Services;
+﻿namespace giraf_core_v2.Services;
 
 public class CitizenService(AppDbContext db)
 {

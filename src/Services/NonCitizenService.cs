@@ -1,10 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography.X509Certificates;
-
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
 
