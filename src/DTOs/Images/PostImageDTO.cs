@@ -18,11 +18,15 @@ public class PostImageDTO : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        int nullCount = 0;
+        nullCount = CitizenId == null ? nullCount + 1 : nullCount;
+        nullCount = ClassId == null ? nullCount + 1 : nullCount;
+        nullCount = OrganizationId == null ? nullCount + 1 : nullCount;
         // Returns error if there is no way to identify who the Returns error if there is no way to identify who the picture belogs to
-        if (CitizenId == null && ClassId == null && OrganizationId == null)
+        if (nullCount != 2)
         {
             yield return new ValidationResult(
-                "CitizenId, ClassId and Organization cannot be null at the same time",
+                "You can pass only 1 identifying paramters (CitizenId, ClassId, OrganizationId)",
                 new[] { nameof(PostImageDTO) }
             );
         }

@@ -25,13 +25,21 @@ public class PostImageDTOTest : TestBase
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
 
-    [Fact]
-    public void Validate_FailsWhenNoOwnerIDIsSet()
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(true, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    public void Validate_FailsByPassingMultipleIdentifiers(bool citizen, bool class_, bool organization)
     {
         var dto = new PostImageDTO
         {
-            Name = "noName",
-            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png")
+            Name = "aName",
+            File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
+            CitizenId = citizen ? 1 : null,
+            ClassId = class_ ? 1 : null,
+            OrganizationId = organization ? 1 : null
         };
         Assert.Single(dto.Validate(new ValidationContext(dto)));
     }
@@ -44,14 +52,27 @@ public class PostImageDTOTest : TestBase
     [InlineData("webp")]
     public void Validate_PassesWithCorrectFileExt(string ext)
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed, ext: ext);
+        var dto = ImageSeeder.CreateRequestBody(Seed, citizenId: null, classId: null, ext: ext);
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
     public void Validate_FailsWithIncorrectFileExt()
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed);
+        var dto = ImageSeeder.CreateRequestBody(Seed, citizenId: null, classId: null);
         Assert.Single(dto.Validate(new ValidationContext(dto)));
+    }
+
+    [Fact]
+    public void Validate_FailsMultipleErrorsInDTO()
+    {
+        var dto = ImageSeeder.CreateRequestBody(Seed);
+        var results = dto.Validate(new ValidationContext(dto)).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(2, results.Count);
+            Assert.Contains(results, r => r.MemberNames.Contains(nameof(PostImageDTO)));
+            Assert.Contains(results, r => r.MemberNames.Contains(nameof(PostImageDTO.File)));
+        });
     }
 }
