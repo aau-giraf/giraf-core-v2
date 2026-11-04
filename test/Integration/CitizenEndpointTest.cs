@@ -10,9 +10,9 @@ public class CitizenEndpointTest(GirafApiFactory factory) : IClassFixture<GirafA
     {
         var seeded = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, seed: 42);
-            var girafClass = await ClassSeeder.SeedAsync(db, seed: 42, organization);
-            return await CitizenSeeder.SeedAsync(db, seed: 42, girafClass);
+            var organization = await OrganizationSeeder.SeedAsync(db, seed: 43);
+            var girafClass = await ClassSeeder.SeedAsync(db, seed: 43, organization);
+            return await CitizenSeeder.SeedAsync(db, seed: 43, girafClass);
         });
         var client = factory.CreateClient();
         var response = await client.GetAsync($"/citizens/{seeded.citizen.Id}");
