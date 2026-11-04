@@ -197,6 +197,9 @@ public class NonCitizenServiceTest : TestBase
         var organization3 = organizations[2];
 
         var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, [(organization1.Id, nonCitizen.Id), (organization2.Id, nonCitizen.Id), (organization3.Id, nonCitizen.Id)]);
+        var userRole1 = userRoles[0];
+        var userRole2 = userRoles[1];
+        var userRole3 = userRoles[2];
 
         List<(RoleType, int)> ogUserRoles = new List<(RoleType, int)>();
 
@@ -205,8 +208,8 @@ public class NonCitizenServiceTest : TestBase
             ogUserRoles.Add((userRole.Role, userRole.OrganizationId));
         }
 
-        // Format useRole to Request format
-        (RoleType, int) roleOrganizationTuple = (userRoles.First().Role, userRoles.First().OrganizationId);
+        // Format userRole to Request format
+        (RoleType, int) roleOrganizationTuple = (userRole1.Role, userRole1.OrganizationId);
 
         var service = new NonCitizenService(db);
 
@@ -224,6 +227,10 @@ public class NonCitizenServiceTest : TestBase
         var remainingUserRoles = await db.UserRoles.ToListAsync();
         Assert.Equal(2, remainingUserRoles.Count);
         Assert.NotNull(remainingUserRoles);
+        foreach (var remainingUserRole in remainingUserRoles)
+        {
+            Assert.Contains((remainingUserRole.Role, remainingUserRole.OrganizationId), ogUserRoles);
+        }
     }
 
 
@@ -260,7 +267,10 @@ public class NonCitizenServiceTest : TestBase
         Assert.NotNull(fetchedUserRoles);
         Assert.Equal(3, fetchedUserRoles.RoleOrganizationTuples.Count);
         Assert.Contains((userRoleFaker.Role, userRoleFaker.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
-
+        foreach (var userRole in userRoles)
+        {
+            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+        }
     }
 
     // ---------- /guardianships ---------- \\
@@ -277,7 +287,7 @@ public class NonCitizenServiceTest : TestBase
         var citizen1 = citizens[0];
         var citizen2 = citizens[1];
 
-        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(nonCitizen.Id, citizen1.citizen.Id), (nonCitizen.Id, citizen2.citizen.Id)]);
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id)]);
         var guardianship1 = guardianships[0];
         var guardianship2 = guardianships[1];
 
@@ -291,6 +301,56 @@ public class NonCitizenServiceTest : TestBase
         foreach (var guardianship in nonCitizen.Guardianships)
         {
             Assert.Contains(guardianship.CitizenId, fetchedGuardianships.CitizenIds);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteGuardianship_DeletesCorrectGuardianship()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+
+        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 3);
+        var citizen1 = citizens[0];
+        var citizen2 = citizens[1];
+        var citizen3 = citizens[2];
+
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id), (citizen3.citizen.Id, nonCitizen.Id)]);
+        var guardianship1 = guardianships[0];
+        var guardianship2 = guardianships[1];
+        var guardianship3 = guardianships[2];
+
+        List<(int, int)> ogGuardianships = new List<(int, int)>();
+
+        foreach (var guardianship in guardianships)
+        {
+            ogGuardianships.Add((guardianship.CitizenId, guardianship.GuardianId));
+        }
+
+        // Format guardianship to Request format
+        (int, int) citizenNonCitizenTuple = (guardianship1.CitizenId, guardianship1.GuardianId);
+
+        var service = new NonCitizenService(db);
+
+        Assert.True(await service.DeleteGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
+        {
+            CitizenId = citizenNonCitizenTuple.Item1
+        }));
+
+        var deletedGuardianship = await db.Guardianships
+            .SingleOrDefaultAsync(gs => gs.CitizenId == citizenNonCitizenTuple.Item1 && gs.GuardianId == citizenNonCitizenTuple.Item2);
+
+        Assert.Null(deletedGuardianship);
+
+        // Make sure the other userRoles was not accidentally deleted
+        var remainingGuardianships = await db.Guardianships.ToListAsync();
+        Assert.Equal(2, remainingGuardianships.Count);
+        Assert.NotNull(remainingGuardianships);
+        foreach (var remainingGuardianship in remainingGuardianships)
+        {
+            Assert.Contains((remainingGuardianship.CitizenId, remainingGuardianship.GuardianId), ogGuardianships);
         }
     }
 
