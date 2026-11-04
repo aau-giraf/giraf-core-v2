@@ -9,6 +9,7 @@ namespace giraf_core_v2.Tests;
 public class GirafApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     // A fresh Postgres in Docker, created for the test run and deleted afterwards.
+    [Obsolete]
     private readonly PostgreSqlContainer _db = new PostgreSqlBuilder()
         .WithImage("postgres:17")
         .Build();

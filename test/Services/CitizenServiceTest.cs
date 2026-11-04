@@ -47,7 +47,7 @@ public class CitizenServiceTest : TestBase
     public async Task UpdateCurrentCitizen_UpdatesCurrentCitizen()
     {
         await using var db = CreateDbContext();
-        
+
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
         var SeededCitizen = await CitizenSeeder.SeedAsync(db, Seed, girafClass);
@@ -163,7 +163,7 @@ public class CitizenServiceTest : TestBase
     public async Task DeleteCurrentCitizen_DeletesCurrentCitizen()
     {
         await using var db = CreateDbContext();
-        
+
         // Create a bogus org and class the citizen is being created in
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
@@ -189,7 +189,7 @@ public class CitizenServiceTest : TestBase
     public async Task CreateNewCitizen_CreatesNewCitizen()
     {
         await using var db = CreateDbContext();
-        
+
         // Create a random organization the class has to exist in
         var organization = await OrganizationSeeder.SeedManyAsync(db, Seed, 1);
         var organization1 = organization[0];
@@ -201,7 +201,7 @@ public class CitizenServiceTest : TestBase
             .RuleFor(u => u.ClassId, schoolClass.Id)
             .RuleFor(u => u.Username, f => f.Person.UserName)
             .RuleFor(u => u.Password, f => f.Random.Word());
-        
+
         var service = new CitizenService(db);
         var created = await service.CreateCitizenAsync(request);
 
@@ -212,19 +212,19 @@ public class CitizenServiceTest : TestBase
         Assert.Equal(request.Username, created.Username);
         Assert.Equal(request.ClassId, created.ClassId);
         Assert.Null(created.Password);
-        
+
         // Assert the citizen was actually saved
         var saved = await db.Citizens.SingleAsync(c => c.Username == request.Username);
         Assert.Equal(request.FirstName, saved.FirstName);
         Assert.Equal(request.LastName, saved.LastName);
         Assert.Equal(schoolClass.Id, saved.ClassId);
-        
+
         // Assert the password was hashed, not stored as plain text
         Assert.NotEqual(request.Password, saved.Password);
         Assert.True(BCrypt.Net.BCrypt.Verify(request.Password, saved.Password));
     }
-    
-    
 
-    
+
+
+
 }

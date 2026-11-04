@@ -72,7 +72,7 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(ur => ur.OrganizationId, f => ogUserRoles.Max(our => our.OrganizationId) + 1)
                                     .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
 
-       
+
         // Add the new userRole to a list containing the original userRoles. 
         updatedUserRoles.Add(userRoleFaker);
 
@@ -87,11 +87,11 @@ public class NonCitizenServiceTest : TestBase
 
         // The updated userRole list but in OrganizationTuple format
         List<(RoleType, int)> updatedRoleOrganizationTuples = new List<(RoleType, int)>();
-        
+
         foreach (var userRole in nonCitizenFaker.Roles.ToList())
         {
             updatedRoleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
-        } 
+        }
 
         var service = new NonCitizenService(db);
 
