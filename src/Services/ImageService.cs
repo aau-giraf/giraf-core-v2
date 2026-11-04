@@ -10,19 +10,18 @@ public class ImageService(AppDbContext db)
     {
         var image = await _db.Images
             .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == image_id);
+            .FirstOrDefaultAsync(i => i.Id == image_id);
         return image;
     }
 
     public async Task<List<Image>?> GetImagesByCitizenIdAsync(int cit_id)
     {
-        var citizen = await _db.Citizens
-        .AsNoTracking()
-        .Include(c => c.Images)
-        .FirstOrDefaultAsync();
+        var citizen = await _db.Citizens.FindAsync(cit_id);
 
-
-        return citizen?.Images.ToList();
+        return citizen == null ? null : await _db.Images
+            .AsNoTracking()
+            .Where(i => i.CitizenId == cit_id)
+            .ToListAsync();
     }
 
     public async Task<List<Image>> GetAllImagesAsync()
