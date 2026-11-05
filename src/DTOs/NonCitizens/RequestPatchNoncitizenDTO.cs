@@ -7,21 +7,21 @@ using Microsoft.Extensions.Validation;
 public class RequestPatchNonCitizenDTO
 {
     [Length(3, 255)]
-    public required string? FirstName { get; set; }
+    public string? FirstName { get; set; }
 
     [Length(3, 255)]
-    public required string? LastName { get; set; }
+    public string? LastName { get; set; }
 
     [EmailAddress]
-    public required string? Email { get; set; }
+    public string? Email { get; set; }
 
     [Length(3, 255)]
-    public required string? Username { get; set; }
+    public string? Username { get; set; }
 
     [Length(3, 255)]
-    public required string? NewPassword { get; set; }
+    public string? NewPassword { get; set; }
 
     [Length(3, 255)]
-    public required string? OldPassword { get; set; }
+    public string? OldPassword { get; set; }
 
 }

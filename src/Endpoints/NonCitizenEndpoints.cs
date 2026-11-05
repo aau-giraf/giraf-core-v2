@@ -24,8 +24,6 @@ public static class NonCitizenEndpoints
         group.MapDelete("/{id:int}/guardianship", DeleteGuardianship); //200 & 404
         group.MapPost("/{id:int}/guardianship", PostGuardianship); //200 & 404
 
-
-
     }
 
     private static async Task<Results<Ok<ResponseNonCitizenDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
@@ -34,10 +32,17 @@ public static class NonCitizenEndpoints
         return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
     }
 
-    private static async Task<Results<Ok<ResponseNonCitizenDTO>, NotFound>> PatchNonCitizen(int nonCitizenId, [FromBody] RequestPatchNonCitizenDTO requestPatchNonCitizenDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<NotFound, UnauthorizedHttpResult, BadRequest, Conflict, Ok<ResponseNonCitizenDTO>>> PatchNonCitizen(int nonCitizenId, [FromBody] RequestPatchNonCitizenDTO requestPatchNonCitizenDTO, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.PatchNonCitizenAsync(nonCitizenId, requestPatchNonCitizenDTO);
-        return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
+        return nonCitizen.Item1 switch
+        {
+            HttpReponseType.NotFound => TypedResults.NotFound(),
+            HttpReponseType.Conflict => TypedResults.Conflict(),
+            HttpReponseType.Unauthorized => TypedResults.Unauthorized(),
+            HttpReponseType.Ok => TypedResults.Ok(nonCitizen.Item2),
+            _ => TypedResults.BadRequest()
+        };
     }
 
     private static async Task<Results<NoContent, NotFound>> DeleteNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
@@ -46,10 +51,16 @@ public static class NonCitizenEndpoints
         return nonCitizen ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseNonCitizenDTO>, NotFound>> PostNonCitizen(int nonCitizenId, [FromBody] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Conflict, NotFound, Ok<ResponseNonCitizenDTO>, BadRequest>> PostNonCitizen(int nonCitizenId, [FromBody] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.PostNonCitizenAsync(requestPostNonCitizenDTO);
-        return nonCitizen == null ? TypedResults.NotFound() : TypedResults.Ok(nonCitizen);
+        return nonCitizen.Item1 switch
+        {
+            HttpReponseType.Conflict => TypedResults.Conflict(),
+            HttpReponseType.NotFound => TypedResults.NotFound(),
+            HttpReponseType.Ok => TypedResults.Ok(nonCitizen.Item2),
+            _ => TypedResults.BadRequest()
+        };
     }
 
     private static async Task<Results<Ok<ResponseNonCitizenUserRolesDTO>, NotFound>> GetUserRoles(int nonCitizenId, NonCitizenService nonCitizenService)
@@ -64,10 +75,16 @@ public static class NonCitizenEndpoints
         return userRole ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseNonCitizenUserRolesDTO>, NotFound>> PostUserRole(int nonCitizenId, [FromBody] RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<ResponseNonCitizenUserRolesDTO>, NotFound, Conflict, BadRequest>> PostUserRole(int nonCitizenId, [FromBody] RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO, NonCitizenService nonCitizenService)
     {
-        var userRoles = await nonCitizenService.PostUserRoleAsync(nonCitizenId, requestNonCitizenUserRoleDTO);
-        return userRoles == null ? TypedResults.NotFound() : TypedResults.Ok(userRoles);
+        var userRole = await nonCitizenService.PostUserRoleAsync(nonCitizenId, requestNonCitizenUserRoleDTO);
+        return userRole.Item1 switch
+        {
+            HttpReponseType.NotFound => TypedResults.NotFound(),
+            HttpReponseType.Conflict => TypedResults.Conflict(),
+            HttpReponseType.Ok => TypedResults.Ok(userRole.Item2),
+            _ => TypedResults.BadRequest()
+        };
     }
 
     private static async Task<Results<Ok<ResponseGuardianshipsDTO>, NotFound>> GetGuardianships(int nonCitizenId, NonCitizenService nonCitizenService)
@@ -82,10 +99,16 @@ public static class NonCitizenEndpoints
         return guardianship ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseGuardianshipsDTO>, NotFound>> PostGuardianship(int nonCitizenId, [FromBody] RequestGuardianshipDTO requestGuardianshipDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<ResponseGuardianshipsDTO>, NotFound, Conflict, BadRequest>> PostGuardianship(int nonCitizenId, [FromBody] RequestGuardianshipDTO requestGuardianshipDTO, NonCitizenService nonCitizenService)
     {
         var guardianships = await nonCitizenService.PostGuardianshipAsync(nonCitizenId, requestGuardianshipDTO);
-        return guardianships == null ? TypedResults.NotFound() : TypedResults.Ok(guardianships);
+        return guardianships.Item1 switch
+        {
+            HttpReponseType.NotFound => TypedResults.NotFound(),
+            HttpReponseType.Conflict => TypedResults.Conflict(),
+            HttpReponseType.Ok => TypedResults.Ok(guardianships.Item2),
+            _ => TypedResults.BadRequest()
+        };
     }
 
 
