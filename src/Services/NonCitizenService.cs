@@ -1,7 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.IO.Compression;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography.X509Certificates;
 
+using giraf_core_v2.Data.Seeding;
+
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
@@ -172,18 +176,19 @@ public class NonCitizenService(AppDbContext db)
     public async Task<ResponseNonCitizenUserRolesDTO?> GetUserRolesAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
-
-        if (nonCitizen is null)
-        {
-            return null;
-        }
-
+        
+        var nonCitizens = await _db.NonCitizens
+            .Include(nc => nc.Roles)
+            .SingleOrDefaultAsync(nc => nc.Id == nonCitizenId);
+       
         // Select only the needed from userRole or else it would eagerly fetch FK fields. 
-        List<(RoleType, int)> roleOrganizationTuples = [];
-        foreach (UserRole userRole in nonCitizen.Roles)
+        ICollection<(RoleType, int)> roleOrganizationTuples = [];
+    
+        foreach (UserRole userRole in nonCitizens!.Roles)
         {
             roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
         }
+
 
         return new ResponseNonCitizenUserRolesDTO
         {
