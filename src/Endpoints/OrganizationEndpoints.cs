@@ -11,10 +11,8 @@ public static class OrganizationEndpoints
     {
         var group = application.MapGroup("/organizations");
 
-        group.MapGet("/", GetOrganizations);
-
+        group.MapGet("/", GetAllOrganizations);
         group.MapGet("/{orgId:int}", GetOrganizationById);
-
         group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization);
 
         group.MapGet("/{org_id:int}/classes", GetClassesInOrganization);
@@ -35,10 +33,10 @@ public static class OrganizationEndpoints
 
     }
 
-    private static async Task<Results<Ok<List<ResponseGetOrganizationDTO>>, NotFound>> GetOrganizations(OrganizationService organizationService)
+    private static async Task<Results<Ok<List<OrganizationResponseDTO>>, NotFound>> GetAllOrganizations(OrganizationService organizationService)
     {
-        var organizations = await organizationService.GetOrganizationsAsync();
-        return organizations == null ? TypedResults.NotFound() : TypedResults.Ok(organizations);
+        List<OrganizationResponseDTO> organizations = await organizationService.GetAllOrganizationsAsync();
+        return organizations.Count != 0 ? TypedResults.NotFound() : TypedResults.Ok(organizations);
     }
 
     private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> GetOrganizationById(int orgId, OrganizationService organizationService)
