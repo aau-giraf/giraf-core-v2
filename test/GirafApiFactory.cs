@@ -19,6 +19,7 @@ public class GirafApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     [Obsolete]
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:defaultConnection", _db.GetConnectionString());
     }
 

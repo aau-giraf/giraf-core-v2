@@ -5,5 +5,5 @@ using Microsoft.Extensions.Validation;
 public class RequestNonCitizenUserRoleDTO
 {
     public required (RoleType, int) RoleOrganizationTuple { get; set; }
-
+    
 }
