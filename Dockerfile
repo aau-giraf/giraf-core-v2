@@ -52,6 +52,9 @@ RUN apk add --no-cache krb5-libs
 COPY --from=build /app .
 COPY appsettings.json .
 
+# The app user cannot create directories under /app. Uploads are written to /app/images.
+RUN mkdir -p /app/images && chown $APP_UID /app/images
+
 # Switch to a non-privileged user (defined in the base image) that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 # and https://github.com/dotnet/dotnet-docker/discussions/4764

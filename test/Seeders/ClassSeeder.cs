@@ -5,12 +5,12 @@ public static class ClassSeeder
     // Create a random class and add it to mock database.
     public static async Task<Class> SeedAsync(AppDbContext db, int seed, Organization organization)
     {
-        var girafClass = Create(seed, organization);
+        var class_ = Create(seed, organization);
 
-        db.Classes.Add(girafClass);
+        db.Classes.Add(class_);
         await db.SaveChangesAsync();
 
-        return girafClass;
+        return class_;
     }
 
     // Create x random classes and add them to mock database.
@@ -44,4 +44,5 @@ public static class ClassSeeder
             .RuleFor(c => c.Name, f => f.Name.FirstName())
             .RuleFor(c => c.OrganizationId, f => organization.Id);
     }
+
 }
