@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
 
+using Npgsql;
+
 namespace giraf_core_v2.Services;
 
 public class NonCitizenService(AppDbContext db)
@@ -294,9 +296,11 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
+        var guardianships = await _db.Guardianships.Where(gs => gs.GuardianId == nonCitizenId).ToListAsync();
+
         // Select the citizens belonging to the specified guardian
         List<int> citizens = [];
-        foreach (var guardian in nonCitizen.Guardianships)
+        foreach (var guardian in guardianships)
         {
             citizens.Add(guardian.CitizenId);
         }
@@ -304,7 +308,7 @@ public class NonCitizenService(AppDbContext db)
         return new ResponseGuardianshipsDTO
         {
             CitizenIds = citizens,
-            NonCitizenId = nonCitizen!.Id
+            NonCitizenId = nonCitizen.Id
         };
     }
 
@@ -365,7 +369,7 @@ public class NonCitizenService(AppDbContext db)
         await _db.SaveChangesAsync();
 
         // Find the updated list of citizens
-        var guardianships = nonCitizen.Guardianships.ToList();
+        var guardianships = await _db.Guardianships.Where(gs => gs.GuardianId == nonCitizenId).ToListAsync();
 
         // Select only the needed from guardianships
         List<int> citizens = [];
