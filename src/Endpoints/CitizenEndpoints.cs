@@ -10,20 +10,16 @@ public static class CitizenEndpoints
         var groupOrg = app.MapGroup("/organizations");
 
         group.MapGet("/{citizenId}", GetCitizen);
+        group.MapPost("", CreateCitizen);
         group.MapPatch("/{citizenId}", UpdateCitizen);
         group.MapDelete("/{citizenId}", DeleteCitizen);
-        groupOrg.MapPost("/citizens", CreateCitizen);
     }
 
     private static async Task<Results<Ok<GetCitizenDTO>, NotFound>> GetCitizen(int citizenId, CitizenService citizenService)
     {
         var citizen = await citizenService.GetCitizenAsync(citizenId);
-        if (citizen is null)
-        {
-            return TypedResults.NotFound();
-        }
 
-        return TypedResults.Ok(citizen);
+        return citizen != null ? TypedResults.Ok(citizen) : TypedResults.NotFound();
     }
 
     private static async Task<Results<Created<GetCitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)

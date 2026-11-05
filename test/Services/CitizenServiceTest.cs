@@ -214,8 +214,4 @@ public class CitizenServiceTest : TestBase
         Assert.NotEqual(request.Password, saved.Password);
         Assert.True(BCrypt.Net.BCrypt.Verify(request.Password, saved.Password));
     }
-
-
-
-
 }

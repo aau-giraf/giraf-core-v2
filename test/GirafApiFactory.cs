@@ -33,4 +33,24 @@ public class GirafApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         return await arrange(db);
     }
+
+    public async Task ResetDatabaseAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlRawAsync(
+            """
+        TRUNCATE TABLE
+            "Guardianship",
+            "Image",
+            "UserRole",
+            "Citizen",
+            "NonCitizen",
+            "User",
+            "Class",
+            "Organization"
+        RESTART IDENTITY CASCADE;
+        """);
+    }
 }
