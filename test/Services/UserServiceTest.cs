@@ -135,6 +135,7 @@ public class UserServiceTest : TestBase
 
     }
 
+    // Skal ændres
     [Fact]
     public async Task DeleteCurrentUserAsync_DeletesCurrentUser()
     {
@@ -153,6 +154,7 @@ public class UserServiceTest : TestBase
         Assert.Null(deletedUser);
     }
 
+    // Skal ændres
     [Fact]
     public async Task DeleteCurrentUserAsync_DeletesCorrectUser()
     {
@@ -181,6 +183,7 @@ public class UserServiceTest : TestBase
         Assert.NotNull(remainingUser);
     }
 
+    // Skal ændres
     [Fact]
     public async Task DeleteCurrentUserAsync_CannotDeleteNonExistingUser()
     {

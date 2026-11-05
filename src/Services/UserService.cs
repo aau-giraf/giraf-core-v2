@@ -2,32 +2,76 @@ using giraf_core_v2.Auth;
 
 using Microsoft.EntityFrameworkCore;
 
+public enum UserServiceResult
+{
+    Succes,
+    NotFound,
+    Forbidden,
+    CanNotDeleteSelf,
+    UsernameTaken,
+    EmailTaken,
+    EmailNotAllowedForCitizen
+}
+
 public class UserService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
+
+    // Which Organization can admin control and which non/citizens
+    public async Task<bool> AdminOrganizationAsync(int callerId, int targetUserId)
+    {
+        // Finds the Organization of the admin
+        var adminOrgIds = _db.UserRoles
+            .Where(r => r.NonCitizenId == callerId && r.Role == RoleType.Admin)
+            .Select(r => r.OrganizationId);
+
+        //Is the target a non-citizen in the admins organization
+        if (await _db.UserRoles.AnyAsync(
+            r => r.NonCitizenId == targetUserId && adminOrgIds.Contains(r.OrganizationId)))
+            return true;
+
+        // If not, then the target is a Citizen in a class in the organization
+        return await _db.Users.OfType<Citizen>().AnyAsync(c => c.Id == targetUserId && adminOrgIds.Contains(c.Class!.OrganizationId));
+    }
 
     public async Task<User?> GetCurrentUserAsync(int id)
     {
         return await _db.Users.FindAsync(id);
     }
 
-    public async Task<bool> DeleteCurrentUserAsync(int id)
+    public async Task<UserServiceResult> DeleteCurrentUserAsync(int callerId, int id)
     {
-        // Hvem må slette en bruger? Må citizens slette deres egen?
+        // Admin can not delete itself
+        if (callerId == id)
+            return UserServiceResult.CanNotDeleteSelf;
+
+        // Is admin over the user
+        if (!await AdminOrganizationAsync(callerId, id))
+            return UserServiceResult.Forbidden;
+
+        // Does the user exist
+        var user = await _db.Users.FindAsync(id);
+        if (user is null)
+            return UserServiceResult.NotFound;
+
+        _db.Users.Remove(user);
+        await _db.SaveChangesAsync();
+        return UserServiceResult.Succes;
+
         // Return true on successful delete.
-        if (await _db.Users.FindAsync(id) is User user)
+        /* if (await _db.Users.FindAsync(id) is User user)
         {
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
             return true;
         }
 
-        return false;
+        return false; */
     }
 
     public async Task<User?> UpdateCurrentUserAsync(int id, UpdateUserDTO inputUser)
     {
-        // TODO: Hvem må kalde endpointet? Og husk citizens ikke har emails.
+        // TODO: Hvem må kalde endpointet? Og husk citizens ikke har emails. Admin skal kunne og Guardianship
         var user = await _db.Users.FindAsync(id);
 
         // Return null if user does not exist.

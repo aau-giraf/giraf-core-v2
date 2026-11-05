@@ -15,7 +15,7 @@ public static class UserEndpoints
         var group = app.MapGroup("/users");
 
         group.MapGet("/me", GetCurrentUser).RequireAuthorization();
-        group.MapDelete("/me", DeleteCurrentUser).RequireAuthorization();
+        group.MapDelete("/{id:int}", DeleteCurrentUser).RequireAuthorization();
         group.MapPatch("/me", UpdateCurrentUser).RequireAuthorization();
         group.MapPut("/me/password", UpdateUserPassword).RequireAuthorization(); // burde password change indgå i update current user?
         group.MapPost("/login", Login).RequireRateLimiting("rateLimitByIp");
@@ -32,10 +32,17 @@ public static class UserEndpoints
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUser(UserService userService, ClaimsPrincipal currentUser)
+    private static async Task<Results<NoContent, NotFound, ForbidHttpResult, BadRequest<string>>> DeleteCurrentUser(int id, UserService userService, ClaimsPrincipal currentUser)
     {
-        var result = await userService.DeleteCurrentUserAsync(GetCurrentUserId(currentUser));
-        return result ? TypedResults.NoContent() : TypedResults.NotFound();
+        var result = await userService.DeleteCurrentUserAsync(GetCurrentUserId(currentUser), id);
+        return result switch
+        {
+            UserServiceResult.Succes => TypedResults.NoContent(),
+            UserServiceResult.NotFound => TypedResults.NotFound(),
+            UserServiceResult.Forbidden => TypedResults.Forbid(),
+            UserServiceResult.CanNotDeleteSelf => TypedResults.BadRequest("You can not delete yourself"),
+            _ => throw new InvalidOperationException($"Unexpected result: {result}")
+        };
     }
 
     private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUser(

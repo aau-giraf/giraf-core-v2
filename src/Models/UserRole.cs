@@ -21,7 +21,7 @@ public class UserRole
 public enum RoleType
 {
     //Based on use cases, further determine which needed enum values
-    Employee, Parent
+    Employee, Parent, Admin
 }
 
 public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
