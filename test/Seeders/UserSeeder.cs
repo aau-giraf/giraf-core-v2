@@ -1,13 +1,15 @@
+// Record to store DB user object and its unencrypted password.
+internal record SeededUser(User User, string PlainPassword);
+// Record of optional parameters used in user seeding.
+// If UserOptions is not supplied, a random password will be generated.
+internal record UserOptions(string Password);
 
-public static class UserSeeder
+internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
 {
-    // Record to store DB user object and its unencrypted password.
-    public record SeededUser(User User, string PlainPassword);
-
     // Create a random user and add it to mock database.
-    public static async Task<SeededUser> SeedAsync(AppDbContext db, int seed)
+    public async Task<SeededUser> SeedAsync(AppDbContext db, int seed, UserOptions? userOptions = null)
     {
-        var user = Create(seed);
+        var user = Create(seed, userOptions);
 
         // add user to db
         db.Users.Add(user.User);
@@ -17,9 +19,9 @@ public static class UserSeeder
     }
 
     // Create x random users and add them to mock database.
-    public static async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count)
+    public async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count, UserOptions? userOptions = null)
     {
-        var users = CreateManyFakers(seed, count);
+        var users = CreateManyFakers(seed, count, userOptions);
 
         // add all User classes to db.
         db.Users.AddRange(users.Select(x => x.User));
@@ -29,36 +31,45 @@ public static class UserSeeder
     }
 
     // Generate a random user.
-    private static SeededUser Create(int seed)
+    public SeededUser Create(int seed, UserOptions? userOptions = null)
     {
-        var faker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
+        User user;
+        string password;
+        if (userOptions is null)
+        {
+            var faker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
 
-        var password = faker.Generate();
-
-        var user = CreateFaker(seed, password).Generate();
+            password = faker.Generate();
+            UserOptions opt = new(password);
+            user = CreateFaker(seed, opt);
+        }
+        else
+        {
+            user = CreateFaker(seed, userOptions).Generate();
+            password = userOptions.Password;
+        }
 
         return new SeededUser(user, password); // returns hashed password in user and unhashed for itself
     }
 
     // Create x random users.
-    private static List<SeededUser> CreateManyFakers(int seed, int count)
+    public List<SeededUser> CreateManyFakers(int seed, int count, UserOptions? userOptions = null)
     {
         // create fakers to reuse for different data
-        var UserFaker = new Faker<NonCitizen>()
+        var userFaker = new Faker<User>()
                    .UseSeed(seed)
                    .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                    .RuleFor(u => u.LastName, f => f.Name.LastName())
-                   .RuleFor(u => u.Username, f => f.Internet.UserName())
-                   .RuleFor(u => u.Email, ""); // email field is 'required', but not needed
+                   .RuleFor(u => u.Username, f => f.Internet.UserName());
 
-        var PasswordFaker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
+        var passwordFaker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
         var users = new List<SeededUser>();
 
         for (int i = 0; i < count; i++)
         {
-            var password = PasswordFaker.Generate();
+            var password = passwordFaker.Generate();
 
-            var user = UserFaker.Generate();
+            var user = userFaker.Generate();
 
             user.Password = BCrypt.Net.BCrypt.HashPassword(password, 12);
 
@@ -69,14 +80,13 @@ public static class UserSeeder
     }
 
     // Create a random test user using bogus.
-    private static Faker<NonCitizen> CreateFaker(int seed, string password)
+    public Faker<User> CreateFaker(int seed, UserOptions userOptions)
     {
-        return new Faker<NonCitizen>()
+        return new Faker<User>()
             .UseSeed(seed)
             .RuleFor(u => u.FirstName, f => f.Name.FirstName())
             .RuleFor(u => u.LastName, f => f.Name.LastName())
             .RuleFor(u => u.Username, f => f.Internet.UserName())
-            .RuleFor(u => u.Email, "") // email field is 'required', but not needed
-            .RuleFor(u => u.Password, f => BCrypt.Net.BCrypt.HashPassword(password, 12));
+            .RuleFor(u => u.Password, f => BCrypt.Net.BCrypt.HashPassword(userOptions.Password, 12));
     }
 }
