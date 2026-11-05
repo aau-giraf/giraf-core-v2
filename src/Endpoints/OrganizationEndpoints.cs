@@ -39,7 +39,7 @@ public static class OrganizationEndpoints
         return organizations.Count != 0 ? TypedResults.NotFound() : TypedResults.Ok(organizations);
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> GetOrganizationById(int orgId, OrganizationService organizationService)
+    private static async Task<Results<Ok<OrganizationResponseDTO>, NotFound>> GetOrganizationById(int orgId, OrganizationService organizationService)
     {
         var organization = await organizationService.GetOrganizationByIdAsync(orgId);
         return organization == null ? TypedResults.NotFound() : TypedResults.Ok(organization);

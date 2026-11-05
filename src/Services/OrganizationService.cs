@@ -27,8 +27,7 @@ public class OrganizationService(AppDbContext db)
         return organizationsDtoList;
     }
 
-    // Fetch the organization by org_id from Route parameter
-    public async Task<ResponseGetOrganizationDTO?> GetOrganizationByIdAsync(int orgId)
+    public async Task<OrganizationResponseDTO?> GetOrganizationByIdAsync(int orgId)
     {
         var organization = await _db.Organizations.FindAsync(orgId);
 
@@ -37,12 +36,11 @@ public class OrganizationService(AppDbContext db)
             return null;
         }
 
-        ResponseGetOrganizationDTO responseOrganizationDTO = new ResponseGetOrganizationDTO
+        return new OrganizationResponseDTO
         {
-            Id = organization!.Id,
+            Id = organization.Id,
             Name = organization.Name,
         };
-        return responseOrganizationDTO;
     }
 
     // Delete organization by org_id from Route parameter
