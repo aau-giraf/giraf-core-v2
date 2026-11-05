@@ -6,25 +6,22 @@ public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<List<ResponseGetOrganizationDTO>> GetOrganizationsAsync()
+    public async Task<List<OrganizationResponseDTO>> GetAllOrganizationsAsync()
     {
-        // Fetch organizations
         var organizations = await _db.Organizations.ToListAsync();
 
-        // List of organizationDTOs
-        List<ResponseGetOrganizationDTO> organizationsDtoList = new List<ResponseGetOrganizationDTO>();
+        List<OrganizationResponseDTO> organizationList = [];
 
         foreach (Organization organization in organizations)
         {
-            ResponseGetOrganizationDTO responseOrganizationDTO = new ResponseGetOrganizationDTO
+            organizationList.Add(new OrganizationResponseDTO
             {
                 Id = organization.Id,
                 Name = organization.Name,
-            };
-            // Add each organization that has been converted to dto to the list
-            organizationsDtoList.Add(responseOrganizationDTO);
+            });
         }
-        return organizationsDtoList;
+
+        return organizationList;
     }
 
     public async Task<OrganizationResponseDTO?> GetOrganizationByIdAsync(int orgId)
