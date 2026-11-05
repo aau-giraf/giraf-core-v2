@@ -1,10 +1,7 @@
 using Microsoft.IdentityModel.JsonWebTokens;
 
-using Xunit.Abstractions;
-
-public class UserServiceTest : TestBase
+public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    public UserServiceTest(ITestOutputHelper output) : base(output) { }
 
     // used to offset seed for different results.
     private readonly int SEED_OFFSET = 123;

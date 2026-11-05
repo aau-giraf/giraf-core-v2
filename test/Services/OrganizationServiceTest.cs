@@ -1,10 +1,7 @@
-using System.Data;
 
-using Xunit.Abstractions;
 
-public class OrganizationServiceTest : TestBase
+public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    public OrganizationServiceTest(ITestOutputHelper output) : base(output) { }
 
     [Fact]
     public async Task GetOrganization_GetsCorrectOrganization()
@@ -136,7 +133,7 @@ public class OrganizationServiceTest : TestBase
 
 
         //----- ASSERT -----\\
-        // Be aware that the assertions differ given if the selectedClass was in the organization or not. 
+        // Be aware that the assertions differ given if the selectedClass was in the organization or not.
         if (selectedClass is null && class1.OrganizationId == organization1.Id)
         {
             Assert.True(deletedClassInOrganization);

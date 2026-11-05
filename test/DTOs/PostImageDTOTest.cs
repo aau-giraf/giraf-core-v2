@@ -1,12 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
-using Microsoft.AspNetCore.Http;
-
-using Xunit.Abstractions;
-
-public class PostImageDTOTest : TestBase
+public class PostImageDTOTest(ITestOutputHelper output) : TestBase(output)
 {
-    public PostImageDTOTest(ITestOutputHelper output) : base(output) { }
 
     [Theory]
     [InlineData(true, false, false)]

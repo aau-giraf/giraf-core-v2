@@ -1,5 +1,3 @@
-using Xunit.Abstractions;
-
 // Base test class for creating in memory db for tests.
 public abstract class TestBase
 {

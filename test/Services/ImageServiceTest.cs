@@ -1,8 +1,5 @@
-using Xunit.Abstractions;
-
-public class ImageServiceTest : TestBase
+public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    public ImageServiceTest(ITestOutputHelper output) : base(output) { }
 
     [Fact]
     public async Task GetAllImagesAsync_ReturnsAllImages()
