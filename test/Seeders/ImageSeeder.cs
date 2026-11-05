@@ -108,13 +108,13 @@ public static class ImageSeeder
 
     private static List<SeededImage> CreateManyFakers(int seed, int count)
     {
-        var ImageFaker = CreateFaker(seed);
+        var imageFaker = CreateFaker(seed);
 
         var images = new List<SeededImage>();
 
         for (int i = 0; i < count; i++)
         {
-            var image = ImageFaker.Generate();
+            var image = imageFaker.Generate();
 
             images.Add(new SeededImage(image));
         }
