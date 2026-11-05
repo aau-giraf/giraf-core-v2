@@ -1,3 +1,5 @@
+using giraf_core_v2.DTOs.Images;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
@@ -68,8 +70,7 @@ public class ImageService(AppDbContext db)
     public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
-
-
+        
         var organization = imageRequest.OrganizationId != null ? await _db.Organizations.FindAsync(imageRequest.OrganizationId) : await FindOrganizationAsync(imageRequest);
         if (organization == null)
         { // If it is not possible to connect the request to an org return null
@@ -78,11 +79,12 @@ public class ImageService(AppDbContext db)
 
         var image = new Image
         {
-            Name = imageRequest.Name,
+            TitleEn = imageRequest.TitleEn,
             Path = stringPath,
             CitizenId = imageRequest.CitizenId,
             ClassId = imageRequest.ClassId,
             OrganizationId = organization!.Id,
+            TicketId = imageRequest.TicketId
         };
 
         _db.Images.Add(image);
@@ -90,6 +92,19 @@ public class ImageService(AppDbContext db)
 
         return await GetImageByIdAsync(image.Id);
     }
+
+    public async Task<GenerateImageDTO?> GenerateImage(PostImagePromptDTO imageRequest)
+    {
+        // Get the user that sends the request
+        
+        // Create a GUID
+        Guid guid = Guid.NewGuid();
+
+        var genImage = new GenerateImageDTO() { Prompt = imageRequest.Prompt, TicketId = guid.ToString()};
+            
+        return genImage;
+    }
+    
     // stores image on core machine
     private static async Task<string> StoreImageAsync(IFormFile file)
     {

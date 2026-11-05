@@ -83,6 +83,7 @@ app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 app.MapImageEndpoints();
+app.MapImageGenerateEndpoints();
 
 app.UseRateLimiter();
 

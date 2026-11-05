@@ -10,12 +10,16 @@ public class Image
 {
     [Key]
     public int Id { get; init; }
-    public required string Name { get; set; }
+    [Length(3, 255)]
+    public string? TitleEn { get; set; }
+    
     //Optional foreign key to the Citizen the image belongs to
     public int? CitizenId { get; set; }
     public int? ClassId { get; set; }
     public Citizen? Citizen { get; set; }
     public required string Path { get; set; }
+    
+    public string TicketId { get; set; }
 
     //Foreign key to the Organization the image is scoped to. If connected to a citizen it should be found by though the citizen and never be NULL
     public required int OrganizationId { get; set; }

@@ -66,18 +66,19 @@ public static class ImageSeeder
     {
         return new Faker<Image>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
             .RuleFor(i => i.Path, f => f.System.FileName())
             .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
-            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
+            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5))
+            .RuleFor(i => i.TicketId, f => f.Lorem.Word());
     }
 
     private static Faker<PostImageDTO> CreateFakerRequest(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0, string ext = "")
     {
         return new Faker<PostImageDTO>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
             .RuleFor(i => i.OrganizationId, f => organizationId != 0 ? organizationId : f.Random.Int(1, 100))
             .RuleFor(i => i.CitizenId, f => citizenId != 0 ? citizenId : f.Random.Int(1, 100))
             .RuleFor(i => i.ClassId, f => classId != 0 ? classId : f.Random.Int(1, 100))

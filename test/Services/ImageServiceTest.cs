@@ -212,7 +212,7 @@ public class ImageServiceTest : TestBase
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.TitleEn, created!.TitleEn);
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
             Assert.Equal(request.ClassId, created.ClassId);
@@ -245,7 +245,7 @@ public class ImageServiceTest : TestBase
             var allImages = await db.Images.ToListAsync();
             var stored = Assert.Single(allImages);
             Assert.Equal(created!.Id, stored.Id);
-            Assert.Equal(request.Name, stored.Name);
+            Assert.Equal(request.TitleEn, stored.TitleEn);
             Assert.Equal(request.OrganizationId, stored.OrganizationId);
             Assert.Equal(request.CitizenId, stored.CitizenId);
             Assert.Equal(request.ClassId, stored.ClassId);
@@ -277,7 +277,7 @@ public class ImageServiceTest : TestBase
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.TitleEn, created!.TitleEn);
             Assert.Equal(citizen.Id, created.CitizenId);
             Assert.Null(created.ClassId);
             Assert.Equal(class_.Id, created.OrganizationId);
@@ -313,7 +313,7 @@ public class ImageServiceTest : TestBase
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.TitleEn, created!.TitleEn);
             Assert.Null(created.CitizenId);
             Assert.Equal(class_.Id, created.ClassId);
             Assert.Equal(organization.Id, created.OrganizationId);
@@ -358,7 +358,7 @@ public class ImageServiceTest : TestBase
             var fetched = await service.GetImageByIdAsync(created.Id);
             Assert.NotNull(fetched);
             Assert.Equal(created.Id, fetched.Id);
-            Assert.Equal(request.Name, fetched.Name);
+            Assert.Equal(request.TitleEn, fetched.TitleEn);
             Assert.Equal(request.OrganizationId, fetched.OrganizationId);
             Assert.Equal(request.CitizenId, fetched.CitizenId);
             Assert.Equal(request.ClassId, fetched.ClassId);

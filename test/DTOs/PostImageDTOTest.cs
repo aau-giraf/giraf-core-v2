@@ -16,11 +16,12 @@ public class PostImageDTOTest : TestBase
     {
         var dto = new PostImageDTO
         {
-            Name = "aName",
+            TitleEn = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
             CitizenId = citizen ? 1 : null,
             ClassId = class_ ? 1 : null,
-            OrganizationId = organization ? 1 : null
+            OrganizationId = organization ? 1 : null,
+            TicketId = "asdasd"
         };
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
@@ -35,11 +36,12 @@ public class PostImageDTOTest : TestBase
     {
         var dto = new PostImageDTO
         {
-            Name = "aName",
+            TitleEn = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
             CitizenId = citizen ? 1 : null,
             ClassId = class_ ? 1 : null,
-            OrganizationId = organization ? 1 : null
+            OrganizationId = organization ? 1 : null,
+            TicketId = "asdasd"
         };
         Assert.Single(dto.Validate(new ValidationContext(dto)));
     }
