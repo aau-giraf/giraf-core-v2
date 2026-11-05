@@ -13,7 +13,8 @@ public class UserService(AppDbContext db)
 
     public async Task<bool> DeleteCurrentUserAsync(int id)
     {
-        // return true on successful update
+        // Hvem må slette en bruger? Må citizens slette deres egen?
+        // Return true on successful delete.
         if (await _db.Users.FindAsync(id) is User user)
         {
             _db.Users.Remove(user);
@@ -26,7 +27,8 @@ public class UserService(AppDbContext db)
 
     public async Task<User?> UpdateCurrentUserAsync(int id, UpdateUserDTO inputUser)
     {
-        var user = await _db.Users.FindAsync(Id);
+        // TODO: Hvem må kalde endpointet? Og husk citizens ikke har emails.
+        var user = await _db.Users.FindAsync(id);
 
         // Return null if user does not exist.
         if (user is null)
@@ -35,19 +37,26 @@ public class UserService(AppDbContext db)
         }
 
         // Update supplied fields.
-        if (inputUser.FirstName is not null)
+        if (inputUser.FirstName is not null && inputUser.FirstName != user.FirstName)
         {
             user.FirstName = inputUser.FirstName;
         }
 
-        if (inputUser.LastName is not null)
+        if (inputUser.LastName is not null && inputUser.LastName != user.LastName)
         {
             user.LastName = inputUser.LastName;
         }
 
-        if (inputUser.Username is not null)
+        if (inputUser.Username is not null && inputUser.Username != user.Username)
         {
-            user.Username = inputUser.Username;
+            if (await _db.Users.AnyAsync(u => u.Username == inputUser.Username))
+            {
+                // hvad skal kalderen få af svar hvis brugernavn er taget? samme med email.
+            }
+            else
+            {
+                user.Username = inputUser.Username;
+            }
         }
 
         // Save changes.
@@ -83,7 +92,23 @@ public class UserService(AppDbContext db)
 
     public async Task<LoginResponseDTO?> Login(LoginRequestDTO loginRequestDTO)
     {
-        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequestDTO.Username);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Username.Equals(loginRequestDTO.Username.ToLower()));
+
+        string roles = "";
+
+        if (user is NonCitizen)
+        {
+            List<UserRole> userRoles = await _db.UserRoles.Where(r => r.NonCitizenId == user.Id).ToListAsync();
+
+            foreach (UserRole role in userRoles)
+            {
+                roles += role.Role.ToString() + " ";
+            }
+        }
+        else if (user is not Citizen)
+        {
+            throw new Exception("User is neither of type Citizen nor NonCitizen");
+        }
 
         // If user doesn't exist or password is incorrect, return null.
         if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
@@ -98,7 +123,7 @@ public class UserService(AppDbContext db)
             FirstName = user.FirstName,
             LastName = user.LastName,
             Username = user.Username,
-            Jwt = tokenProvider.Create(user)
+            Jwt = tokenProvider.Create(user, roles.Trim())
         };
     }
 }

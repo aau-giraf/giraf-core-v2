@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 using giraf_core_v2.Auth;
 using giraf_core_v2.Utils;
 
@@ -15,47 +17,37 @@ public static class UserEndpoints
         group.MapGet("/me", GetCurrentUser).RequireAuthorization();
         group.MapDelete("/me", DeleteCurrentUser).RequireAuthorization();
         group.MapPatch("/me", UpdateCurrentUser).RequireAuthorization();
-        group.MapPut("/me/password", UpdateUserPassword).RequireAuthorization();
+        group.MapPut("/me/password", UpdateUserPassword).RequireAuthorization(); // burde password change indgå i update current user?
         group.MapPost("/login", Login).RequireRateLimiting("rateLimitByIp");
     }
 
-    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider)
+    private static int GetCurrentUserId(ClaimsPrincipal currentUser)
     {
-        var user = await userService.GetCurrentUserAsync(1);
+        return int.Parse(currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("User ID not found in JWT claim!"));
+    }
+
+    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider, ClaimsPrincipal currentUser)
+    {
+        var user = await userService.GetCurrentUserAsync(GetCurrentUserId(currentUser));
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUser(UserService userService)
+    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUser(UserService userService, ClaimsPrincipal currentUser)
     {
-        // TODO: Get ID when authentication is enabled.
-        // if (id is null)
-        // {
-        //     return TypedResults.BadRequest();
-        // }
-        var result = await userService.DeleteCurrentUserAsync(1);
+        var result = await userService.DeleteCurrentUserAsync(GetCurrentUserId(currentUser));
         return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
     private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUser(
-        UserService userService, [FromBody] UpdateUserDTO? inputUser)
+        UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateUserDTO inputUser)
     {
-        // TODO: get ID from authentication
-        if (inputUser is null)
-        {
-            return TypedResults.BadRequest();
-        }
-
-        var user = await userService.UpdateCurrentUserAsync(1, inputUser);
+        var user = await userService.UpdateCurrentUserAsync(GetCurrentUserId(currentUser), inputUser);
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPassword(UserService userService, [FromBody] UpdatePasswordDTO? updatePassword)
+    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPassword(UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdatePasswordDTO updatePassword)
     {
-        if (updatePassword is null)
-        {
-            return TypedResults.BadRequest();
-        }
-        var status = await userService.UpdateUserPasswordAsync(2, updatePassword);
+        var status = await userService.UpdateUserPasswordAsync(GetCurrentUserId(currentUser), updatePassword);
 
         return status switch
         {

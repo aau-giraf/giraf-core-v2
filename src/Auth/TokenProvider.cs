@@ -10,7 +10,7 @@ namespace giraf_core_v2.Auth;
 
 public sealed class TokenProvider()
 {
-    public string Create(User user)
+    public string Create(User user, string roles)
     {
         // Create signing credentials based on the JWT secret using HMAC-SHA256.
         // The signing credentials are used to validate the token on the receivers end.
@@ -27,7 +27,8 @@ public sealed class TokenProvider()
         {
             Subject = new ClaimsIdentity([
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Name, user.FirstName)
+                new Claim(JwtRegisteredClaimNames.Name, user.FirstName),
+                new Claim("roles", roles)
             ]),
             Expires = DateTime.UtcNow.AddMilliseconds(double.Parse(Env.Get("JWT_MAX_AGE_MS"))),
             SigningCredentials = credentials,
