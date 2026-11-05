@@ -11,15 +11,16 @@ public static class LegacyClassEndpoints
     {
         var group = app.MapGroup("/legacy/class");
 
-        group.MapPost("/create", CreateClassInOrganization);
+        group.MapPost("/Create", CreateClassInOrganization);
         group.MapGet("/GetAll", GetAllClassrooms);
+        group.MapDelete("/Delete/{classId}", DeleteClassInOrganization);
 
     }
 
     private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromBody] LegacyRequestCreateClassDTO requestCreateClassDTO, OrganizationService organizationservice)
     {
         var requestCreateClass = new RequestCreateClassDTO { Name = requestCreateClassDTO.ClassName }; //Service vil geren have specifikke klasser så vil skal ændre dem hvis der skal ske noget andet 
-        var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClass, 1); //org ID is 0, because it will always be Egebakken
+        var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClass, 1); //org ID is 1, because it will always be Egebakken
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
@@ -34,7 +35,12 @@ public static class LegacyClassEndpoints
         }).ToList();
     }
 
+    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(OrganizationService organizationService, int ClassId)
+    {
+        int OrgId = 1; // Currently only Egebakken
 
-
+        bool result = await organizationService.DeleteClassInOrganizationAsync(OrgId, ClassId);
+        return result ? TypedResults.NoContent() : TypedResults.NotFound();
+    }
 
 }
