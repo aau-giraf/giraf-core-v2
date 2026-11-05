@@ -51,7 +51,7 @@ public static class NonCitizenEndpoints
         return nonCitizen ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Conflict, NotFound, Ok<ResponseNonCitizenDTO>, BadRequest>> PostNonCitizen(int nonCitizenId, [FromBody] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
+    private static async Task<Results<Conflict, NotFound, Ok<ResponseNonCitizenDTO>, BadRequest>> PostNonCitizen([FromBody] RequestPostNonCitizenDTO requestPostNonCitizenDTO, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.PostNonCitizenAsync(requestPostNonCitizenDTO);
         return nonCitizen.Item1 switch

@@ -32,6 +32,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CitizenService>();
+builder.Services.AddScoped<NonCitizenService>();
 
 builder.Services.AddValidation();
 
@@ -54,5 +55,6 @@ app.MapHealthChecks("/health");
 app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 app.MapCitizenEndpoints();
+app.MapNonCitizenEndpoints();
 
 app.Run();

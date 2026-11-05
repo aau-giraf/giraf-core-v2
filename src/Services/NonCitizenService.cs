@@ -146,8 +146,7 @@ public class NonCitizenService(AppDbContext db)
             nc => nc.Username == requestPostNonCitizenDTO.Username &&
             nc.FirstName == requestPostNonCitizenDTO.FirstName &&
             nc.LastName == requestPostNonCitizenDTO.LastName &&
-            nc.Email == requestPostNonCitizenDTO.Email &&
-            BCrypt.Net.BCrypt.Verify(requestPostNonCitizenDTO.Password, nc.Password) == true
+            nc.Email == requestPostNonCitizenDTO.Email
         );
 
         if (nonCitizen is null)

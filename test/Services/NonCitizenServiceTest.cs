@@ -403,21 +403,21 @@ public class NonCitizenServiceTest : TestBase
 
     // ---------- /nonCitizens on invalid inputs ---------- \\
     [Fact]
-    public async Task PatchNonCitizen_ReturnsConflictResponsecode()
+    public async Task PatchNonCitizen_ReturnsUnauthorizedResponseOnNonUnauthorizedOldPassword()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
         var SeededNoncitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
         var nonCitizen = SeededNoncitizen.NonCitizen;
+        var ogPassword = SeededNoncitizen.PlainPassword;
 
-        // Save original data, because nonCitizen cannot be a constant entity.
-        string ogEmail = nonCitizen.Email;
+        // New password
+        string newPassword = "fjkewkf21w121";
 
         // Generate different nonCitizen with another seed
         NonCitizen nonCitizenFaker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(nc => nc.Email, f => ogEmail);
-
+                                    .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(newPassword, 12));
 
         var service = new NonCitizenService(db);
 
@@ -426,12 +426,118 @@ public class NonCitizenServiceTest : TestBase
             nonCitizen.Id,
             new RequestPatchNonCitizenDTO
             {
-                Email = ogEmail,
+                OldPassword = ogPassword + "udsw",
+                NewPassword = nonCitizenFaker.Password,
+            });
+
+        //----- ASSERT -----\\
+        Assert.Null(fetchedNonCitizen.Item2);
+        Assert.True(BCrypt.Net.BCrypt.Verify(newPassword, nonCitizenFaker.Password));
+        Assert.Equal(HttpReponseType.Unauthorized.ToString(), fetchedNonCitizen.Item1.ToString());
+    }
+
+    [Fact]
+    public async Task PostNonCitizen_ReturnsConflictResponseOnNonUniqueEmail()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var SeededNoncitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+        var nonCitizen = SeededNoncitizen.NonCitizen;
+        var ogPassword = SeededNoncitizen.PlainPassword;
+
+        var service = new NonCitizenService(db);
+
+        // Faker nonCitizen
+        NonCitizen nonCitizenFaker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(nc => nc.FirstName, f => f.Name.FirstName())
+                                    .RuleFor(nc => nc.LastName, f => f.Name.LastName())
+                                    .RuleFor(nc => nc.Username, f => f.Internet.UserName())
+                                    .RuleFor(nc => nc.Email, f => nonCitizen.Email)
+                                    .RuleFor(nc => nc.Password, f => BCrypt.Net.BCrypt.HashPassword(f.Internet.Password(), 12));
+
+        //----- ACT -----\\
+        var fetchedNonCitizen = await service.PostNonCitizenAsync(
+            new RequestPostNonCitizenDTO
+            {
+                FirstName = nonCitizenFaker.FirstName,
+                LastName = nonCitizenFaker.LastName,
+                Username = nonCitizenFaker.Username,
+                Email = nonCitizenFaker.Email,
+                Password = nonCitizenFaker.Password,
             });
 
         //----- ASSERT -----\\
         Assert.Null(fetchedNonCitizen.Item2);
         Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedNonCitizen.Item1.ToString());
+    }
+
+    // ---------- /nonCitizens/userRoles on invalid inputs ---------- \\
+
+    [Fact]
+    public async Task PostUserRole_RetunsNotFoundOnNonExistingOrganisation()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizenSeeder = await NonCitizenSeeder.SeedAsync(db, Seed);
+        var nonCitizen = nonCitizenSeeder.NonCitizen;
+
+        // No organizations yet -> So new userRole is forced to fail.
+
+        // Faker userRole
+        UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
+                                    .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
+                                    .RuleFor(urf => urf.OrganizationId, f => f.Random.Int(1, 1000));
+
+        //----- ACT -----\\              
+        var service = new NonCitizenService(db);
+
+        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
+        {
+            RoleOrganizationTuple = (userRoleFaker.Role, userRoleFaker.OrganizationId)
+        });
+
+        //----- ASSERT -----\\  
+        Assert.Null(fetchedUserRoles.Item2);
+        Assert.Equal(HttpReponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
+    }
+
+    // ---------- /nonCitizens/guardianships on invalid inputs ---------- \\
+
+    [Fact]
+    public async Task PostGuardianship_ReturnsConflictResonseOnExistingGuardianship()
+    {
+        //----- ARRANGE -----\\
+        await using var db = CreateDbContext();
+
+        var nonCitizenSeeder = await NonCitizenSeeder.SeedAsync(db, Seed);
+        var nonCitizen = nonCitizenSeeder.NonCitizen;
+
+        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 3);
+        var citizen1 = citizens[0];
+        var citizen2 = citizens[1];
+        var citizen3 = citizens[2];
+
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id)]);
+
+        // Faker guardianship
+        Guardianship guardianshipFaker = new Faker<Guardianship>().UseSeed(Seed + SEED_OFFSET)
+                                    .RuleFor(gs => gs.GuardianId, f => nonCitizen.Id)
+                                    .RuleFor(gs => gs.CitizenId, f => citizen2.citizen.Id);
+
+        //----- ACT -----\\              
+        var service = new NonCitizenService(db);
+
+        var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
+        {
+            CitizenId = citizen2.citizen.Id
+        });
+
+        //----- ASSERT -----\\  
+        Assert.Null(fetchedGuardianships.Item2);
+        Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedGuardianships.Item1.ToString());
     }
 
 }
