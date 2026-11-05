@@ -25,7 +25,7 @@ public class CitizenService(AppDbContext db)
         return getCitizenDto;
     }
 
-    public async Task<CreateCitizenDTO?> CreateCitizenAsync(CreateCitizenDTO dto)
+    public async Task<GetCitizenDTO?> CreateCitizenAsync(CreateCitizenDTO dto)
     {
         var citizen = new Citizen
         {
@@ -36,8 +36,8 @@ public class CitizenService(AppDbContext db)
             Username = dto.Username,
         };
 
-        var schoolClass = await _db.Classes.FindAsync(dto.ClassId);
-        if (schoolClass is null)
+        var class_ = await _db.Classes.FindAsync(dto.ClassId);
+        if (class_ is null)
         {
             return null;
         }
@@ -45,8 +45,9 @@ public class CitizenService(AppDbContext db)
         _db.Citizens.Add(citizen);
         await _db.SaveChangesAsync();
 
-        return new CreateCitizenDTO
+        return new GetCitizenDTO
         {
+            UserId = citizen.Id,
             ClassId = citizen.ClassId,
             Username = citizen.Username,
             FirstName = citizen.FirstName,

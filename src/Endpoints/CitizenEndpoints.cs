@@ -26,15 +26,11 @@ public static class CitizenEndpoints
         return TypedResults.Ok(citizen);
     }
 
-    private static async Task<Results<Created<CreateCitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
+    private static async Task<Results<Created<GetCitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
     {
         var citizen = await citizenService.CreateCitizenAsync(createCitizen);
 
-        if (citizen is null)
-        {
-            return TypedResults.BadRequest();
-        }
-        return TypedResults.Created("/citizen", citizen);
+        return citizen != null ? TypedResults.Created("/citizen", citizen) : TypedResults.BadRequest();
     }
 
     private static async Task<Results<Ok<GetCitizenDTO>, NotFound, BadRequest>> UpdateCitizen(int citizenId, CitizenService citizenService, [FromBody] UpdateCitizenDTO? updateCitizen)

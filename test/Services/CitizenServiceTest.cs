@@ -6,22 +6,20 @@ public class CitizenServiceTest : TestBase
 {
     public CitizenServiceTest(ITestOutputHelper output) : base(output) { }
 
-    private readonly int SEED_OFFSET = 123;
-
     [Fact]
     public async Task GetCurrentCitizen_GetsCurrentCitizen()
     {
         await using var db = CreateDbContext();
 
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-        var SeededCitizen = await CitizenSeeder.SeedAsync(db, Seed, girafClass);
-        var citizen = SeededCitizen.citizen;
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
 
         var service = new CitizenService(db);
 
         var fetchedCitizen = await service.GetCitizenAsync(citizen.Id);
 
+        Assert.NotNull(fetchedCitizen);
         Assert.Equal(citizen.FirstName, fetchedCitizen.FirstName);
         Assert.Equal(citizen.LastName, fetchedCitizen.LastName);
         Assert.Equal(citizen.ClassId, fetchedCitizen.ClassId);
@@ -47,9 +45,8 @@ public class CitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-        var SeededCitizen = await CitizenSeeder.SeedAsync(db, Seed, girafClass);
-        var citizen = SeededCitizen.citizen;
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
 
         // save the original user data before altering the first name
         int ogId = citizen.Id;
@@ -58,7 +55,7 @@ public class CitizenServiceTest : TestBase
         string ogUserName = citizen.Username;
 
         // Generate a new first name
-        GetCitizenDTO faker = new Faker<GetCitizenDTO>().UseSeed(Seed + SEED_OFFSET)
+        GetCitizenDTO faker = new Faker<GetCitizenDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName);
         Assert.NotEqual(ogName, faker.FirstName);
 
@@ -82,13 +79,12 @@ public class CitizenServiceTest : TestBase
         await using var db = CreateDbContext();
         // Create a random organization the class has to exist in
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-        var SeededCitizen = await CitizenSeeder.SeedAsync(db, Seed, girafClass);
-        var citizen = SeededCitizen.citizen;
-        var newClass = await ClassSeeder.SeedAsync(db, Seed, organization);
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+        var newClass = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
 
         // Generate new values for every field
-        UpdateCitizenDTO request = new Faker<UpdateCitizenDTO>().UseSeed(Seed + SEED_OFFSET)
+        UpdateCitizenDTO request = new Faker<UpdateCitizenDTO>().UseSeed(Seed)
             .RuleFor(u => u.ClassId, newClass.Id)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
@@ -122,7 +118,7 @@ public class CitizenServiceTest : TestBase
         var organization = await OrganizationSeeder.SeedManyAsync(db, Seed, 1);
         var organization1 = organization[0];
         // The class must exist so the lookup fails on the citizen, not the class
-        var schoolClass = await ClassSeeder.SeedAsync(db, Seed, organization1);
+        var schoolClass = await ClassSeeder.SeedAsync(db, Seed, organization1.Id);
 
         var service = new CitizenService(db);
 
@@ -140,9 +136,8 @@ public class CitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-        var SeededCitizen = await CitizenSeeder.SeedAsync(db, Seed, girafClass);
-        var citizen = SeededCitizen.citizen;
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
         int ogClassId = citizen.ClassId;
 
         var service = new CitizenService(db);
@@ -164,9 +159,8 @@ public class CitizenServiceTest : TestBase
 
         // Create a bogus org and class the citizen is being created in
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-        var seededCitizen = await CitizenSeeder.SeedAsync(db, Seed, girafClass);
-        var citizen = seededCitizen.citizen;
+        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
 
         var service = new CitizenService(db);
         await service.DeleteCitizenAsync(citizen.Id);
@@ -191,9 +185,9 @@ public class CitizenServiceTest : TestBase
         // Create a random organization the class has to exist in
         var organization = await OrganizationSeeder.SeedManyAsync(db, Seed, 1);
         var organization1 = organization[0];
-        var schoolClass = await ClassSeeder.SeedAsync(db, Seed, organization1);
+        var schoolClass = await ClassSeeder.SeedAsync(db, Seed, organization1.Id);
 
-        CreateCitizenDTO request = new Faker<CreateCitizenDTO>().UseSeed(Seed + SEED_OFFSET)
+        CreateCitizenDTO request = new Faker<CreateCitizenDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
             .RuleFor(u => u.ClassId, schoolClass.Id)
@@ -209,7 +203,6 @@ public class CitizenServiceTest : TestBase
         Assert.Equal(request.LastName, created.LastName);
         Assert.Equal(request.Username, created.Username);
         Assert.Equal(request.ClassId, created.ClassId);
-        Assert.Null(created.Password);
 
         // Assert the citizen was actually saved
         var saved = await db.Citizens.SingleAsync(c => c.Username == request.Username);

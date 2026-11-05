@@ -215,24 +215,22 @@ public class NonCitizenServiceTest : TestBase
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 1, organization.Id, nonCitizen.Id);
 
-        // Faker userRole
-        UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
-                                    .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
-                                    .RuleFor(urf => urf.OrganizationId, organization.Id);
+        // RoleType only has two values, so a second seeded role can match the first and Post returns null.
+        var existingRole = userRoles.Single().Role;
+        var newRole = existingRole == RoleType.Employee ? RoleType.Parent : RoleType.Employee;
 
-        //----- ACT -----\\              
+        //----- ACT -----\\
         var service = new NonCitizenService(db);
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
         {
-            RoleOrganizationTuple = (userRoleFaker.Role, userRoleFaker.OrganizationId)
+            RoleOrganizationTuple = (newRole, organization.Id)
         });
 
-        //----- ASSERT -----\\  
+        //----- ASSERT -----\\
         Assert.NotNull(fetchedUserRoles);
         Assert.Equal(2, fetchedUserRoles.RoleOrganizationTuples.Count);
-        Assert.Contains((userRoleFaker.Role, userRoleFaker.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+        Assert.Contains((newRole, organization.Id), fetchedUserRoles.RoleOrganizationTuples);
 
     }
 

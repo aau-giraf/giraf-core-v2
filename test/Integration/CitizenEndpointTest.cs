@@ -10,33 +10,33 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     [Fact]
     public async Task GetCitizenById_ReturnsCorrectResult()
     {
-        var seeded = await factory.ArrangeAsync(async db =>
+        var seededCitizen = await factory.ArrangeAsync(async db =>
         {
             var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-            return await CitizenSeeder.SeedAsync(db, Seed, girafClass);
+            var class_ = await ClassSeeder.SeedAsync(db, Seed + 1, organization.Id);
+            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
         });
         var client = factory.CreateClient();
-        var response = await client.GetAsync($"/citizens/{seeded.citizen.Id}");
+        var response = await client.GetAsync($"/citizens/{seededCitizen.Id}");
 
         response.EnsureSuccessStatusCode();
         var citizen = await response.Content.ReadFromJsonAsync<GetCitizenDTO>();
         Assert.NotNull(citizen);
-        Assert.Equal(seeded.citizen.Id, citizen.UserId);
+        Assert.Equal(seededCitizen.Id, citizen.UserId);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
     public async Task DeleteCitizen_ReturnsCorrectResult()
     {
-        var seeded = await factory.ArrangeAsync(async db =>
+        var seededCitizen = await factory.ArrangeAsync(async db =>
         {
             var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var girafClass = await ClassSeeder.SeedAsync(db, Seed, organization);
-            return await CitizenSeeder.SeedAsync(db, Seed, girafClass);
+            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
         });
         var client = factory.CreateClient();
-        var response = await client.DeleteAsync($"/citizens/{seeded.citizen.Id}");
+        var response = await client.DeleteAsync($"/citizens/{seededCitizen.Id}");
 
         response.EnsureSuccessStatusCode();
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);

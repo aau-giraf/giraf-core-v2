@@ -10,16 +10,16 @@ public class CreateCitizenDTO
 {
     [Required]
     public int ClassId { get; set; }
-    [Required]
+
     [Length(3, 255)]
-    public string? FirstName { get; set; }
-    [Required]
+    public required string FirstName { get; set; }
+
     [Length(3, 255)]
-    public string? LastName { get; set; }
-    [Required]
+    public required string LastName { get; set; }
+
     [Length(3, 255)]
-    public string? Username { get; set; }
-    [Required]
+    public required string Username { get; set; }
+
     [Length(3, 255)]
-    public string? Password { get; set; }
+    public required string Password { get; set; }
 }
