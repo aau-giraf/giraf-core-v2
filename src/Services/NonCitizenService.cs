@@ -26,7 +26,7 @@ public class NonCitizenService(AppDbContext db)
 
         ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
         {
-            Id = nonCitizen!.Id,
+            Id = nonCitizen.Id,
             FirstName = nonCitizen.FirstName,
             LastName = nonCitizen.LastName,
             Email = nonCitizen.Email,
