@@ -6,15 +6,15 @@ public class UserService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<User?> GetCurrentUserAsync(int Id)
+    public async Task<User?> GetCurrentUserAsync(int id)
     {
-        return await _db.Users.FindAsync(Id);
+        return await _db.Users.FindAsync(id);
     }
 
-    public async Task<bool> DeleteCurrentUserAsync(int Id)
+    public async Task<bool> DeleteCurrentUserAsync(int id)
     {
         // return true on successful update
-        if (await _db.Users.FindAsync(Id) is User user)
+        if (await _db.Users.FindAsync(id) is User user)
         {
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
@@ -24,7 +24,7 @@ public class UserService(AppDbContext db)
         return false;
     }
 
-    public async Task<User?> UpdateCurrentUserAsync(int Id, UpdateUserDTO inputUser)
+    public async Task<User?> UpdateCurrentUserAsync(int id, UpdateUserDTO inputUser)
     {
         var user = await _db.Users.FindAsync(Id);
 
@@ -56,9 +56,9 @@ public class UserService(AppDbContext db)
         return user;
     }
 
-    public async Task<int> UpdateUserPasswordAsync(int Id, UpdatePasswordDTO updatePassword)
+    public async Task<int> UpdateUserPasswordAsync(int id, UpdatePasswordDTO updatePassword)
     {
-        var user = await _db.Users.FindAsync(Id);
+        var user = await _db.Users.FindAsync(id);
 
         // Return 0 if user does not exist.
         if (user is null)

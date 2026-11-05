@@ -11,28 +11,17 @@ public static class OrganizationEndpoints
     {
         var group = application.MapGroup("/organizations");
 
-        group.MapGet("/", GetOrganizations);
-
-        group.MapGet("/{orgId:int}", GetOrganizationById);
-
-        group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization);
-
-        group.MapGet("/{org_id:int}/classes", GetClassesInOrganization);
-
-        group.MapPost("/{orgId:int}/classes", CreateClassInOrganization);
-
-        group.MapPost("/", CreateOrganization);
-
-        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole);
-
-        group.MapPatch("/{orgId:int}", UpdateOrganization);
-
-        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole);
-
-        group.MapDelete("/{orgId:int}", DeleteOrganization);
-
-        group.MapDelete("/{orgId:int}/classes/{classId:int}", DeleteClassInOrganization);
-
+        group.MapGet("/", GetOrganizations).RequireAuthorization();
+        group.MapGet("/{orgId:int}", GetOrganizationById).RequireAuthorization();
+        group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization).RequireAuthorization();
+        group.MapGet("/{orgid:int}/classes", GetClassesInOrganization).RequireAuthorization();
+        group.MapPost("/{orgId:int}/classes", CreateClassInOrganization).RequireAuthorization();
+        group.MapPost("/", CreateOrganization).RequireAuthorization();
+        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole).RequireAuthorization();
+        group.MapPatch("/{orgId:int}", UpdateOrganization).RequireAuthorization();
+        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole).RequireAuthorization();
+        group.MapDelete("/{orgId:int}", DeleteOrganization).RequireAuthorization();
+        group.MapDelete("/{orgId:int}/classes/{classId:int}", DeleteClassInOrganization).RequireAuthorization();
     }
 
     private static async Task<Results<Ok<List<ResponseGetOrganizationDTO>>, NotFound>> GetOrganizations(OrganizationService organizationService)
