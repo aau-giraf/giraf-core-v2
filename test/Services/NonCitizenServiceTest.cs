@@ -1,11 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
-using Bogus.DataSets;
-
-using DotNet.Testcontainers.Configurations;
-
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 using Xunit.Abstractions;
 
@@ -39,6 +31,7 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizen.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizen.Email, fetchedNonCitizen!.Email);
     }
+
 
     [Fact]
     public async Task PatchNonCitizen_PatchesCorrectNonCitizen()
@@ -300,11 +293,10 @@ public class NonCitizenServiceTest : TestBase
         var nonCitizenSeeder = await NonCitizenSeeder.SeedAsync(db, Seed);
         var nonCitizen = nonCitizenSeeder.NonCitizen;
 
-        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 2);
-        var citizen1 = citizens[0];
-        var citizen2 = citizens[1];
+        var citizen1 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen2 = await CitizenSeeder.SeedAsync(db, Seed);
 
-        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id)]);
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.Id, nonCitizen.Id), (citizen2.Id, nonCitizen.Id)]);
         var guardianship1 = guardianships[0];
         var guardianship2 = guardianships[1];
 
@@ -330,12 +322,12 @@ public class NonCitizenServiceTest : TestBase
         var nonCitizenSeeder = await NonCitizenSeeder.SeedAsync(db, Seed);
         var nonCitizen = nonCitizenSeeder.NonCitizen;
 
-        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 3);
-        var citizen1 = citizens[0];
-        var citizen2 = citizens[1];
-        var citizen3 = citizens[2];
+        var citizen1 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen2 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen3 = await CitizenSeeder.SeedAsync(db, Seed);
 
-        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id), (citizen3.citizen.Id, nonCitizen.Id)]);
+
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.Id, nonCitizen.Id), (citizen2.Id, nonCitizen.Id), (citizen3.Id, nonCitizen.Id)]);
         var guardianship1 = guardianships[0];
         var guardianship2 = guardianships[1];
         var guardianship3 = guardianships[2];
@@ -381,24 +373,23 @@ public class NonCitizenServiceTest : TestBase
         var nonCitizenSeeder = await NonCitizenSeeder.SeedAsync(db, Seed);
         var nonCitizen = nonCitizenSeeder.NonCitizen;
 
-        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 3);
-        var citizen1 = citizens[0];
-        var citizen2 = citizens[1];
-        var citizen3 = citizens[2];
+        var citizen1 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen2 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen3 = await CitizenSeeder.SeedAsync(db, Seed);
 
-        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id)]);
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.Id, nonCitizen.Id), (citizen2.Id, nonCitizen.Id)]);
 
         // Faker guardianship
         Guardianship guardianshipFaker = new Faker<Guardianship>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(gs => gs.GuardianId, f => nonCitizen.Id)
-                                    .RuleFor(gs => gs.CitizenId, f => citizen3.citizen.Id);
+                                    .RuleFor(gs => gs.CitizenId, f => citizen3.Id);
 
         //----- ACT -----\\              
         var service = new NonCitizenService(db);
 
         var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
         {
-            CitizenId = citizen3.citizen.Id
+            CitizenId = citizen3.Id
         });
 
         //----- ASSERT -----\\  
@@ -526,24 +517,24 @@ public class NonCitizenServiceTest : TestBase
         var nonCitizenSeeder = await NonCitizenSeeder.SeedAsync(db, Seed);
         var nonCitizen = nonCitizenSeeder.NonCitizen;
 
-        var citizens = await CitizenSeeder.SeedManyAsync(db, Seed, 3);
-        var citizen1 = citizens[0];
-        var citizen2 = citizens[1];
-        var citizen3 = citizens[2];
+        var citizen1 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen2 = await CitizenSeeder.SeedAsync(db, Seed);
+        var citizen3 = await CitizenSeeder.SeedAsync(db, Seed);
 
-        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.citizen.Id, nonCitizen.Id), (citizen2.citizen.Id, nonCitizen.Id)]);
+
+        var guardianships = await GuardianshipSeeder.SeedManyAsync(db, Seed, [(citizen1.Id, nonCitizen.Id), (citizen2.Id, nonCitizen.Id)]);
 
         // Faker guardianship
         Guardianship guardianshipFaker = new Faker<Guardianship>().UseSeed(Seed + SEED_OFFSET)
                                     .RuleFor(gs => gs.GuardianId, f => nonCitizen.Id)
-                                    .RuleFor(gs => gs.CitizenId, f => citizen2.citizen.Id);
+                                    .RuleFor(gs => gs.CitizenId, f => citizen2.Id);
 
         //----- ACT -----\\              
         var service = new NonCitizenService(db);
 
         var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
         {
-            CitizenId = citizen2.citizen.Id
+            CitizenId = citizen2.Id
         });
 
         //----- ASSERT -----\\  

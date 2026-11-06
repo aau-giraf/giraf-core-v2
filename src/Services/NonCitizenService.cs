@@ -1,17 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-using System.IO.Compression;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography.X509Certificates;
-
-using giraf_core_v2.Data.Seeding;
-
-using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using Microsoft.EntityFrameworkCore;
-
-using Npgsql;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
 
