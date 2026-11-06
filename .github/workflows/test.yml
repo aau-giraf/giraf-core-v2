@@ -6,6 +6,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: TEST_SECRETS
 
     steps:
       - uses: actions/checkout@v4
@@ -18,12 +19,26 @@ jobs:
         with:
           name: build-output
 
+      - name: Create .env to use in tests
+        env:
+          JWT_AUDIENCES: ${{ secrets.JWT_AUDIENCES }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_MAX_AGE_MS: ${{ secrets.JWT_MAX_AGE_MS }}
+        run: |
+          {
+            printf 'JWT_AUDIENCES=%s\n' "$JWT_AUDIENCES"
+            printf 'JWT_ISSUER=%s\n' "$JWT_ISSUER"
+            printf 'JWT_SECRET=%s\n' "$JWT_SECRET"
+            printf 'JWT_MAX_AGE_MS=%s\n' "$JWT_MAX_AGE_MS"
+          } > .env
+
       - name: Run tests with coverage
         run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
       - name: Generate per-file coverage Markdown
         if: always() && github.event_name == 'pull_request'
-        run: python3 scripts/coverage-to-markdown.py
+        run: python3 scripts/coverage_to_markdown.py
 
       - name: Add Coverage PR Comment
         uses: marocchino/sticky-pull-request-comment@v2

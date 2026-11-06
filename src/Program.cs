@@ -1,29 +1,47 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
+using giraf_core_v2.Auth;
 using giraf_core_v2.Data.Seeding;
+using giraf_core_v2.Utils;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+
+// Load environment variables
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Register health checks
 builder.Services.AddHealthChecks();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection"))
-        .UseSeeding((context, _) =>
-        { // Runs when Databse.Migrate.
-            var seeders = typeof(AppDbContext).Assembly // Gets all classes from the assembly AppDbContext gets compiled into (all classes)
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("defaultConnection"));
+
+    if (!builder.Environment.IsEnvironment("Testing"))
+    {
+        options.UseSeeding((context, _) =>
+        {
+            // Runs when Databse.Migrate.
+            var seeders = typeof(AppDbContext)
+                .Assembly // Gets all classes from the assembly AppDbContext gets compiled into (all classes)
                 .GetTypes()
-                .Where(type => typeof(ISeeding).IsAssignableFrom(type) && !type.IsInterface) // Ensures only entities compatible with ISeeding are included (excluding ISeeding itself)
+                .Where(type =>
+                    typeof(ISeeding).IsAssignableFrom(type) &&
+                    !type.IsInterface) // Ensures only entities compatible with ISeeding are included (excluding ISeeding itself)
                 .Select(type => (ISeeding)Activator.CreateInstance(type)!) // Creates instances of said classes
-                .OrderBy(seeder => seeder.SeedingPosition); // Ensures seeding happens in the correct order in respect to FK linking
+                .OrderBy(seeder =>
+                    seeder.SeedingPosition); // Ensures seeding happens in the correct order in respect to FK linking
 
             foreach (ISeeding seeder in seeders)
             {
                 seeder.Seed((AppDbContext)context);
             }
-        })
-);
+        });
+    }
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(
@@ -31,13 +49,36 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ImageService>();
+builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<CitizenService>();
 builder.Services.AddScoped<NonCitizenService>();
 
 builder.Services.AddValidation();
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(o =>
+{
+    o.RequireHttpsMetadata = false;
+    o.TokenValidationParameters = TokenParameters.Get();
+});
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGenWithAuth();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("rateLimitByIp", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+            factory: f => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromSeconds(10)
+            }
+    ));
+});
 
 var app = builder.Build();
 
@@ -56,5 +97,12 @@ app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 app.MapCitizenEndpoints();
 app.MapNonCitizenEndpoints();
+app.MapImageEndpoints();
+
+app.UseRateLimiter();
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.Run();

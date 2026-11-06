@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <File Path="src/.env" />
     <Project Path="src/giraf-core-v2.csproj" />
   </Folder>
   <Folder Name="/test/">

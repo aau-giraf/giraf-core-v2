@@ -262,7 +262,7 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
                                     .RuleFor(urf => urf.OrganizationId, organization3.Id);
 
-        //----- ACT -----\\              
+        //----- ACT -----\\
         var service = new NonCitizenService(db);
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO

@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 namespace giraf_core_v2.Endpoints;
 
@@ -12,31 +10,23 @@ public static class CitizenEndpoints
         var groupOrg = app.MapGroup("/organizations");
 
         group.MapGet("/{citizenId}", GetCitizen);
+        group.MapPost("", CreateCitizen);
         group.MapPatch("/{citizenId}", UpdateCitizen);
         group.MapDelete("/{citizenId}", DeleteCitizen);
-        groupOrg.MapPost("/citizens", CreateCitizen);
     }
 
     private static async Task<Results<Ok<GetCitizenDTO>, NotFound>> GetCitizen(int citizenId, CitizenService citizenService)
     {
         var citizen = await citizenService.GetCitizenAsync(citizenId);
-        if (citizen is null)
-        {
-            return TypedResults.NotFound();
-        }
 
-        return TypedResults.Ok(citizen);
+        return citizen != null ? TypedResults.Ok(citizen) : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Created<CreateCitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
+    private static async Task<Results<Created<GetCitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
     {
         var citizen = await citizenService.CreateCitizenAsync(createCitizen);
 
-        if (citizen is null)
-        {
-            return TypedResults.BadRequest();
-        }
-        return TypedResults.Created("/citizen", citizen);
+        return citizen != null ? TypedResults.Created("/citizen", citizen) : TypedResults.BadRequest();
     }
 
     private static async Task<Results<Ok<GetCitizenDTO>, NotFound, BadRequest>> UpdateCitizen(int citizenId, CitizenService citizenService, [FromBody] UpdateCitizenDTO? updateCitizen)

@@ -1,17 +1,31 @@
 ## Guide
+First, ensure that Docker is running on your machine.
 
-Run
+Then ensure you have a `.env` file in the project's root folder with the following variables set:
+```
+JWT_SECRET=<INSERT_SUPER_SECRET_KEY_HERE>
+JWT_MAX_AGE_MS=3600000 # 1 Hour
+JWT_AUDIENCES=giraf-foodplanner,giraf-weekplanner,giraf-vta
+JWT_ISSUER=giraf-core
+```
+
+For development purposes, any random 256bit string will work as the `JWT_SECRET`.
+
+You can generate one here: [Secret Generator](https://jwtsecretkeygenerator.com/)
+
+Now run
 `docker compose up --build`
 
 Then check the following endpoint:
 `localhost:8080/health`
 
-To add entries to tables, run:
-`docker exec -it giraf-core-v2-db-1 psql -U postgres -d defaultdb`
+To access the docker database, run:
+`docker exec -it [container-name] psql -U [pg-user] -d [pg-db]`
 
-Now you can run `INSERT INTO ...;`
+For example:
+`docker exec -it db_dev psql -U postgres -d defaultdb`
 
-E.g., `INSERT INTO "Users" ("Id", "FirstName", "LastName", "Email", "Username", "Password", "Role") VALUES (1, 'Peter', 'Bødstrup', 'pb123@gmail.com', 'Hestepeter', 'hp123', 1);`
+Now you can run SQL queries.
 
 ### Linux
 
@@ -36,10 +50,6 @@ Might require the following package a separate 'docker buildx' package depending
 
 `docker compose up --build`
 
-### Run tests
-
-`docker compose --profile test run --run --rm test`
-
 ### Optional: discard the local database volume to fix the existing EnsureCreated/migration mismatch
 
 ### WARNING: deletes database data
@@ -49,7 +59,7 @@ Might require the following package a separate 'docker buildx' package depending
 
 ## Run Tests
 
-Run: `dotnet test --configuration Release --verbosity normal`
+Run: `docker compose --profile test build --no-cache test; docker compose --profile test run --rm test`
 The test seed will then be visible in the error message if a test fails.
 
 ## Contributing

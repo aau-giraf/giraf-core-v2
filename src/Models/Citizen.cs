@@ -6,6 +6,7 @@ public class Citizen : User
 {
     [Required]
     public int ClassId { get; set; }
+
     [Required]
     public Class? Class { get; set; }
 

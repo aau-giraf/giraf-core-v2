@@ -6,10 +6,10 @@ using Microsoft.Extensions.Validation;
 [ValidatableType]
 public class UpdateUserDTO
 {
-    [Length(3, 255)]
+    [Length(2, 255)]
     public string? FirstName { get; set; }
 
-    [Length(3, 255)]
+    [Length(2, 255)]
     public string? LastName { get; set; }
 
     [EmailAddress]
