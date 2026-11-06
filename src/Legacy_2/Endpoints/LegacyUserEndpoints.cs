@@ -12,8 +12,23 @@ public static class LegacyUserEndpoints
         var group = app.MapGroup("legacy/users");
 
         group.MapDelete("/deleteLoggedInUser", DeleteCurrentUser);
+        
+
         group.MapGet("/getLoggedIn", GetCurrentUser);
+        //group.MapGet("/GetBearerTest", );
+        //group.MapGet("/EmailExists", );
+        //group.MapGet("/HasPinCode", );
+
         group.MapPut("/UpdateLoggedIn", UpdateCurrentUser);
+        //group.MapPut("/UpdatePinCode", );
+        //group.MapPut("/UpdatePassword", );
+
+        //group.MapPost("/Create",);
+        //group.MapPost("/CreateUserChildren",);
+        //group.MapPost("/Login",);
+        //group.MapPost("/LoginChild",);
+        //group.MapPost("/ChekcPinCode",);
+
 
     }
 
