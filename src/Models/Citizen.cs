@@ -4,10 +4,10 @@ namespace giraf_core_v2.Models;
 
 public class Citizen : User
 {
-    [Required]
-    public int ClassId { get; set; }
-    [Required]
-    public Class? Class { get; set; }
+    
+    public required int ClassId { get; set; }
+    
+    public required Class Class { get; set; }
 
     //Navigational property: The guardianships involving this citizen. Find this citizen's guardians
     public ICollection<Guardianship> Guardianships { get; } = [];
