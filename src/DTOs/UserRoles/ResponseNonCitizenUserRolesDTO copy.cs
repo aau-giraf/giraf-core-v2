@@ -7,6 +7,6 @@ using Microsoft.Extensions.Validation;
 public class ResponseNonCitizenUserRolesDTO
 {
     public required int NonCitizenId { get; set; }
-    public required ICollection<(RoleType, int)> RoleOrganizationTuples { get; set; } = [];
+    public required ICollection<string> RoleOrganizationTuples { get; set; } = [];
 
 }

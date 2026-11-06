@@ -6,6 +6,8 @@ using Microsoft.Extensions.Validation;
 [ValidatableType]
 public class RequestNonCitizenUserRoleDTO
 {
-    public required (RoleType, int) RoleOrganizationTuple { get; set; }
+    public required RoleType Role { get; set; }
+
+    public required int OrganizationId { get; set; }
 
 }

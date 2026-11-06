@@ -182,8 +182,11 @@ public class NonCitizenServiceTest : TestBase
         //----- ASSERT -----\\
         Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
         foreach (var userRole in nonCitizen.Roles)
-        {
-            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+        {   
+            var roleString = userRole.Role.ToString();
+            var orgString = userRole.OrganizationId.ToString();
+            var roleOrgString = roleString + "|" + orgString;
+            Assert.Contains(roleOrgString, fetchedUserRoles.RoleOrganizationTuples);
         }
     }
 
@@ -213,18 +216,16 @@ public class NonCitizenServiceTest : TestBase
             ogUserRoles.Add((userRole.Role, userRole.OrganizationId));
         }
 
-        // Format userRole to Request format
-        (RoleType, int) roleOrganizationTuple = (userRole1.Role, userRole1.OrganizationId);
-
         var service = new NonCitizenService(db);
 
         Assert.True(await service.DeleteUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
         {
-            RoleOrganizationTuple = roleOrganizationTuple
+            Role = userRole1.Role,
+            OrganizationId = userRole1.OrganizationId
         }));
 
         var deletedUserRole = await db.UserRoles
-            .SingleOrDefaultAsync(ur => ur.NonCitizenId == nonCitizen.Id && ur.Role == roleOrganizationTuple.Item1 && ur.OrganizationId == roleOrganizationTuple.Item2);
+            .SingleOrDefaultAsync(ur => ur.NonCitizenId == nonCitizen.Id && ur.Role == userRole1.Role && ur.OrganizationId == userRole1.OrganizationId);
 
         Assert.Null(deletedUserRole);
 
@@ -266,16 +267,25 @@ public class NonCitizenServiceTest : TestBase
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
         {
-            RoleOrganizationTuple = (userRoleFaker.Role, userRoleFaker.OrganizationId)
+            Role = userRoleFaker.Role,
+            OrganizationId = userRoleFaker.OrganizationId
         });
 
         //----- ASSERT -----\\  
         Assert.NotNull(fetchedUserRoles.Item2);
         Assert.Equal(3, fetchedUserRoles.Item2!.RoleOrganizationTuples.Count);
-        Assert.Contains((userRoleFaker.Role, userRoleFaker.OrganizationId), fetchedUserRoles.Item2.RoleOrganizationTuples);
+
+        var roleString = userRoleFaker.Role.ToString();
+        var orgString = userRoleFaker.OrganizationId.ToString();
+        var roleOrgString = roleString + "|" + orgString;
+
+        Assert.Contains(roleOrgString, fetchedUserRoles.Item2.RoleOrganizationTuples);
         foreach (var userRole in userRoles)
-        {
-            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.Item2.RoleOrganizationTuples);
+        {   
+            var roleString1 = userRole.Role.ToString();
+            var orgString1 = userRole.OrganizationId.ToString();
+            var roleOrgString1 = roleString + "|" + orgString;
+            Assert.Contains(roleOrgString1, fetchedUserRoles.Item2.RoleOrganizationTuples);
         }
     }
 
@@ -495,8 +505,9 @@ public class NonCitizenServiceTest : TestBase
         var service = new NonCitizenService(db);
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
-        {
-            RoleOrganizationTuple = (userRoleFaker.Role, userRoleFaker.OrganizationId)
+        {   
+            Role = userRoleFaker.Role,
+            OrganizationId = userRoleFaker.OrganizationId
         });
 
         //----- ASSERT -----\\  

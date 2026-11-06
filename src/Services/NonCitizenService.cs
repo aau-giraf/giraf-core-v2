@@ -178,19 +178,24 @@ public class NonCitizenService(AppDbContext db)
     public async Task<ResponseNonCitizenUserRolesDTO?> GetUserRolesAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
-        
-        var nonCitizens = await _db.NonCitizens
-            .Include(nc => nc.Roles)
-            .SingleOrDefaultAsync(nc => nc.Id == nonCitizenId);
-       
-        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
-        ICollection<(RoleType, int)> roleOrganizationTuples = [];
-    
-        foreach (UserRole userRole in nonCitizens!.Roles)
+
+        if (nonCitizen is null)
         {
-            roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+            return null;
         }
 
+        var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizenId).ToListAsync();
+
+        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        ICollection<string> roleOrganizationTuples = [];
+
+        foreach (UserRole userRole in userRoles)
+        {   
+            var roleString = userRole.Role.ToString();
+            var orgString = userRole.OrganizationId.ToString();
+            var roleOrgString = roleString + "|" + orgString;
+            roleOrganizationTuples.Add(roleOrgString);
+        }
 
         return new ResponseNonCitizenUserRolesDTO
         {
@@ -200,20 +205,20 @@ public class NonCitizenService(AppDbContext db)
     }
 
     public async Task<bool> DeleteUserRoleAsync(int nonCitizenId, RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO)
-    {
+    {   
         if (await _db.UserRoles.AnyAsync(ur =>
              ur.NonCitizenId == nonCitizenId &&
-             ur.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2 &&
-             ur.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1
+             ur.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId &&
+             ur.Role == requestNonCitizenUserRoleDTO.Role
              ))
         {
             var userRole = await _db.UserRoles
-            .FindAsync(nonCitizenId, requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1, requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2);
+            .FindAsync(nonCitizenId, requestNonCitizenUserRoleDTO.Role, requestNonCitizenUserRoleDTO.OrganizationId);
 
             if (
                 userRole!.NonCitizenId == nonCitizenId &&
-                userRole.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2 &&
-                userRole.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1 &&
+                userRole.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId &&
+                userRole.Role == requestNonCitizenUserRoleDTO.Role &&
                 userRole is not null
                 )
             {
@@ -237,7 +242,7 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check organization exists
-        var organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2);
+        var organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.OrganizationId);
         if (organization is null)
         {
             return (HttpReponseType.NotFound, null);
@@ -246,8 +251,8 @@ public class NonCitizenService(AppDbContext db)
         // Check if userRole exists
         var userRoleExists = await _db.UserRoles.AnyAsync(ur =>
              ur.NonCitizenId == nonCitizenId &&
-             ur.Role == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1 &&
-             ur.OrganizationId == requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2
+             ur.Role == requestNonCitizenUserRoleDTO.Role &&
+             ur.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId
             );
 
         if (userRoleExists is true)
@@ -257,25 +262,28 @@ public class NonCitizenService(AppDbContext db)
 
         var createdUserRole = new UserRole()
         {
-            Role = requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item1,
+            Role = requestNonCitizenUserRoleDTO.Role,
             NonCitizenId = nonCitizen.Id,
             NonCitizen = nonCitizen,
-            OrganizationId = requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2,
-            Organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.RoleOrganizationTuple.Item2)
+            OrganizationId = requestNonCitizenUserRoleDTO.OrganizationId,
+            Organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.OrganizationId)
         };
 
         _db.UserRoles.Add(createdUserRole);
         await _db.SaveChangesAsync();
 
         // Find the updated list of userRoles
-        var userRoles = nonCitizen.Roles.ToList();
+        var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizenId).ToListAsync();
 
-        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
-        List<(RoleType, int)> roleOrganizationTuples = [];
+        // Select only the needed from userRole
+        List<string> roleOrganizationTuples = [];
 
         foreach (var userRole in userRoles)
-        {
-            roleOrganizationTuples.Add((userRole.Role, userRole.OrganizationId));
+        {   
+            var roleString = userRole.Role.ToString();
+            var orgString = userRole.OrganizationId.ToString();
+            var roleOrgString = roleString + "|" + orgString;
+            roleOrganizationTuples.Add(roleOrgString);
         }
 
         // Return in correct format
@@ -343,6 +351,13 @@ public class NonCitizenService(AppDbContext db)
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
         if (nonCitizen is null)
+        {
+            return (HttpReponseType.NotFound, null);
+        }
+
+        var citizen = await _db.Citizens.AnyAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
+
+        if (citizen == false)
         {
             return (HttpReponseType.NotFound, null);
         }
