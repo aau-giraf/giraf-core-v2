@@ -182,7 +182,7 @@ public class NonCitizenServiceTest : TestBase
         //----- ASSERT -----\\
         Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
         foreach (var userRole in nonCitizen.Roles)
-        {   
+        {
             var roleString = userRole.Role.ToString();
             var orgString = userRole.OrganizationId.ToString();
             var roleOrgString = roleString + "|" + orgString;
@@ -281,7 +281,7 @@ public class NonCitizenServiceTest : TestBase
 
         Assert.Contains(roleOrgString, fetchedUserRoles.Item2.RoleOrganizationTuples);
         foreach (var userRole in userRoles)
-        {   
+        {
             var roleString1 = userRole.Role.ToString();
             var orgString1 = userRole.OrganizationId.ToString();
             var roleOrgString1 = roleString + "|" + orgString;
@@ -505,7 +505,7 @@ public class NonCitizenServiceTest : TestBase
         var service = new NonCitizenService(db);
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
-        {   
+        {
             Role = userRoleFaker.Role,
             OrganizationId = userRoleFaker.OrganizationId
         });

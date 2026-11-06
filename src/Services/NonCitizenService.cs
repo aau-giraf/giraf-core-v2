@@ -190,7 +190,7 @@ public class NonCitizenService(AppDbContext db)
         ICollection<string> roleOrganizationTuples = [];
 
         foreach (UserRole userRole in userRoles)
-        {   
+        {
             var roleString = userRole.Role.ToString();
             var orgString = userRole.OrganizationId.ToString();
             var roleOrgString = roleString + "|" + orgString;
@@ -205,7 +205,7 @@ public class NonCitizenService(AppDbContext db)
     }
 
     public async Task<bool> DeleteUserRoleAsync(int nonCitizenId, RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO)
-    {   
+    {
         if (await _db.UserRoles.AnyAsync(ur =>
              ur.NonCitizenId == nonCitizenId &&
              ur.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId &&
@@ -279,7 +279,7 @@ public class NonCitizenService(AppDbContext db)
         List<string> roleOrganizationTuples = [];
 
         foreach (var userRole in userRoles)
-        {   
+        {
             var roleString = userRole.Role.ToString();
             var orgString = userRole.OrganizationId.ToString();
             var roleOrgString = roleString + "|" + orgString;
