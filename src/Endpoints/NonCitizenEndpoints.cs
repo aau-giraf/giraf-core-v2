@@ -10,19 +10,19 @@ public static class NonCitizenEndpoints
         var group = app.MapGroup("/nonCitizens");
 
         group.MapGet("/{nonCitizenId}", GetNonCitizen);
-        group.MapPatch("/{nonCitizenId}", PatchNonCitizen); 
+        group.MapPatch("/{nonCitizenId}", PatchNonCitizen);
         group.MapDelete("/{nonCitizenId}", DeleteNonCitizen);
-        group.MapPost("/", PostNonCitizen); 
+        group.MapPost("/", PostNonCitizen);
 
-        group.MapGet("/{nonCitizenId}/userRoles", GetUserRoles); 
+        group.MapGet("/{nonCitizenId}/userRoles", GetUserRoles);
         // No patch - All fields of UserRoles model are without setters. (Use PostUserRole instead)
         group.MapDelete("/{nonCitizenId}/userRoles", DeleteUserRole);
-        group.MapPost("/{nonCitizenId}/userRoles", PostUserRole); 
+        group.MapPost("/{nonCitizenId}/userRoles", PostUserRole);
 
-        group.MapGet("/{nonCitizenId}/guardianships", GetGuardianships); 
+        group.MapGet("/{nonCitizenId}/guardianships", GetGuardianships);
         // No patch - All fields of Guardianship model are without setters. (Use PostUserGuardianship instead)
-        group.MapDelete("/{nonCitizenId}/guardianship", DeleteGuardianship); 
-        group.MapPost("/{nonCitizenId}/guardianship", PostGuardianship); 
+        group.MapDelete("/{nonCitizenId}/guardianship", DeleteGuardianship);
+        group.MapPost("/{nonCitizenId}/guardianship", PostGuardianship);
 
     }
 
