@@ -17,7 +17,7 @@ public static class OrganizationEndpoints
 
         group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization);
 
-        group.MapGet("/{org_id:int}/classes", GetClassesInOrganization);
+        group.MapGet("/{orgId:int}/classes", GetClassesInOrganization);
 
         group.MapPost("/{orgId:int}/classes", CreateClassInOrganization);
 
