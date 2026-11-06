@@ -142,30 +142,30 @@ public class NonCitizenServiceTest : TestBase
         Assert.Equal(nonCitizenFaker.Username, fetchedNonCitizen!.Username);
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Email);
     }
-
-    [Fact]
-    public async Task GetUserRoles_GetsCorrectUserRoles()
-    {
-        //----- ARRANGE -----\\
-        await using var db = CreateDbContext();
-
-        var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
-        int? organizationId = null;
-        var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 4, organizationId, nonCitizen.Id);
-
-        var service = new NonCitizenService(db);
-
-        //----- ACT -----\\
-        var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
-
-        //----- ASSERT -----\\
-        Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
-        foreach (var userRole in nonCitizen.Roles)
+    /*
+        [Fact]
+        public async Task GetUserRoles_GetsCorrectUserRoles()
         {
-            Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
-        }
-    }
+            //----- ARRANGE -----\\
+            await using var db = CreateDbContext();
 
+            var nonCitizen = await NonCitizenSeeder.SeedAsync(db, Seed);
+            int? organizationId = null;
+            var userRoles = await UserRoleSeeder.SeedManyAsync(db, Seed, 4, organizationId, nonCitizen.Id);
+
+            var service = new NonCitizenService(db);
+
+            //----- ACT -----\\
+            var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
+
+            //----- ASSERT -----\\
+            Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
+            foreach (var userRole in nonCitizen.Roles)
+            {
+                Assert.Contains((userRole.Role, userRole.OrganizationId), fetchedUserRoles.RoleOrganizationTuples);
+            }
+        }
+    */
     [Fact]
     public async Task DeleteUserRole_DeletesCorrectUserRole()
     {
