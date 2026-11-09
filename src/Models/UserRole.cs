@@ -7,6 +7,7 @@ namespace giraf_core_v2.Models;
 [PrimaryKey(nameof(NonCitizenId), nameof(Role), nameof(OrganizationId))]
 public class UserRole
 {
+    public int Id { get; init; }
     public int NonCitizenId { get; init; }
     public NonCitizen? NonCitizen { get; init; }
 
