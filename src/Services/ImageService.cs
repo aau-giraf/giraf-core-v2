@@ -104,6 +104,18 @@ public class ImageService(AppDbContext db)
             
         return genImage;
     }
+
+    public async Task<InappropiateImageDTO?> InappropiateImage(InappropiateImageDTO req)
+    {
+        if (req.Inappropiate == false ||  req.TicketId == null)
+        {
+            return null;
+        }
+        
+        var denied = new InappropiateImageDTO() { Inappropiate = req.Inappropiate, TicketId = req.TicketId };
+
+        return denied;
+    }
     
     // stores image on core machine
     private static async Task<string> StoreImageAsync(IFormFile file)

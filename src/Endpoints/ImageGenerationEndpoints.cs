@@ -11,11 +11,11 @@ public static class ImageGenerateEndpoints
 {
     public static void MapImageGenerateEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/generate");
+        var group = app.MapGroup("/images");
 
-        // group.MapGet("/{ticketId}", GetImageByTicketId);
-        group.MapPost("/image", PostPromptForImage);
-
+        group.MapPost("/prompt", PostPromptForImage);
+        group.MapPost("/inappropiate", InappropiateImage);
+        // group.MapGet("/done", IsImageDone);
     }
     
     private static int GetCurrentUserId(ClaimsPrincipal currentUser)
@@ -34,4 +34,20 @@ public static class ImageGenerateEndpoints
 
         return TypedResults.Ok(ticketId);
     }
+
+    private static async Task<Results<Ok, BadRequest<string>>> InappropiateImage([FromBody] InappropiateImageDTO inappropiateImageDto, ImageService imageService)
+    {
+        var req = await imageService.InappropiateImage(inappropiateImageDto);
+        if (req == null)
+        {
+            return TypedResults.BadRequest("TicketId cannot be null and Inappropriate cannot be false");
+        }
+
+        return TypedResults.Ok();
+    }
+
+    // private static async Task<Results<Ok, BadRequest>> IsImageDone([FromBody] ReqIsImageDoneNoDTO req,  ImageService imageService)
+    // {
+    //     var req = imageService.IsImageDone()
+    // }
 }
