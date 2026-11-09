@@ -1,14 +1,15 @@
-
 import glob
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+
+from code_coverage_ignore import ignore
 
 
 def should_ignore(filename):
     normalized = filename.replace("\\", "/").lower()
     parts = normalized.strip("/").split("/")
 
-    return any(part in {"obj", "bin", "migrations"} for part in parts)
+    return any(part in ignore for part in parts)
 
 
 def percentage(covered, total):
@@ -100,9 +101,7 @@ with open(
 
     # Overall coverage summary in a separate table.
     overall_value = (
-        float(overall_coverage.rstrip("%"))
-        if overall_coverage != "N/A"
-        else None
+        float(overall_coverage.rstrip("%")) if overall_coverage != "N/A" else None
     )
 
     if overall_value is None:
