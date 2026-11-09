@@ -15,7 +15,7 @@ internal interface ISeeder<TEntity, TReturn, TOptions> where TEntity : class
 
     TReturn Create(int seed, TOptions options);
 
-    List<TReturn> CreateManyFakers(int seed, int count, TOptions options);
+    List<TReturn> CreateMany(int seed, int count, TOptions options);
 
     Faker<TEntity> CreateFaker(int seed, TOptions options);
 }
