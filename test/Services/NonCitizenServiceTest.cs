@@ -1,6 +1,3 @@
-
-using Xunit.Abstractions;
-
 public class NonCitizenServiceTest : TestBase
 {
     public NonCitizenServiceTest(ITestOutputHelper output) : base(output) { }
@@ -264,7 +261,7 @@ public class NonCitizenServiceTest : TestBase
             OrganizationId = userRoleFaker.OrganizationId
         });
 
-        //----- ASSERT -----\\  
+        //----- ASSERT -----\\
         Assert.NotNull(fetchedUserRoles.Item2);
         Assert.Equal(3, fetchedUserRoles.Item2!.RoleOrganizationTuples.Count);
 
@@ -384,7 +381,7 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(gs => gs.GuardianId, f => nonCitizen.Id)
                                     .RuleFor(gs => gs.CitizenId, f => citizen3.Id);
 
-        //----- ACT -----\\              
+        //----- ACT -----\\
         var service = new NonCitizenService(db);
 
         var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
@@ -392,7 +389,7 @@ public class NonCitizenServiceTest : TestBase
             CitizenId = citizen3.Id
         });
 
-        //----- ASSERT -----\\  
+        //----- ASSERT -----\\
         Assert.NotNull(fetchedGuardianships.Item2);
         Assert.Equal(3, fetchedGuardianships.Item2!.CitizenIds.Count);
         Assert.Contains(guardianshipFaker.CitizenId, fetchedGuardianships.Item2.CitizenIds);
@@ -492,7 +489,7 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
                                     .RuleFor(urf => urf.OrganizationId, f => f.Random.Int(1, 1000));
 
-        //----- ACT -----\\              
+        //----- ACT -----\\
         var service = new NonCitizenService(db);
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
@@ -501,7 +498,7 @@ public class NonCitizenServiceTest : TestBase
             OrganizationId = userRoleFaker.OrganizationId
         });
 
-        //----- ASSERT -----\\  
+        //----- ASSERT -----\\
         Assert.Null(fetchedUserRoles.Item2);
         Assert.Equal(HttpReponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
     }
@@ -529,7 +526,7 @@ public class NonCitizenServiceTest : TestBase
                                     .RuleFor(gs => gs.GuardianId, f => nonCitizen.Id)
                                     .RuleFor(gs => gs.CitizenId, f => citizen2.Id);
 
-        //----- ACT -----\\              
+        //----- ACT -----\\
         var service = new NonCitizenService(db);
 
         var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
@@ -537,7 +534,7 @@ public class NonCitizenServiceTest : TestBase
             CitizenId = citizen2.Id
         });
 
-        //----- ASSERT -----\\  
+        //----- ASSERT -----\\
         Assert.Null(fetchedGuardianships.Item2);
         Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedGuardianships.Item1.ToString());
     }

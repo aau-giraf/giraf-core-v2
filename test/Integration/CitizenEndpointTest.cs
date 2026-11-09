@@ -1,8 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 
-using Xunit.Abstractions;
-
 namespace giraf_core_v2.Tests.Integration;
 
 public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper output) : TestBase(output), IClassFixture<GirafApiFactory>

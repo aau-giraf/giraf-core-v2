@@ -1,6 +1,4 @@
-﻿using Xunit.Abstractions;
-
-namespace giraf_core_v2.Tests.Services;
+﻿namespace giraf_core_v2.Tests.Services;
 
 public class CitizenServiceTest : TestBase
 {
