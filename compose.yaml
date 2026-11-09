@@ -40,6 +40,8 @@ services:
     # Integration tests start Postgres with Testcontainers, which needs the host daemon.
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    security_opt:
+      - label=disable
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:

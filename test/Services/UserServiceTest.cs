@@ -135,18 +135,25 @@ public class UserServiceTest : TestBase
 
     }
 
-    // Skal ændres
     [Fact]
-    public async Task DeleteCurrentUserAsync_DeletesCurrentUser()
+    public async Task DeleteCurrentUserAsync_AdminDeletesUser()
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var user = SeededUser.User;
+        var SeededUser = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var admin = SeededUser[0].User;
+        var user = SeededUser[1].User;
+
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+
+        db.UserRoles.AddRange(
+            new UserRole { NonCitizenId = admin.Id, OrganizationId = organization.Id, Role = RoleType.Admin },
+            new UserRole { NonCitizenId = user.Id, OrganizationId = organization.Id, Role = RoleType.Employee });
+        await db.SaveChangesAsync();
 
         var service = new UserService(db);
 
-        Assert.True(await service.DeleteCurrentUserAsync(user.Id));
+        Assert.Equal(UserServiceResult.Succes, await service.DeleteCurrentUserAsync(admin.Id, user.Id));
 
         var deletedUser = await db.Users
             .SingleOrDefaultAsync(u => u.Id == user.Id);
@@ -156,27 +163,32 @@ public class UserServiceTest : TestBase
 
     // Skal ændres
     [Fact]
-    public async Task DeleteCurrentUserAsync_DeletesCorrectUser()
+    public async Task DeleteCurrentUserAsync_AdminDeletesCorrectUser()
     {
         await using var db = CreateDbContext();
 
-        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = SeededUsers[0].User;
-        var user2 = SeededUsers[1].User;
+        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 3);
+        var admin = SeededUsers[0].User;
+        var user1 = SeededUsers[1].User;
+        var user2 = SeededUsers[2].User;
 
-        Assert.NotNull(user1);
-        Assert.NotNull(user2);
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+
+        db.UserRoles.AddRange(
+            new UserRole { NonCitizenId = admin.Id, OrganizationId = organization.Id, Role = RoleType.Admin },
+            new UserRole { NonCitizenId = user1.Id, OrganizationId = organization.Id, Role = RoleType.Employee },
+            new UserRole { NonCitizenId = user2.Id, OrganizationId = organization.Id, Role = RoleType.Employee });
+        await db.SaveChangesAsync();
 
         var service = new UserService(db);
 
-        Assert.True(await service.DeleteCurrentUserAsync(user1.Id));
+        Assert.Equal(UserServiceResult.Succes, await service.DeleteCurrentUserAsync(admin.Id, user1.Id));
 
         var deletedUser = await db.Users
             .SingleOrDefaultAsync(u => u.Id == user1.Id);
 
         Assert.Null(deletedUser);
 
-        // Make sure the other user was not accidentally deleted
         var remainingUser = await db.Users
             .SingleOrDefaultAsync(u => u.Id == user2.Id);
 
@@ -189,11 +201,21 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        int id = 1;
+        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var admin = SeededUser.User;
+
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+
+        db.UserRoles.Add(
+            new UserRole { NonCitizenId = admin.Id, OrganizationId = organization.Id, Role = RoleType.Admin });
+        await db.SaveChangesAsync();
+
+        int nonExistingId = admin.Id + 100;
 
         var service = new UserService(db);
 
-        Assert.False(await service.DeleteCurrentUserAsync(id));
+         // A non-existing user belongs to no organization, so the admin check fails before the lookup
+        Assert.Equal(UserServiceResult.Forbidden, await service.DeleteCurrentUserAsync(admin.Id, nonExistingId));
     }
 
     [Fact]
