@@ -140,75 +140,61 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var admin = SeededUser[0].User;
-        var user = SeededUser[1].User;
+        var seededUser = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var admin = seededUser[0].User;
+        var user = seededUser[1].User;
 
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
 
-        db.UserRoles.AddRange(
-            new UserRole { NonCitizenId = admin.Id, OrganizationId = organization.Id, Role = RoleType.Admin },
-            new UserRole { NonCitizenId = user.Id, OrganizationId = organization.Id, Role = RoleType.Employee });
-        await db.SaveChangesAsync();
+        await UserRoleSeeder.SeedAsync(db, Seed, organizationId: organization.Id, nonCitizenId: admin.Id, role: RoleType.Admin);
+        await UserRoleSeeder.SeedAsync(db, Seed, organizationId: organization.Id, nonCitizenId: user.Id, role: RoleType.Employee);
 
         var service = new UserService(db);
 
         Assert.Equal(UserServiceResult.Succes, await service.DeleteCurrentUserAsync(admin.Id, user.Id));
 
-        var deletedUser = await db.Users
-            .SingleOrDefaultAsync(u => u.Id == user.Id);
-
+        var deletedUser = await db.Users.SingleOrDefaultAsync(u => u.Id == user.Id);
         Assert.Null(deletedUser);
     }
 
-    // Skal ændres
     [Fact]
     public async Task DeleteCurrentUserAsync_AdminDeletesCorrectUser()
     {
         await using var db = CreateDbContext();
 
-        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 3);
-        var admin = SeededUsers[0].User;
-        var user1 = SeededUsers[1].User;
-        var user2 = SeededUsers[2].User;
+        var seededUsers = await UserSeeder.SeedManyAsync(db, Seed, 3);
+        var admin = seededUsers[0].User;
+        var user1 = seededUsers[1].User;
+        var user2 = seededUsers[2].User;
 
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
 
-        db.UserRoles.AddRange(
-            new UserRole { NonCitizenId = admin.Id, OrganizationId = organization.Id, Role = RoleType.Admin },
-            new UserRole { NonCitizenId = user1.Id, OrganizationId = organization.Id, Role = RoleType.Employee },
-            new UserRole { NonCitizenId = user2.Id, OrganizationId = organization.Id, Role = RoleType.Employee });
-        await db.SaveChangesAsync();
+        await UserRoleSeeder.SeedAsync(db, Seed, organizationId: organization.Id, nonCitizenId: admin.Id, role: RoleType.Admin);
+        await UserRoleSeeder.SeedAsync(db, Seed, organizationId: organization.Id, nonCitizenId: user1.Id, role: RoleType.Employee);
+        await UserRoleSeeder.SeedAsync(db, Seed, organizationId: organization.Id, nonCitizenId: user2.Id, role: RoleType.Employee);
 
         var service = new UserService(db);
 
         Assert.Equal(UserServiceResult.Succes, await service.DeleteCurrentUserAsync(admin.Id, user1.Id));
 
-        var deletedUser = await db.Users
-            .SingleOrDefaultAsync(u => u.Id == user1.Id);
-
+        var deletedUser = await db.Users.SingleOrDefaultAsync(u => u.Id == user1.Id);
         Assert.Null(deletedUser);
 
-        var remainingUser = await db.Users
-            .SingleOrDefaultAsync(u => u.Id == user2.Id);
-
+        var remainingUser = await db.Users.SingleOrDefaultAsync(u => u.Id == user2.Id);
         Assert.NotNull(remainingUser);
     }
 
-    // Skal ændres
     [Fact]
     public async Task DeleteCurrentUserAsync_CannotDeleteNonExistingUser()
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var admin = SeededUser.User;
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var admin = seededUser.User;
 
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
 
-        db.UserRoles.Add(
-            new UserRole { NonCitizenId = admin.Id, OrganizationId = organization.Id, Role = RoleType.Admin });
-        await db.SaveChangesAsync();
+        await UserRoleSeeder.SeedAsync(db, Seed, organizationId: organization.Id, nonCitizenId: admin.Id, role: RoleType.Admin);
 
         int nonExistingId = admin.Id + 100;
 
