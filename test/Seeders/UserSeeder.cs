@@ -8,7 +8,8 @@ enum UserType
 internal record SeededUser(User User, string PlainPassword);
 // Record of optional parameters used in user seeding.
 // If UserOptions is not supplied, a random password will be generated and user type will default to citizen.
-internal record UserOptions(string Password, int ClassId = -9999, UserType Type = UserType.Citizen);
+// class id should be a positive integer to be valid, else it will be random.
+internal record UserOptions(string Password = "", int ClassId = -9999, UserType Type = UserType.Citizen);
 
 internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
 {
