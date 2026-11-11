@@ -10,7 +10,8 @@ public enum UserServiceResult
     CanNotDeleteSelf,
     UsernameTaken,
     EmailTaken,
-    EmailNotAllowedForCitizen
+    EmailNotAllowedForCitizen,
+    WrongPassword
 }
 
 public class UserService(AppDbContext db)
@@ -132,6 +133,31 @@ public class UserService(AppDbContext db)
 
         // Return 2 on successful password change.
         return 2;
+    }
+
+    public async Task<UserServiceResult> UpdateUserEmailAsync(int id, UpdateEmailDTO updateEmail)
+    {
+        var user = await _db.Users.FindAsync(id);
+        if (user is null)
+            return UserServiceResult.NotFound;
+
+        if (user is not NonCitizen nonCitizen)
+            return UserServiceResult.EmailNotAllowedForCitizen;
+
+        if (!BCrypt.Net.BCrypt.Verify(updateEmail.Password, user.Password))
+            return UserServiceResult.WrongPassword;
+
+        var newEmail = updateEmail.NewEmail;
+
+        if (newEmail == nonCitizen.Email)
+            return UserServiceResult.Succes;
+
+        if (await _db.Users.OfType<NonCitizen>().AnyAsync(n => n.Email == newEmail && n.Id != id))
+            return UserServiceResult.EmailTaken;
+
+        nonCitizen.Email = newEmail;
+        await _db.SaveChangesAsync();
+        return UserServiceResult.Succes;
     }
 
     public async Task<LoginResponseDTO?> Login(LoginRequestDTO loginRequestDTO)
