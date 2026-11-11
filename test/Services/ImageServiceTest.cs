@@ -1,3 +1,5 @@
+using giraf_core_v2.DTOs.Images;
+
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
@@ -382,5 +384,101 @@ public class ImageServiceTest : TestBase
                 File.Delete(path);
             }
         }
+    }
+    
+    [Fact]
+    public async Task PostIsImageDone_ReturnsTicketId_WhenImageWithTicketExists()
+    {
+        // Arrange data
+        await using var db = CreateDbContext();
+        var seeded = await ImageSeeder.SeedAsync(db, Seed);
+        var image = seeded.Image;
+        var service = new ImageService(db);
+
+        // Act - lookup the seeded image.ticketId to retrieve it from the database
+        var result = await service.IsImageDone(image.TicketId);
+        db.ChangeTracker.Clear();
+        
+        Assert.NotNull(result);
+        Assert.Equal(image.TicketId, result!.TicketId);
+        Assert.Equal(image.TitleEn, result.TitleEn);
+    }
+
+    [Fact]
+    public async Task PostIsImageDone_ReturnsNull_WhenImageWithTicketDoesNotExist()
+    {
+        // Arrange data
+        await using var db = CreateDbContext();
+        await ImageSeeder.SeedAsync(db, Seed);
+        var service = new ImageService(db);
+        db.ChangeTracker.Clear();
+        
+        // Act - Give the servie call a ticketId that does not exist in the database
+        var result = await service.IsImageDone(Guid.NewGuid().ToString());
+        
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task PostPromptForImageGeneration_ReturnsTicketId()
+    {
+        // Arrange - a prompt that can be sent into the service and the user since we need the userId
+        await using var db = CreateDbContext();
+        var seeded =  await UserSeeder.SeedAsync(db, Seed);
+        var prompt = Guid.NewGuid().ToString();
+        var service = new ImageService(db);
+        var request = new PostImagePromptDTO{ Prompt = prompt };
+        db.ChangeTracker.Clear();
+        
+        // Act
+        var result = await service.GenerateImage(request, seeded.User.Id);
+        
+        // Assert
+        Assert.NotNull(result);
+        Assert.False(string.IsNullOrEmpty(result!.TicketId));
+        Assert.Equal(request.Prompt, result.Prompt);
+        Assert.Equal(seeded.User.Id, result.UserId);
+    }
+    
+    [Fact]
+    public async Task PostIsImageInappropriateImageGeneration_ReturnsTicketIdAndInapropiate()
+    {
+        // Arrange
+        await using var db = CreateDbContext();
+        var service =  new ImageService(db);
+        // A request the AI backend will send with a ticketId and inappropiate is true
+        var request = new InappropiateImageDTO { Inappropiate = true, TicketId = Guid.NewGuid().ToString() };
+        
+        // Act
+        var result = await service.InappropiateImage(request);
+        
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(request.TicketId, result.TicketId);
+        Assert.True(result.Inappropiate);
+    }
+
+    [Fact]
+    public async Task PostIsImageInappropriateImageGeneration_ReturnsNull_WhenSendingNoTicketId()
+    {
+        await using var db = CreateDbContext();
+        var service = new ImageService(db);
+        var request = new InappropiateImageDTO { Inappropiate = true, TicketId = null };
+
+        var result = await service.InappropiateImage(request);
+
+        Assert.Null(result);
+    }
+    
+    [Fact]
+    public async Task PostIsImageInappropriateImageGeneration_ReturnsNull_WhenSendingFalseInappropiate()
+    {
+        await using var db = CreateDbContext();
+        var service = new ImageService(db);
+        var request = new InappropiateImageDTO { Inappropiate = false, TicketId = Guid.NewGuid().ToString() };
+
+        var result = await service.InappropiateImage(request);
+
+        Assert.Null(result);
     }
 }

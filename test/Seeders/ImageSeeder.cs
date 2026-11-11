@@ -88,7 +88,8 @@ public static class ImageSeeder
                 var stream = new MemoryStream(bytes);
                 var chosen = ext != "" ? ext : RandomCommonFileExt(f);
                 return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.{chosen}");
-            });
+            })
+            .RuleFor(i => i.TicketId, f => f.Lorem.Word());
     }
 
     private static readonly HashSet<string> BlockedFileExtensions = new(StringComparer.OrdinalIgnoreCase)

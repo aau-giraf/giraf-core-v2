@@ -2,6 +2,6 @@
 
 public class PostImagePromptDTO
 {
-    
+
     public required string Prompt { get; set; }
 }

@@ -2,8 +2,8 @@
 
 public class GenerateImageDTO
 {
-    public string Prompt { get; set; }
-    public int MapId { get; set; }
+    public string? Prompt { get; set; }
+    public int UserId { get; set; }
     public required string TicketId { get; set; }
     public int TypeId { get; set; }
 }

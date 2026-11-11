@@ -13,22 +13,22 @@ public static class ImageGenerateEndpoints
     {
         var group = app.MapGroup("/images");
 
-        group.MapPost("/prompt", PostPromptForImage);
+        group.MapPost("/prompt", PostPromptForImage).RequireAuthorization();
         group.MapPost("/inappropiate", InappropiateImage);
-        // group.MapGet("/done", IsImageDone);
+        group.MapGet("/done/{ticketId}", IsImageDone);
     }
-    
+
     private static int GetCurrentUserId(ClaimsPrincipal currentUser)
     {
         return int.Parse(currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("User ID not found in JWT claim!"));
     }
 
-    private static async Task<Results<Ok<string>, UnauthorizedHttpResult>> PostPromptForImage([FromBody] PostImagePromptDTO postImagePromptDto, ImageService imageService)
+    private static async Task<Results<Ok<string>, UnauthorizedHttpResult>> PostPromptForImage([FromBody] PostImagePromptDTO postImagePromptDto, ClaimsPrincipal currentUser, ImageService imageService)
     {
-        // Auth check that returns Unauthorized if the user if not eligible to create an image.
-        //var user = await GetCurrentUserId();
-        
-        var genImage = await imageService.GenerateImage(postImagePromptDto);
+        // Auth check that returns 401 if the user if not eligible to create an image
+        var userId = GetCurrentUserId(currentUser);
+
+        var genImage = await imageService.GenerateImage(postImagePromptDto, userId);
 
         var ticketId = genImage.TicketId;
 
@@ -46,8 +46,15 @@ public static class ImageGenerateEndpoints
         return TypedResults.Ok();
     }
 
-    // private static async Task<Results<Ok, BadRequest>> IsImageDone([FromBody] ReqIsImageDoneNoDTO req,  ImageService imageService)
-    // {
-    //     var req = imageService.IsImageDone()
-    // }
+    private static async Task<Results<Ok<ReqIsImageDoneDTO>, NotFound>> IsImageDone(string ticketId, ImageService imageService)
+    {
+        var req = await imageService.IsImageDone(ticketId);
+
+        if (req == null)
+        {
+            return TypedResults.NotFound();
+        }
+
+        return TypedResults.Ok(req);
+    }
 }

@@ -70,7 +70,7 @@ public class ImageService(AppDbContext db)
     public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
-        
+
         var organization = imageRequest.OrganizationId != null ? await _db.Organizations.FindAsync(imageRequest.OrganizationId) : await FindOrganizationAsync(imageRequest);
         if (organization == null)
         { // If it is not possible to connect the request to an org return null
@@ -93,30 +93,45 @@ public class ImageService(AppDbContext db)
         return await GetImageByIdAsync(image.Id);
     }
 
-    public async Task<GenerateImageDTO?> GenerateImage(PostImagePromptDTO imageRequest)
+    public async Task<GenerateImageDTO?> GenerateImage(PostImagePromptDTO imageRequest, int userId)
     {
-        // Get the user that sends the request
-        
         // Create a GUID
         Guid guid = Guid.NewGuid();
 
-        var genImage = new GenerateImageDTO() { Prompt = imageRequest.Prompt, TicketId = guid.ToString()};
-            
+        var genImage = new GenerateImageDTO() { Prompt = imageRequest.Prompt, TicketId = guid.ToString(), UserId = userId };
+
         return genImage;
     }
 
     public async Task<InappropiateImageDTO?> InappropiateImage(InappropiateImageDTO req)
     {
-        if (req.Inappropiate == false ||  req.TicketId == null)
+        if (req.Inappropiate == false || req.TicketId == null)
         {
             return null;
         }
-        
+
         var denied = new InappropiateImageDTO() { Inappropiate = req.Inappropiate, TicketId = req.TicketId };
 
         return denied;
     }
-    
+
+    public async Task<ReqIsImageDoneDTO?> IsImageDone(string ticketId)
+    {
+        // lookup the image from the ticket id, if it returns null its not yet created
+        var image = await _db.Images
+            .AsNoTracking()
+            .FirstOrDefaultAsync(i => i.TicketId == ticketId);
+
+        if (image == null)
+        {
+            return null;
+        }
+
+        var requestDTO = new ReqIsImageDoneDTO() { TicketId = ticketId, TitleEn = image.TitleEn, };
+
+        return requestDTO;
+    }
+
     // stores image on core machine
     private static async Task<string> StoreImageAsync(IFormFile file)
     {
