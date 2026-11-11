@@ -4,18 +4,18 @@
 // TOption -> record containing all test specific parameters. (ex: User seeding can optionally be supplied with a password)
 internal interface ISeeder<TEntity, TReturn, TOptions> where TEntity : class
 {
-    Task<TReturn> SeedAsync(AppDbContext db, int seed, TOptions options);
+    public Task<TReturn> SeedAsync(AppDbContext db, int seed, TOptions options);
 
-    Task<List<TReturn>> SeedManyAsync(
+    public Task<List<TReturn>> SeedManyAsync(
         AppDbContext db,
         int seed,
         int count,
         List<TOptions?> options
     );
 
-    TReturn Create(int seed, TOptions options);
+    public TReturn Create(int seed, TOptions options);
 
-    List<TReturn> CreateMany(int seed, int count, List<TOptions?> options);
+    public List<TReturn> CreateMany(int seed, int count, List<TOptions?> options);
 
-    Faker<TEntity> CreateFaker(int seed, TOptions options);
+    public Faker<TEntity> CreateFaker(int seed, TOptions options);
 }
