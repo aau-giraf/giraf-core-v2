@@ -69,7 +69,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
         return users;
     }
 
-    // Create a random test user using bogus. TODO: Classid, email?
+    // Create a random test user using bogus.
     public Faker<User> CreateFaker(int seed, UserOptions userOptions)
     {
         return new Faker<User>()
