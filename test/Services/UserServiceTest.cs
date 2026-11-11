@@ -26,9 +26,8 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         string ogLastname = user.LastName;
         string ogUsername = user.Username;
 
-        // generate a different firstname with another seed
-        User faker = new Faker<User>().UseSeed(Seed + _seedOffset)
-                                    .RuleFor(u => u.FirstName, f => f.Name.FirstName());
+        // generate a different user with another name.
+        var otherUser = _userSeeder.Create(Seed + _seedOffset, opt);
 
 
         var service = new UserService(db);
@@ -37,11 +36,11 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
             user.Id,
             new UpdateUserDTO
             {
-                FirstName = faker.FirstName
+                FirstName = otherUser.User.FirstName
             });
 
         Assert.Equal(ogId, user!.Id);
-        Assert.Equal(faker.FirstName, user!.FirstName);
+        Assert.Equal(otherUser.User.FirstName, user!.FirstName);
         Assert.Equal(ogLastname, user!.LastName);
         Assert.Equal(ogUsername, user!.Username);
 
