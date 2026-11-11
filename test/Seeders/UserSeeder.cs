@@ -8,7 +8,7 @@ enum UserType
 internal record SeededUser(User User, string PlainPassword);
 // Record of optional parameters used in user seeding.
 // If UserOptions is not supplied, a random password will be generated and user type will default to citizen.
-internal record UserOptions(string Password, UserType Type = UserType.Citizen);
+internal record UserOptions(string Password, int ClassId = -9999, UserType Type = UserType.Citizen);
 
 internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
 {
@@ -69,7 +69,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
         return users;
     }
 
-    // Create a random test user using bogus.
+    // Create a random test user using bogus. TODO: Classid, email?
     public Faker<User> CreateFaker(int seed, UserOptions userOptions)
     {
         return new Faker<User>()
@@ -90,7 +90,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
                         FirstName = firstName,
                         LastName = lastName,
                         Password = password,
-                        ClassId = f.Random.Int(1, 10)
+                        ClassId = userOptions.ClassId
                     },
 
                     UserType.NonCitizen => new NonCitizen
@@ -113,18 +113,20 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
     // Makes the options always usable by create faker
     private UserOptions OptionHandler(int seed, UserOptions? userOptions)
     {
-        int minLength = 8;
-        if (userOptions is null || userOptions.Password.Length < minLength)
-        {
-            var faker = new Faker<string>()
-                .UseSeed(seed)
-                .CustomInstantiator(f => f.Internet.Password());
+        const int minLength = 8;
 
-            // ensure user type is not lost if supplied.
-            userOptions = userOptions is not null && userOptions.Type == UserType.NonCitizen
-                          ? new UserOptions(faker.Generate(), userOptions.Type)
-                          : new UserOptions(faker.Generate());
-        }
-        return userOptions;
+        // Check a password exists and use if length requirement is fulfilled, else generate a random one.
+        string password = userOptions?.Password is { Length: >= minLength }
+            ? userOptions.Password
+            : new Faker<string>()
+                .UseSeed(seed)
+                .CustomInstantiator(f => f.Internet.Password())
+                .Generate();
+
+        UserType type = userOptions?.Type ?? UserType.Citizen;
+
+        int classId = userOptions?.ClassId is not null and > 0 ? userOptions.ClassId : new Random(seed).Next(1, Int32.MaxValue);
+
+        return new(password, classId, type);
     }
 }
