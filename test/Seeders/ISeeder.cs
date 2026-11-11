@@ -10,12 +10,12 @@ internal interface ISeeder<TEntity, TReturn, TOptions> where TEntity : class
         AppDbContext db,
         int seed,
         int count,
-        TOptions options
+        List<TOptions?> options
     );
 
     TReturn Create(int seed, TOptions options);
 
-    List<TReturn> CreateMany(int seed, int count, TOptions options);
+    List<TReturn> CreateMany(int seed, int count, List<TOptions?> options);
 
     Faker<TEntity> CreateFaker(int seed, TOptions options);
 }
