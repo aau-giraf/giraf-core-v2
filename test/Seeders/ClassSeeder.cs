@@ -1,11 +1,12 @@
+// Record of optional parameters. Non-positive numbers result in random postive integer.
+internal record ClassOptions(string ClassName = "", int OrgId = -9999);
 
-public static class ClassSeeder
+internal class ClassSeeder : Seeder<Class, ClassOptions>
 {
-
     // Create a random class and add it to mock database.
-    public static async Task<Class> SeedAsync(AppDbContext db, int seed, int? organizationId = 0)
+    public override async Task<Class> SeedAsync(AppDbContext db, int seed, ClassOptions? opt = null)
     {
-        var class_ = Create(seed, organizationId);
+        var class_ = Create(seed, opt);
 
         db.Classes.Add(class_);
         await db.SaveChangesAsync();
@@ -14,9 +15,9 @@ public static class ClassSeeder
     }
 
     // Create x random classes and add them to mock database.
-    public static async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count, int? organizationId = 0)
+    public override async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count, List<ClassOptions?>? opt = null)
     {
-        var classes = CreateManyFakers(seed, count, organizationId);
+        var classes = CreateMany(seed, count, opt);
 
         db.Classes.AddRange(classes);
         await db.SaveChangesAsync();
@@ -24,25 +25,13 @@ public static class ClassSeeder
         return classes;
     }
 
-    // Generate a random class.
-    private static Class Create(int seed, int? organizationId)
-    {
-        return CreateFaker(seed, organizationId).Generate();
-    }
-
-    // Create x random classes.
-    private static List<Class> CreateManyFakers(int seed, int count, int? organizationId)
-    {
-        return CreateFaker(seed, organizationId).Generate(count);
-    }
-
     // Create a random test class using bogus.
-    private static Faker<Class> CreateFaker(int seed, int? organizationId)
+    public override Faker<Class> CreateFaker(int seed, ClassOptions? opt = null)
     {
         return new Faker<Class>()
             .UseSeed(seed)
-            .RuleFor(c => c.Name, f => f.Name.FirstName())
-            .RuleFor(c => c.OrganizationId, f => organizationId != 0 ? organizationId : f.Random.Int(1, 100));
+            .RuleFor(c => c.Name, f => opt is not null && !String.IsNullOrEmpty(opt.ClassName) ? opt.ClassName : f.Commerce.Department())
+            .RuleFor(c => c.OrganizationId, f => opt is not null && opt.OrgId > 0 ? opt.OrgId : f.Random.Int(1, Int32.MaxValue));
     }
 
 }

@@ -31,6 +31,6 @@ internal class OrganizationSeeder : Seeder<Organization, OrgOptions>
     {
         return new Faker<Organization>()
             .UseSeed(seed)
-            .RuleFor(o => o.Name, f => opt is not null && !String.IsNullOrEmpty(opt.Name) ? opt.Name : f.Name.FirstName());
+            .RuleFor(o => o.Name, f => opt is not null && !String.IsNullOrEmpty(opt.Name) ? opt.Name : f.Company.CompanyName());
     }
 }
