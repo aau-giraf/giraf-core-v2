@@ -68,10 +68,11 @@ public static class UserEndpoints
 
     public static async Task<Results<NoContent, Conflict<string>, BadRequest<string>>> UpdateUserEmail (UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateEmailDTO updateEmail)
     {
-        var status = await userService.UpdateUserEmailAsync(GetCurrentUserId(currentUser), updateEmail);
+        var result = await userService.UpdateUserEmailAsync(GetCurrentUserId(currentUser), updateEmail);
 
-        return status switch
+        return result switch
         {
+            UserServiceResult.NotFound => TypedResults.BadRequest("Could not find the user"),
             UserServiceResult.Succes => TypedResults.NoContent(),
             UserServiceResult.EmailTaken => TypedResults.BadRequest("Email is already taken"),
             UserServiceResult.WrongPassword => TypedResults.Conflict("Wrong Password"),
