@@ -18,6 +18,7 @@ public static class UserEndpoints
         group.MapDelete("/{id:int}", DeleteCurrentUser).RequireAuthorization();
         group.MapPatch("/me", UpdateCurrentUser).RequireAuthorization();
         group.MapPut("/me/password", UpdateUserPassword).RequireAuthorization(); // burde password change indgå i update current user?
+        group.MapPut("/me/email", UpdateUserEmail).RequireAuthorization();
         group.MapPost("/login", Login).RequireRateLimiting("rateLimitByIp");
     }
 
@@ -62,6 +63,19 @@ public static class UserEndpoints
             1 => TypedResults.Unauthorized(),
             2 => TypedResults.NoContent(),
             _ => TypedResults.BadRequest(),
+        };
+    }
+
+    public static async Task<Results<NoContent, Conflict<string>, BadRequest<string>>> UpdateUserEmail (UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateEmailDTO updateEmail)
+    {
+        var status = await userService.UpdateUserEmailAsync(GetCurrentUserId(currentUser), updateEmail);
+
+        return status switch
+        {
+            UserServiceResult.Succes => TypedResults.NoContent(),
+            UserServiceResult.EmailTaken => TypedResults.BadRequest("Email is already taken"),
+            UserServiceResult.WrongPassword => TypedResults.Conflict("Wrong Password"),
+            UserServiceResult.EmailNotAllowedForCitizen => TypedResults.BadRequest("Citizens can not have a Email")
         };
     }
 
