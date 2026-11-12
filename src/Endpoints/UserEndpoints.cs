@@ -77,6 +77,7 @@ public static class UserEndpoints
             UserServiceResult.EmailTaken => TypedResults.BadRequest("Email is already taken"),
             UserServiceResult.WrongPassword => TypedResults.Conflict("Wrong Password"),
             UserServiceResult.EmailNotAllowedForCitizen => TypedResults.BadRequest("Citizens can not have a Email")
+            _ => throw new InvalidOperationException($"Unexpected result: {result}")
         };
     }
 
