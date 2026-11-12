@@ -1,5 +1,5 @@
 // Options for creating org, if not supplied a random name is generated.
-internal record OrgOptions(string Name = "");
+internal record OrgOptions(string OrgName = "");
 
 internal class OrganizationSeeder : Seeder<Organization, OrgOptions>
 {
@@ -31,6 +31,6 @@ internal class OrganizationSeeder : Seeder<Organization, OrgOptions>
     {
         return new Faker<Organization>()
             .UseSeed(seed)
-            .RuleFor(o => o.Name, f => opt is not null && !String.IsNullOrEmpty(opt.Name) ? opt.Name : f.Company.CompanyName());
+            .RuleFor(o => o.Name, f => opt is not null && !String.IsNullOrEmpty(opt.OrgName) ? opt.OrgName : f.Company.CompanyName());
     }
 }

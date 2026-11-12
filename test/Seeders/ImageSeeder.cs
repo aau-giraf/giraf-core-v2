@@ -3,10 +3,10 @@
 // Ext == null = random not in BlockedFileExtensions, else Ext = supplied extension
 internal record ImageOptions(int? ClassId = 0, int? OrgId = 0, int? CitizenId = 0, string? Ext = null);
 
-public class ImageSeeder : ISeeder<Image, Image, ImageOptions>
+internal class ImageSeeder : Seeder<Image, ImageOptions>
 {
 
-    public async Task<Image> SeedAsync(AppDbContext db, int seed)
+    public override async Task<Image> SeedAsync(AppDbContext db, int seed)
     {
         var image = Create(seed);
 
@@ -31,17 +31,12 @@ public class ImageSeeder : ISeeder<Image, Image, ImageOptions>
         return images;
     }
 
-    private Image Create(int seed)
-    {
-        return CreateFaker(seed).Generate();
-    }
-
     public PostImageDTO CreateRequestBody(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0, string ext = "")
     {
         return CreateFakerRequest(seed, organizationId, citizenId, classId, ext).Generate();
     }
 
-    public async Task<List<Image>> SeedManyAsync(AppDbContext db, int seed, int count)
+    public override async Task<List<Image>> SeedManyAsync(AppDbContext db, int seed, int count)
     {
         var images = CreateManyFakers(seed, count);
 
@@ -51,7 +46,7 @@ public class ImageSeeder : ISeeder<Image, Image, ImageOptions>
         return images;
     }
 
-    private Faker<Image> CreateFaker(int seed, ImageOptions? opt = null)
+    public override Faker<Image> CreateFaker(int seed, ImageOptions? opt = null)
     {
         return new Faker<Image>()
             .UseSeed(seed)
@@ -94,21 +89,5 @@ public class ImageSeeder : ISeeder<Image, Image, ImageOptions>
         while (BlockedFileExtensions.Contains(extension));
 
         return extension;
-    }
-
-    private static List<Image> CreateManyFakers(int seed, int count, ImageOptions? opt = null)
-    {
-        var imageFaker = CreateFaker(seed);
-
-        var images = new List<Image>();
-
-        for (int i = 0; i < count; i++)
-        {
-            var image = imageFaker.Generate();
-
-            images.Add(image);
-        }
-
-        return images;
     }
 }
