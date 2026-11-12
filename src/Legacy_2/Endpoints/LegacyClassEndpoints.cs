@@ -11,7 +11,7 @@ public static class LegacyClassEndpoints
     {
         var group = app.MapGroup("/legacy/class");
 
-        group.MapPost("/Create", CreateClassInOrganization);
+        group.MapPost("/Create", CreateClassInOrganization); //Kræver admin authorization
         group.MapGet("/GetAll", GetAllClassrooms);
         group.MapDelete("/Delete/{classId}", DeleteClassInOrganization);
 
