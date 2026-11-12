@@ -2,6 +2,9 @@
 
 public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output)
 {
+    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly ClassSeeder _classSeeder = new();
+    private readonly UserSeeder _userSeeder = new();
 
     [Fact]
     public async Task GetOrganization_GetsCorrectOrganization()
@@ -9,7 +12,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
@@ -35,11 +38,11 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        List<Organization> organizationsList = new List<Organization>() { organization1, organization2 };
+        List<Organization> organizationsList = [organization1, organization2];
 
         Assert.NotNull(organization1);
         Assert.NotNull(organization2);
@@ -74,7 +77,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
@@ -104,11 +107,13 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
+        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
+
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -158,11 +163,12 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
+        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -196,7 +202,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        RequestCreateOrganizationDTO requestCreateOrganizationDTO = new RequestCreateOrganizationDTO
+        RequestCreateOrganizationDTO requestCreateOrganizationDTO = new()
         {
             Name = "SchoolOfIdoha",
         };
@@ -215,7 +221,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
         int organization1Id = organization1.Id;
@@ -226,7 +232,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        RequestCreateOrganizationDTO requestUpdateOrganizationDTO = new RequestCreateOrganizationDTO
+        RequestCreateOrganizationDTO requestUpdateOrganizationDTO = new()
         {
             Name = "SchoolOfNY",
         };
@@ -248,11 +254,12 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
+        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -264,7 +271,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        RequestCreateClassDTO requestCreateClassinOrganizationDTO = new RequestCreateClassDTO
+        RequestCreateClassDTO requestCreateClassinOrganizationDTO = new()
         {
             Name = "4a",
         };
@@ -287,11 +294,13 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await OrganizationSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
+        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
+
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -341,8 +350,10 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+
+        UserOptions userOpt = new(Type: UserType.NonCitizen);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed, userOpt);
         var role1 = RoleType.Employee;
 
         Assert.NotNull(organization);
@@ -351,14 +362,14 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, UserRole? userRole) result = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, UserRole? userRole) = await service.CreateOrUpdateUserRole(organization.Id, seededUser.User.Id, role1);
 
         //----- ASSERT -----\\
-        Assert.Equal(1, result.outcomeStatus); //creation outcome
-        Assert.NotNull(result.userRole);
-        Assert.Equal(seededUser.User.Id, result.userRole.NonCitizenId);
-        Assert.Equal(organization.Id, result.userRole.OrganizationId);
-        Assert.Equal(role1, result.userRole.Role);
+        Assert.Equal(1, outcomeStatus); //creation outcome
+        Assert.NotNull(userRole);
+        Assert.Equal(seededUser.User.Id, userRole.NonCitizenId);
+        Assert.Equal(organization.Id, userRole.OrganizationId);
+        Assert.Equal(role1, userRole.Role);
     }
     [Fact]
     public async Task CreateOrUpdateUserRole_UpdatesUserRole()
@@ -366,9 +377,10 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
 
-        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        UserOptions userOpt = new(Type: UserType.NonCitizen);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed, userOpt);
 
         var role1 = RoleType.Employee;
         //var role2 = RoleType.Parent;
