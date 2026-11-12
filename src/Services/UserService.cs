@@ -135,7 +135,7 @@ public class UserService(AppDbContext db)
         return 2;
     }
 
-    public async Task<UserServiceResult> UpdateUserEmailAsync(int id, UpdateEmailDTO updateEmail)
+    public async Task<UserServiceResult> UpdateUserEmailAsync(int id, UpdateUserEmailDTO updateEmail)
     {
         var user = await _db.Users.FindAsync(id);
         if (user is null)
