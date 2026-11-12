@@ -34,5 +34,3 @@ public class LegacyUserDTO
 
     public bool Archived { get; set; }
 }
-
-
