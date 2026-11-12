@@ -15,7 +15,7 @@ internal class ClassSeeder : Seeder<Class, ClassOptions>
     }
 
     // Create x random classes and add them to mock database.
-    public override async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count, List<ClassOptions?>? opt = null)
+    public override async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count, List<ClassOptions>? opt = null)
     {
         var classes = CreateMany(seed, count, opt);
 

@@ -16,7 +16,7 @@ internal class OrganizationSeeder : Seeder<Organization, OrgOptions>
     }
 
     // Create x random organizations and add them to mock database.
-    public override async Task<List<Organization>> SeedManyAsync(AppDbContext db, int seed, int count, List<OrgOptions?>? opt = null)
+    public override async Task<List<Organization>> SeedManyAsync(AppDbContext db, int seed, int count, List<OrgOptions>? opt = null)
     {
         var organizations = CreateMany(seed, count, opt);
 

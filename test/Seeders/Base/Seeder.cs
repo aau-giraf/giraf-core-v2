@@ -11,7 +11,7 @@ internal abstract class Seeder<TEntity, TOptions> where TEntity : class
         AppDbContext db,
         int seed,
         int count,
-        List<TOptions?> options
+        List<TOptions> options
     );
 
     // Generate a TEntity.
@@ -22,7 +22,7 @@ internal abstract class Seeder<TEntity, TOptions> where TEntity : class
 
 
     // Generate x TEntity based on options or randomly
-    public List<TEntity> CreateMany(int seed, int count, List<TOptions?>? options = null)
+    public List<TEntity> CreateMany(int seed, int count, List<TOptions>? options = null)
     {
         List<TEntity> list = [];
         // some int used to offset seed.

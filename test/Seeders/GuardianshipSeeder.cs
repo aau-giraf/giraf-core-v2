@@ -16,7 +16,7 @@ internal class GuardianshipSeeder : Seeder<Guardianship, GuardianshipOptions>
     }
 
     // Create x random Guardianship and add them to mock database.
-    public override async Task<List<Guardianship>> SeedManyAsync(AppDbContext db, int seed, int count, List<GuardianshipOptions?>? opt = null)
+    public override async Task<List<Guardianship>> SeedManyAsync(AppDbContext db, int seed, int count, List<GuardianshipOptions>? opt = null)
     {
         var guardianships = CreateMany(seed, count, opt);
 

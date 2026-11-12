@@ -16,7 +16,7 @@ internal class UserRoleSeeder : Seeder<UserRole, UserRoleOptions>
     }
 
     // Create x random UserRole and add them to mock database.
-    public override async Task<List<UserRole>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserRoleOptions?>? opt = null)
+    public override async Task<List<UserRole>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserRoleOptions>? opt = null)
     {
         var userRoles = CreateMany(seed, count, opt);
 
