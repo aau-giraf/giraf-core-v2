@@ -11,10 +11,10 @@ internal record SeededUser(User User, string PlainPassword);
 // class id should be a positive integer to be valid, else it will be random.
 internal record UserOptions(string Password = "", int ClassId = -9999, UserType Type = UserType.Citizen);
 
-internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
+internal class UserSeeder : CustomResultSeeder<User, SeededUser, UserOptions>
 {
     // Create a random user and add it to mock database.
-    public async Task<SeededUser> SeedAsync(AppDbContext db, int seed, UserOptions? userOptions = null)
+    public override async Task<SeededUser> SeedAsync(AppDbContext db, int seed, UserOptions? userOptions = null)
     {
         var user = Create(seed, userOptions);
 
@@ -26,7 +26,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
     }
 
     // Create x random users and add them to mock database.
-    public async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserOptions?>? userOptions = null)
+    public override async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserOptions?>? userOptions = null)
     {
         var users = CreateMany(seed, count, userOptions);
 
@@ -38,7 +38,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
     }
 
     // Generate a random user.
-    public SeededUser Create(int seed, UserOptions? userOptions = null)
+    public override SeededUser Create(int seed, UserOptions? userOptions = null)
     {
         UserOptions opt = OptionHandler(seed, userOptions);
 
@@ -48,7 +48,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
     }
 
     // Create x random users.
-    public List<SeededUser> CreateMany(
+    public override List<SeededUser> CreateMany(
         int seed,
         int count,
         List<UserOptions?>? userOptions = null)
@@ -93,7 +93,7 @@ internal class UserSeeder : ISeeder<User, SeededUser, UserOptions>
     }
 
     // Create a random test user using bogus.
-    public Faker<User> CreateFaker(int seed, UserOptions userOptions)
+    public override Faker<User> CreateFaker(int seed, UserOptions userOptions)
     {
         return new Faker<User>()
             .UseSeed(seed)
