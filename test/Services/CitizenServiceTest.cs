@@ -1,17 +1,20 @@
 ﻿namespace giraf_core_v2.Tests.Services;
 
-public class CitizenServiceTest : TestBase
+public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    public CitizenServiceTest(ITestOutputHelper output) : base(output) { }
+    private readonly UserSeeder _userSeeder = new();
+    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly ClassSeeder _classSeeder = new();
 
     [Fact]
     public async Task GetCurrentCitizen_GetsCurrentCitizen()
     {
         await using var db = CreateDbContext();
 
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         var service = new CitizenService(db);
 
@@ -42,9 +45,10 @@ public class CitizenServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         // save the original user data before altering the first name
         int ogId = citizen.Id;
@@ -76,10 +80,11 @@ public class CitizenServiceTest : TestBase
     {
         await using var db = CreateDbContext();
         // Create a random organization the class has to exist in
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
-        var newClass = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var newClass = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         // Generate new values for every field
         UpdateCitizenDTO request = new Faker<UpdateCitizenDTO>().UseSeed(Seed)
@@ -113,10 +118,10 @@ public class CitizenServiceTest : TestBase
     {
         await using var db = CreateDbContext();
         // Create a random organization the class has to exist in
-        var organization = await OrganizationSeeder.SeedManyAsync(db, Seed, 1);
-        var organization1 = organization[0];
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+
         // The class must exist so the lookup fails on the citizen, not the class
-        var schoolClass = await ClassSeeder.SeedAsync(db, Seed, organization1.Id);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
 
         var service = new CitizenService(db);
 
@@ -133,9 +138,10 @@ public class CitizenServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
         int ogClassId = citizen.ClassId;
 
         var service = new CitizenService(db);
@@ -156,9 +162,10 @@ public class CitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         // Create a bogus org and class the citizen is being created in
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         var service = new CitizenService(db);
         await service.DeleteCitizenAsync(citizen.Id);
@@ -181,9 +188,8 @@ public class CitizenServiceTest : TestBase
         await using var db = CreateDbContext();
 
         // Create a random organization the class has to exist in
-        var organization = await OrganizationSeeder.SeedManyAsync(db, Seed, 1);
-        var organization1 = organization[0];
-        var schoolClass = await ClassSeeder.SeedAsync(db, Seed, organization1.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
 
         CreateCitizenDTO request = new Faker<CreateCitizenDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
