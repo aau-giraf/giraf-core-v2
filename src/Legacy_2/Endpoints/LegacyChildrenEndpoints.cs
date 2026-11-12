@@ -12,7 +12,7 @@ public static class LegacyChildrenEndpoints
         //group.MapGet("/GetAllChldrenClasses", ); //Kræver teacher authorization
         //group.MapGet("/GetChildrenByParentToken", );
         //group.MapGet("/GetChildFromChildId/{id}", ); //Kræver teacher authorization
-        //group.MapGet("/GetParentsByChildId/{childId}", );
+        //group.MapGet("/GetParentsByChildId/{childId}", ); //Ligger på "blockedEndpoint"-branch //Mangler endpoint fra Core //FP skal lige finde ud af hvad der skal retuneres
         //group.MapGet("/GetTeachersByChildId/{childId}", ); //Kræver teacher authorization
         //group.MapGet("/GetChildrenByTeacherId/{teacherId}", ); //Kræver teacher authorization
 
@@ -26,7 +26,4 @@ public static class LegacyChildrenEndpoints
 
 
     }
-
-
-
 }
