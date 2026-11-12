@@ -5,24 +5,28 @@ namespace giraf_core_v2.Tests.Integration;
 
 public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper output) : TestBase(output), IClassFixture<GirafApiFactory>
 {
+    private readonly UserSeeder _userSeeder = new();
+    private readonly ClassSeeder _classSeeder = new();
+    private readonly OrganizationSeeder _orgSeeder = new();
+
     [Fact]
     public async Task GetCitizenById_ReturnsCorrectResult()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id, Type: UserType.Citizen));
         });
         var client = factory.CreateClient();
-        var response = await client.GetAsync($"/citizens/{seededCitizen.Id}");
+        var response = await client.GetAsync($"/citizens/{seededCitizen.User.Id}");
 
         try
         {
             response.EnsureSuccessStatusCode();
             var citizen = await response.Content.ReadFromJsonAsync<GetCitizenDTO>();
             Assert.NotNull(citizen);
-            Assert.Equal(seededCitizen.Id, citizen.UserId);
+            Assert.Equal(seededCitizen.User.Id, citizen.UserId);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
         finally
@@ -36,12 +40,12 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
         });
         var client = factory.CreateClient();
-        var response = await client.GetAsync($"/citizens/{seededCitizen.Id + 1}");
+        var response = await client.GetAsync($"/citizens/{seededCitizen.User.Id + 1}");
 
         try
         {
@@ -58,8 +62,8 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededClass = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            return await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            return await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
         });
 
         CreateCitizenDTO requestBody = new Faker<CreateCitizenDTO>().UseSeed(Seed)
@@ -95,8 +99,8 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededClass = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            return await ClassSeeder.SeedAsync(db, Seed, organization.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            return await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
         });
 
         CreateCitizenDTO requestBody = new Faker<CreateCitizenDTO>().UseSeed(Seed)
@@ -142,30 +146,31 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
         });
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         UpdateCitizenDTO requestBody = new Faker<UpdateCitizenDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => isFirstNameChanged ? f.Person.FirstName : null)
             .RuleFor(u => u.LastName, f => isLastNameChanged ? f.Person.LastName : null)
-            .RuleFor(u => u.ClassId, isClassChanged ? seededCitizen.Id : null)
+            .RuleFor(u => u.ClassId, isClassChanged ? citizen.Id : null)
             .RuleFor(u => u.Username, f => isUsernameChanged ? f.Person.UserName : null);
 
         var client = factory.CreateClient();
 
-        var response = await client.PatchAsJsonAsync($"/citizens/{seededCitizen.Id}", requestBody);
+        var response = await client.PatchAsJsonAsync($"/citizens/{citizen.Id}", requestBody);
 
         try
         {
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var citizen = await response.Content.ReadFromJsonAsync<GetCitizenDTO>();
-            Assert.NotNull(citizen);
-            Assert.Equal(isFirstNameChanged ? requestBody.FirstName : seededCitizen.FirstName, citizen.FirstName);
-            Assert.Equal(isLastNameChanged ? requestBody.LastName : seededCitizen.LastName, citizen.LastName);
-            Assert.Equal(isClassChanged ? requestBody.ClassId : seededCitizen.ClassId, citizen.ClassId);
-            Assert.Equal(isUsernameChanged ? requestBody.Username : seededCitizen.Username, citizen.Username);
+            var citizenJson = await response.Content.ReadFromJsonAsync<GetCitizenDTO>();
+            Assert.NotNull(citizenJson);
+            Assert.Equal(isFirstNameChanged ? requestBody.FirstName : citizen.FirstName, citizenJson.FirstName);
+            Assert.Equal(isLastNameChanged ? requestBody.LastName : citizen.LastName, citizenJson.LastName);
+            Assert.Equal(isClassChanged ? requestBody.ClassId : citizen.ClassId, citizenJson.ClassId);
+            Assert.Equal(isUsernameChanged ? requestBody.Username : citizen.Username, citizenJson.Username);
         }
         finally
         {
@@ -178,14 +183,14 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
         });
 
         var client = factory.CreateClient();
 
-        var response = await client.PatchAsync($"/citizens/{seededCitizen.Id}", null);
+        var response = await client.PatchAsync($"/citizens/{seededCitizen.User.Id}", null);
 
         try
         {
@@ -203,21 +208,21 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
         });
-
+        var citizen = Assert.IsType<Citizen>(seededCitizen.User);
         var client = factory.CreateClient();
 
 
         UpdateCitizenDTO updateCitizenDTO = new Faker<UpdateCitizenDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
-            .RuleFor(u => u.ClassId, seededCitizen.Id)
+            .RuleFor(u => u.ClassId, citizen.Id)
             .RuleFor(u => u.Username, f => f.Person.UserName);
 
-        var response = await client.PatchAsJsonAsync($"/citizens/{seededCitizen.Id + 1}", updateCitizenDTO);
+        var response = await client.PatchAsJsonAsync($"/citizens/{citizen.Id + 1}", updateCitizenDTO);
 
         try
         {
@@ -234,12 +239,12 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
         });
         var client = factory.CreateClient();
-        var response = await client.DeleteAsync($"/citizens/{seededCitizen.Id}");
+        var response = await client.DeleteAsync($"/citizens/{seededCitizen.User.Id}");
 
         response.EnsureSuccessStatusCode();
         try
@@ -258,12 +263,12 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-            var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-            return await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
+            var organization = await _orgSeeder.SeedAsync(db, Seed);
+            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
         });
         var client = factory.CreateClient();
-        var response = await client.DeleteAsync($"/citizens/{seededCitizen.Id + 1}");
+        var response = await client.DeleteAsync($"/citizens/{seededCitizen.User.Id + 1}");
 
         try
         {
