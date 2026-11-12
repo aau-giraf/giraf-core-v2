@@ -2,6 +2,7 @@
 // TEntity -> database model to seed. (ex: User model used in the database)
 // TResult -> Custom return type of seeded entities. (ex: SeededUser a record containing a user and its unencrypted password)
 // TOption -> record containing all test specific parameters. (ex: User seeding can optionally be supplied with a password)
+// To expand possible options, expand the related record on an actual seeder class, just remember to take care of special cases due to newly added content. (ex: something is null etc.)
 internal abstract class CustomResultSeeder<TEntity, TReturn, TOptions> where TEntity : class
 {
     // Create a random TEntity or use supplied options and add it to mock database.

@@ -1,6 +1,7 @@
 // Common seeder for general test seeders.
 // TEntity -> database model to seed. (ex: UserRole model used in the database)
 // TOption -> record containing all test specific parameters. (ex: UserRole seeding can optionally be supplied with a Citizen or NonCitizen ID)
+// To add further options to an existing non-abstract seeder, simply expand the related record and make sure to account for possible cases (ex: something is null etc.) in CreateFaker()
 internal abstract class Seeder<TEntity, TOptions> where TEntity : class
 {
     // Create a random TEntity or use supplied options and add it to mock database.
