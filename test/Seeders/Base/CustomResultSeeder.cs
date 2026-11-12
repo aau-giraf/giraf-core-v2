@@ -14,14 +14,14 @@ internal abstract class CustomResultSeeder<TEntity, TReturn, TOptions> where TEn
         AppDbContext db,
         int seed,
         int count,
-        List<TOptions?> options
+        List<TOptions> options
     );
 
     // Generate a TEntity and return it as a custom result object.
     public abstract TReturn Create(int seed, TOptions options);
 
     // Generate x TEntity based on options or randomly and return as list of custom result objects
-    public abstract List<TReturn> CreateMany(int seed, int count, List<TOptions?> options);
+    public abstract List<TReturn> CreateMany(int seed, int count, List<TOptions> options);
 
     // Create a bogus faker with random content or based on optios.
     public abstract Faker<TEntity> CreateFaker(int seed, TOptions options);

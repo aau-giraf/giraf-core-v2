@@ -26,7 +26,7 @@ internal class UserSeeder : CustomResultSeeder<User, SeededUser, UserOptions>
     }
 
     // Create x random users and add them to mock database.
-    public override async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserOptions?>? userOptions = null)
+    public override async Task<List<SeededUser>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserOptions>? userOptions = null)
     {
         var users = CreateMany(seed, count, userOptions);
 
@@ -51,7 +51,7 @@ internal class UserSeeder : CustomResultSeeder<User, SeededUser, UserOptions>
     public override List<SeededUser> CreateMany(
         int seed,
         int count,
-        List<UserOptions?>? userOptions = null)
+        List<UserOptions>? userOptions = null)
     {
         var users = new List<SeededUser>();
         // Some int used to offset seed.
