@@ -11,7 +11,8 @@ public enum UserServiceResult
     UsernameTaken,
     EmailTaken,
     EmailNotAllowedForCitizen,
-    WrongPassword
+    WrongPassword,
+    WrongOldEmail
 }
 
 public class UserService(AppDbContext db)
@@ -147,7 +148,14 @@ public class UserService(AppDbContext db)
         if (!BCrypt.Net.BCrypt.Verify(updateEmail.Password, user.Password))
             return UserServiceResult.WrongPassword;
 
-        var newEmail = updateEmail.NewEmail;
+        if (!string.Equals(updateEmail.OldEmail, nonCitizen.Email, StringComparison.OrdinalIgnoreCase))
+            return UserServiceResult.WrongOldEmail;
+
+        var newEmail = updateEmail.NewEmail.Trim().ToLowerInvariant();
+        var oldEmail = updateEmail.OldEmail.Trim().ToLowerInvariant();
+
+        if (!string.Equals(updateEmail.OldEmail.Trim(), nonCitizen.Email, StringComparison.OrdinalIgnoreCase))
+            return UserServiceResult.WrongOldEmail;
 
         if (newEmail == nonCitizen.Email)
             return UserServiceResult.Succes;

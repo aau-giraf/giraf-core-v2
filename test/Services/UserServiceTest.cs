@@ -473,4 +473,179 @@ public class UserServiceTest : TestBase
             validationResult.IsValid,
             validationResult.Exception?.ToString());
     }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_UpdatesEmail()
+    {
+        await using var db = CreateDbContext();
+
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = (NonCitizen)seededUser.User;
+
+        string newEmail = "new@test.dk";
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            user.Id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = user.Email,
+                NewEmail = newEmail,
+                Password = seededUser.PlainPassword
+            });
+
+        Assert.Equal(UserServiceResult.Succes, result);
+
+        var updatedUser = await db.Users.OfType<NonCitizen>().SingleAsync(u => u.Id == user.Id);
+        Assert.Equal(newEmail, updatedUser.Email);
+    }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_CitizenCannotHaveEmail()
+    {
+        await using var db = CreateDbContext();
+
+        var citizen = await CitizenSeeder.SeedAsync(db, Seed);
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            citizen.Id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = "old@test.dk",
+                NewEmail = "new@test.dk",
+                Password = "HestePeter2*2=4"
+            });
+
+        Assert.Equal(UserServiceResult.EmailNotAllowedForCitizen, result);
+    }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_ReturnsNotFoundOnNonExistingUser()
+    {
+        await using var db = CreateDbContext();
+
+        int id = 100;
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = "old@test.dk",
+                NewEmail = "new@test.dk",
+                Password = "HestePeter2*2=4"
+            });
+
+        Assert.Equal(UserServiceResult.NotFound, result);
+    }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_DoesNothingOnWrongPassword()
+    {
+        await using var db = CreateDbContext();
+
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = (NonCitizen)seededUser.User;
+        string ogEmail = user.Email;
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            user.Id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = ogEmail,
+                NewEmail = "new@test.dk",
+                Password = seededUser.PlainPassword + "incorrect-password"
+            });
+
+        Assert.Equal(UserServiceResult.WrongPassword, result);
+
+        var afterCallUser = await db.Users.OfType<NonCitizen>().SingleAsync(u => u.Id == user.Id);
+        Assert.Equal(ogEmail, afterCallUser.Email);
+    }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_DoesNothingOnWrongOldEmail()
+    {
+        await using var db = CreateDbContext();
+
+        var seededUser = await UserSeeder.SeedAsync(db, Seed);
+        var user = (NonCitizen)seededUser.User;
+        string ogEmail = user.Email;
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            user.Id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = "wrong" + ogEmail,
+                NewEmail = "new@test.dk",
+                Password = seededUser.PlainPassword
+            });
+
+        Assert.Equal(UserServiceResult.WrongOldEmail, result);
+
+        var afterCallUser = await db.Users.OfType<NonCitizen>().SingleAsync(u => u.Id == user.Id);
+        Assert.Equal(ogEmail, afterCallUser.Email);
+    }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_DoesNothingWhenEmailIsTaken()
+    {
+        await using var db = CreateDbContext();
+
+        var seededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = (NonCitizen)seededUsers[0].User;
+        var user2 = (NonCitizen)seededUsers[1].User;
+        string ogEmail = user1.Email;
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            user1.Id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = ogEmail,
+                NewEmail = user2.Email, // already taken by user2
+                Password = seededUsers[0].PlainPassword
+            });
+
+        Assert.Equal(UserServiceResult.EmailTaken, result);
+
+        var afterCallUser = await db.Users.OfType<NonCitizen>().SingleAsync(u => u.Id == user1.Id);
+        Assert.Equal(ogEmail, afterCallUser.Email);
+    }
+
+    [Fact]
+    public async Task UpdateUserEmailAsync_UpdatesCorrectUser()
+    {
+        await using var db = CreateDbContext();
+
+        var seededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = (NonCitizen)seededUsers[0].User;
+        var user2 = (NonCitizen)seededUsers[1].User;
+        string ogEmailUser2 = user2.Email;
+
+        var service = new UserService(db);
+
+        var result = await service.UpdateUserEmailAsync(
+            user1.Id,
+            new UpdateUserEmailDTO
+            {
+                OldEmail = user1.Email,
+                NewEmail = "new@test.dk",
+                Password = seededUsers[0].PlainPassword
+            });
+
+        Assert.Equal(UserServiceResult.Succes, result);
+
+        var otherUser = await db.Users.OfType<NonCitizen>().SingleAsync(u => u.Id == user2.Id);
+        Assert.Equal(ogEmailUser2, otherUser.Email);
+    }
 }

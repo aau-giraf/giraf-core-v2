@@ -66,18 +66,19 @@ public static class UserEndpoints
         };
     }
 
-    public static async Task<Results<NoContent, Conflict<string>, BadRequest<string>>> UpdateUserEmail(UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateUserEmailDTO updateEmail)
+    public static async Task<Results<NoContent, Conflict<string>, NotFound, BadRequest<string>>> UpdateUserEmail(UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateUserEmailDTO updateEmail)
     {
         var result = await userService.UpdateUserEmailAsync(GetCurrentUserId(currentUser), updateEmail);
 
         return result switch
         {
-            UserServiceResult.NotFound => TypedResults.BadRequest("Could not find the user"),
             UserServiceResult.Succes => TypedResults.NoContent(),
-            UserServiceResult.EmailTaken => TypedResults.BadRequest("Email is already taken"),
-            UserServiceResult.WrongPassword => TypedResults.Conflict("Wrong Password"),
-            UserServiceResult.EmailNotAllowedForCitizen => TypedResults.BadRequest("Citizens can not have a Email")
-
+            UserServiceResult.NotFound => TypedResults.NotFound(),
+            UserServiceResult.EmailTaken => TypedResults.Conflict("Email is already taken"),
+            UserServiceResult.WrongPassword => TypedResults.BadRequest("Wrong password"),
+            UserServiceResult.WrongOldEmail => TypedResults.BadRequest("Old email does not match"),
+            UserServiceResult.EmailNotAllowedForCitizen => TypedResults.BadRequest("Citizens can not have an email"),
+            _ => throw new InvalidOperationException($"Unexpected result: {result}")
         };
     }
 

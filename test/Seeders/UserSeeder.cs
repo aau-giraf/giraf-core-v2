@@ -49,7 +49,7 @@ public static class UserSeeder
                    .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                    .RuleFor(u => u.LastName, f => f.Name.LastName())
                    .RuleFor(u => u.Username, f => f.Internet.UserName())
-                   .RuleFor(u => u.Email, ""); // email field is 'required', but not needed
+                   .RuleFor(u => u.Email, f => f.Internet.Email().ToLowerInvariant());
 
         var PasswordFaker = new Faker<string>().UseSeed(seed).CustomInstantiator(f => f.Internet.Password());
         var users = new List<SeededUser>();
@@ -76,7 +76,7 @@ public static class UserSeeder
             .RuleFor(u => u.FirstName, f => f.Name.FirstName())
             .RuleFor(u => u.LastName, f => f.Name.LastName())
             .RuleFor(u => u.Username, f => f.Internet.UserName())
-            .RuleFor(u => u.Email, "") // email field is 'required', but not needed
+            .RuleFor(u => u.Email, f => f.Internet.Email().ToLowerInvariant())
             .RuleFor(u => u.Password, f => BCrypt.Net.BCrypt.HashPassword(password, 12));
     }
 }

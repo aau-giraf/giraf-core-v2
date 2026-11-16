@@ -8,12 +8,10 @@ using Microsoft.Extensions.Validation;
 public partial class UpdateUserEmailDTO : IValidatableObject
 {
     [Required]
-    [EmailAddress]
     [MaxLength(255)]
     public required string NewEmail { get; set; }
 
     [Required]
-    [EmailAddress]
     [MaxLength(255)]
     public required string OldEmail { get; set; }
 
@@ -26,6 +24,9 @@ public partial class UpdateUserEmailDTO : IValidatableObject
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
+        if (string.IsNullOrEmpty(NewEmail) || string.IsNullOrEmpty(OldEmail))
+            yield break;
+
         if (!EmailRegex().IsMatch(OldEmail))
             yield return new ValidationResult("Invalid email.", [nameof(OldEmail)]);
 
@@ -34,7 +35,7 @@ public partial class UpdateUserEmailDTO : IValidatableObject
 
         if (string.Equals(OldEmail, NewEmail, StringComparison.OrdinalIgnoreCase))
             yield return new ValidationResult(
-                "The new email must be diffent from the old one",
+                "The new email must be different from the old one",
                 [nameof(NewEmail)]);
     }
 }
