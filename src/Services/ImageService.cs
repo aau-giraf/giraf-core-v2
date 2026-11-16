@@ -8,7 +8,7 @@ namespace giraf_core_v2.Services;
 public class ImageService(AppDbContext db, IMemoryCache cache, HttpClient http)
 {
     private readonly AppDbContext _db = db;
-    
+
     // How long a rejected ticketId is saved
     private static readonly TimeSpan RejectedTicketLifetime = TimeSpan.FromMinutes(10);
 
@@ -109,7 +109,7 @@ public class ImageService(AppDbContext db, IMemoryCache cache, HttpClient http)
             postImagePromptDto.ClassId = null;
             postImagePromptDto.OrganizationId = null;
         }
-        
+
         var request = new AiGenerationRequestDTO
         {
             TicketId = ticketId,
@@ -154,7 +154,7 @@ public class ImageService(AppDbContext db, IMemoryCache cache, HttpClient http)
             return new ReqIsImageDoneDTO { Status = ImageStatus.Pending, TicketId = ticketId };
         }
 
-        var requestDTO = new ReqIsImageDoneDTO() { TicketId = ticketId, TitleEn = image.TitleEn, Status = ImageStatus.Done, ImageId = image.Id};
+        var requestDTO = new ReqIsImageDoneDTO() { TicketId = ticketId, TitleEn = image.TitleEn, Status = ImageStatus.Done, ImageId = image.Id };
 
         return requestDTO;
     }

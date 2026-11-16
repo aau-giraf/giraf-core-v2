@@ -7,7 +7,7 @@ public class PostImagePromptDTO
     [Required]
     [Length(3, 250)]
     public required string Prompt { get; set; }
-    
+
     public int? CitizenId { get; set; }
     public int? ClassId { get; set; }
     public int? OrganizationId { get; set; }

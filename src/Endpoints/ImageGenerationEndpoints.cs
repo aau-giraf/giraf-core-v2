@@ -29,7 +29,7 @@ public static class ImageGenerateEndpoints
         var userId = GetCurrentUserId(currentUser);
         var ticketId = await imageService.GenerateImage(postImagePromptDto, userId);
 
-        return ticketId is null ? TypedResults.Problem("Image generation is unavailable right now", statusCode : 503) : TypedResults.Ok(ticketId);
+        return ticketId is null ? TypedResults.Problem("Image generation is unavailable right now", statusCode: 503) : TypedResults.Ok(ticketId);
     }
 
     private static Ok InappropriateImage([FromBody] InappropriateImageDTO inappropriateImageDto, ImageService imageService)
@@ -44,7 +44,7 @@ public static class ImageGenerateEndpoints
 
         return TypedResults.Ok(req);
     }
-    
+
     private static async Task<Results<Ok<int>, BadRequest<string>>> PostGeneratedImage([FromForm] PostImageDTO imageRequest, ImageService imageService)
     {
         // An AI-generated image must belong to a ticket, otherwise the client can never find it

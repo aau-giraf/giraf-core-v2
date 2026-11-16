@@ -413,7 +413,7 @@ public class ImageServiceTest : TestBase
             }
         }
     }
-    
+
     [Fact]
     public async Task PostIsImageDone_ReturnsTicketId_WhenImageWithTicketExists()
     {
@@ -426,7 +426,7 @@ public class ImageServiceTest : TestBase
         // Act - lookup the seeded image.ticketId to retrieve it from the database
         var result = await service.IsImageDone(image.TicketId!);
         db.ChangeTracker.Clear();
-        
+
         Assert.NotNull(result);
         Assert.Equal(image.TicketId, result!.TicketId);
         Assert.Equal(image.TitleEn, result.TitleEn);
@@ -470,7 +470,7 @@ public class ImageServiceTest : TestBase
         Assert.Equal(7, sent.UserId);
         Assert.Equal(ticketId, sent.TicketId);
     }
-    
+
     [Fact]
     public async Task GenerateImage_ReturnsNull_WhenAiBackendFails()
     {
@@ -500,7 +500,7 @@ public class ImageServiceTest : TestBase
         // Assert
         Assert.Equal(ImageStatus.Inappropriate, result.Status);
     }
-    
+
     [Fact]
     public async Task GenerateImage_ForcesCitizenAsOwner_WhenUserIsCitizen()
     {
@@ -510,7 +510,7 @@ public class ImageServiceTest : TestBase
         var handler = new FakeHttpHandler();
         var service = CreateService(db, handler);
         var request = new PostImagePromptDTO { Prompt = "a giraffe", OrganizationId = 99, ClassId = 42 };
-        
+
         // Act - call GenerateImage with userId = citizen.Id
         var result = await service.GenerateImage(request, userId: seededCitizen.Id);
 

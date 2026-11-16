@@ -9,7 +9,7 @@ namespace giraf_core_v2.Tests.DTOs;
 public class PostImagePromptDTOTest : TestBase
 {
     public PostImagePromptDTOTest(ITestOutputHelper output) : base(output) { }
-    
+
     [Theory]
     // Three tests where the owner of the prompt is set to exactly one
     [InlineData(true, false, false)]
@@ -27,7 +27,7 @@ public class PostImagePromptDTOTest : TestBase
         // Assert there are no errors and the DTO is valid
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
-    
+
     [Theory]
     // Five tests that are not valid in the DTO, no owner and multiple owners
     [InlineData(false, false, false)] // no owner
