@@ -79,79 +79,77 @@ public class OrganizationService(AppDbContext db)
             return (OrganizationServiceResult.OrganizationNotFound, null);
         }
 
-    public async Task<bool> DeleteClassInOrganizationAsync(int orgId, int classId)
-    {
-        // Fetch the class with classId and organizationId matching Route parameters
-        if (await _db.Classes.AnyAsync(c => c.Id == classId && c.OrganizationId == orgId))
-        {
-            var selectedClass = await _db.Classes
-            .FirstOrDefaultAsync(c => c.Id == classId && c.OrganizationId == orgId);
-
-            if (selectedClass!.Id == classId && selectedClass.OrganizationId == orgId)
+        // Fetch the classes and return the list.
+        return (OrganizationServiceResult.Success, await _db.Classes
+            .Where(c => c.OrganizationId == organizationId)
+            .Select(c => new ClassResponseDTO
             {
-                _db.Classes.Remove(selectedClass);
-                await _db.SaveChangesAsync();
-                return true;
-            }
-        }
-        return false;
+                ClassId = c.Id,
+                Name = c.Name,
+                OrganizationId = c.OrganizationId,
+            })
+            .ToListAsync());
     }
 
-    public async Task<ResponseCreateClassDTO?> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass, int orgId)
+    public async Task<(OrganizationServiceResult, ClassResponseDTO?)> CreateClassInOrganizationAsync(CreateClassDTO createClassDto, int organizationId)
     {
-        // Fetch organization instance from db (Required in Class model)
-        var organization = await _db.Organizations.FindAsync(orgId);
+        // Check that the specified organization exists.
+        bool organizationExists = await _db.Organizations
+            .AnyAsync(o => o.Id == organizationId);
 
-        if (organization is null)
+        if (!organizationExists)
         {
-            return null;
+            return (OrganizationServiceResult.OrganizationNotFound, null);
         }
 
-        // Create new instance of class
-        Class createdClass = new Class
+        Class newClass = new()
         {
-            Name = createClass.Name,
-            OrganizationId = organization!.Id,
-            Organization = organization,
+            Name = createClassDto.Name.ToLower(),
+            OrganizationId = organizationId,
         };
 
-        // Check if the createdClass already exists as a tuple in the classes relation.
-        // We check this by attributes: Name and organizationId
-        // Ensures that an organization can not hold two classes named: 4a
-        bool checkTupleAlreadyExist = await _db.Classes.AnyAsync(c => c.Name == createClass.Name && c.OrganizationId == orgId);
-
-        // Insert the new instance tuple into the db.
-        if (createdClass.Name is not null && createdClass.Organization is not null && checkTupleAlreadyExist is false)
+        // Return null if proposed class already exists.
+        if (await _db.Classes.AnyAsync(c => c.Name.ToLower().Equals(newClass.Name) && c.OrganizationId == organizationId))
         {
-            _db.Classes.Add(createdClass);
-            await _db.SaveChangesAsync();
+            return (OrganizationServiceResult.ClassAlreadyExists, null);
         }
 
-        // Fetch the new class in the db. 
-        // The db makes the class Id on insert, which is required in the response body
-        // It is therefore we insert it in the db, and then fetches that same entry now containing id. 
-        Class newClass = _db.Classes.FirstOrDefault(c => c.Name == createdClass.Name
-                && c.OrganizationId == createdClass.OrganizationId)!;
+        _db.Classes.Add(newClass);
 
-        if (newClass is null)
-        {
-            return null;
-        }
+        await _db.SaveChangesAsync();
 
-        // Return correctly formatted response
-        ResponseCreateClassDTO responseClass = new ResponseCreateClassDTO
+        return (OrganizationServiceResult.Success, new ClassResponseDTO
         {
-            Id = newClass!.Id,
+            ClassId = newClass.Id,
             Name = newClass.Name,
             OrganizationId = newClass.OrganizationId,
-        };
-
-        return responseClass;
-
+        });
     }
 
+    public async Task<(OrganizationServiceResult, OrganizationResponseDTO?)> CreateOrganizationAsync(OrganizationDTO createOrganizationDto)
+    {
+        var newOrganization = new Organization
+        {
+            Name = createOrganizationDto.Name.ToLower(),
+        };
 
-    public async Task<ResponseGetOrganizationDTO?> CreateOrganizationAsync(RequestCreateOrganizationDTO createOrganization)
+        // Return null if proposed organization already exists.
+        if (await _db.Organizations.AnyAsync(o => o.Name.ToLower().Equals(newOrganization.Name)))
+        {
+            return (OrganizationServiceResult.OrganizationAlreadyExists, null);
+        }
+
+        _db.Organizations.Add(newOrganization);
+
+        await _db.SaveChangesAsync();
+
+        return (OrganizationServiceResult.Success, new OrganizationResponseDTO
+        {
+            OrganizationId = newOrganization.Id,
+            Name = newOrganization.Name,
+        });
+    }
+
     {
         // Check if the name specified in the requestbody is already taken
         bool checkNameAlreadyExist = await _db.Organizations.AnyAsync(o => o.Name == createOrganization.Name);

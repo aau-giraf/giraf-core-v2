@@ -67,16 +67,29 @@ public static class OrganizationEndpoints
         return response.result == OrganizationServiceResult.OrganizationNotFound ? TypedResults.NotFound($"Organization with ID {organizationId} not found.") : TypedResults.Ok(response.classResponseDtoList);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(int orgId, int classId, OrganizationService organizationService)
+    private static async Task<Results<Ok<ClassResponseDTO>, NotFound<string>, Conflict<string>, InternalServerError>> CreateClassInOrganization([FromBody] CreateClassDTO createClassDto, int organizationId, OrganizationService organizationService)
     {
-        var selectedClass = await organizationService.DeleteClassInOrganizationAsync(orgId, classId);
-        return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
+        (OrganizationServiceResult, ClassResponseDTO?) response = await organizationService.CreateClassInOrganizationAsync(createClassDto, organizationId);
+
+        return response switch
+        {
+            (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
+            (OrganizationServiceResult.ClassAlreadyExists, null) => TypedResults.Conflict($"Class with name '{createClassDto.Name.ToLower()}' already exists."),
+            (OrganizationServiceResult.Success, ClassResponseDTO classResponseDto) => TypedResults.Ok(classResponseDto),
+            _ => TypedResults.InternalServerError(),
+        };
     }
 
-    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromForm] RequestCreateClassDTO requestCreateClassDTO, int orgId, OrganizationService organizationService)
+    private static async Task<Results<Ok<OrganizationResponseDTO>, Conflict<string>, InternalServerError>> CreateOrganization([FromBody] OrganizationDTO createOrganizationDto, OrganizationService organizationService)
     {
-        var createdClass = await organizationService.CreateClassInOrganizationAsync(requestCreateClassDTO, orgId);
-        return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
+        (OrganizationServiceResult, OrganizationResponseDTO?) response = await organizationService.CreateOrganizationAsync(createOrganizationDto);
+
+        return response switch
+        {
+            (OrganizationServiceResult.OrganizationAlreadyExists, null) => TypedResults.Conflict($"Organization with name '{createOrganizationDto.Name.ToLower()}' already exists."),
+            (OrganizationServiceResult.Success, OrganizationResponseDTO organizationResponseDto) => TypedResults.Ok(organizationResponseDto),
+            _ => TypedResults.InternalServerError(),
+        };
     }
 
     private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationService)
