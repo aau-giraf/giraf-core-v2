@@ -33,16 +33,11 @@ public static class OrganizationEndpoints
 
     }
 
-    private static async Task<Results<Ok<List<OrganizationResponseDTO>>, NotFound>> GetAllOrganizations(OrganizationService organizationService)
+    private static async Task<Ok<List<OrganizationResponseDTO>>> GetAllOrganizations(OrganizationService organizationService)
     {
         List<OrganizationResponseDTO> organizations = await organizationService.GetAllOrganizationsAsync();
-        return organizations.Count != 0 ? TypedResults.NotFound() : TypedResults.Ok(organizations);
-    }
 
-    private static async Task<Results<Ok<OrganizationResponseDTO>, NotFound>> GetOrganizationById(int orgId, OrganizationService organizationService)
-    {
-        var organization = await organizationService.GetOrganizationByIdAsync(orgId);
-        return organization == null ? TypedResults.NotFound() : TypedResults.Ok(organization);
+        return TypedResults.Ok(organizations);
     }
 
     private static async Task<Results<NoContent, NotFound>> DeleteOrganization(int orgId, OrganizationService organizationService)
@@ -51,16 +46,24 @@ public static class OrganizationEndpoints
         return organization ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<ResponseGetClassInOrganizationDTO>, NotFound>> GetClassInOrganization(int orgId, int classId, OrganizationService organizationService)
+    private static async Task<Results<Ok<ClassResponseDTO>, NotFound<string>, InternalServerError>> GetClassInOrganization(int organizationId, int classId, OrganizationService organizationService)
     {
-        var selectedClass = await organizationService.GetClassInOrganizationAsync(orgId, classId);
-        return selectedClass == null ? TypedResults.NotFound() : TypedResults.Ok(selectedClass);
+        (OrganizationServiceResult, ClassResponseDTO?) response = await organizationService.GetClassInOrganizationAsync(organizationId, classId);
+
+        return response switch
+        {
+            (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
+            (OrganizationServiceResult.ClassNotFound, null) => TypedResults.NotFound($"Organization with ID {classId} not found."),
+            (OrganizationServiceResult.Success, ClassResponseDTO classResponseDto) => TypedResults.Ok(classResponseDto),
+            _ => TypedResults.InternalServerError(),
+        };
     }
 
-    private static async Task<Results<Ok<List<ResponseGetClassInOrganizationDTO>>, NotFound>> GetClassesInOrganization(int orgId, OrganizationService organizationService)
+    private static async Task<Results<Ok<List<ClassResponseDTO>>, NotFound<string>>> GetAllClassesInOrganization(int organizationId, OrganizationService organizationService)
     {
-        var classes = await organizationService.GetClassesInOrganizationAsync(orgId);
-        return classes == null ? TypedResults.NotFound() : TypedResults.Ok(classes);
+        (OrganizationServiceResult result, List<ClassResponseDTO>? classResponseDtoList) response = await organizationService.GetAllClassesInOrganizationAsync(organizationId);
+
+        return response.result == OrganizationServiceResult.OrganizationNotFound ? TypedResults.NotFound($"Organization with ID {organizationId} not found.") : TypedResults.Ok(response.classResponseDtoList);
     }
 
     private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(int orgId, int classId, OrganizationService organizationService)

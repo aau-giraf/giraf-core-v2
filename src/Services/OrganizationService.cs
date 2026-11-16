@@ -8,36 +8,25 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<List<OrganizationResponseDTO>> GetAllOrganizationsAsync()
     {
-        var organizations = await _db.Organizations.ToListAsync();
-
-        List<OrganizationResponseDTO> organizationList = [];
-
-        foreach (Organization organization in organizations)
-        {
-            organizationList.Add(new OrganizationResponseDTO
+        return await _db.Organizations
+            .Select(o => new OrganizationResponseDTO
             {
-                Id = organization.Id,
-                Name = organization.Name,
-            });
-        }
-
-        return organizationList;
+                OrganizationId = o.Id,
+                Name = o.Name,
+            })
+            .ToListAsync();
     }
 
-    public async Task<OrganizationResponseDTO?> GetOrganizationByIdAsync(int orgId)
+    public async Task<OrganizationResponseDTO?> GetOrganizationByIdAsync(int organizationId)
     {
-        var organization = await _db.Organizations.FindAsync(orgId);
-
-        if (organization is null)
+        return await _db.Organizations
+        .Where(o => o.Id == organizationId)
+        .Select(o => new OrganizationResponseDTO
         {
-            return null;
-        }
-
-        return new OrganizationResponseDTO
-        {
-            Id = organization.Id,
-            Name = organization.Name,
-        };
+            OrganizationId = o.Id,
+            Name = o.Name,
+        })
+        .FirstOrDefaultAsync();
     }
 
     // Delete organization by org_id from Route parameter
@@ -59,50 +48,36 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseGetClassInOrganizationDTO?> GetClassInOrganizationAsync(int orgId, int classId)
-    {
-        // Fetch the class tuple, where the column OrganizationId equals org_id and
-        // the column Id equals class_id from Route parameter
-        var selectedClass = await _db.Classes
-            .FirstOrDefaultAsync(c => c.Id == classId && c.OrganizationId == orgId);
-
-        if (selectedClass is null)
-        {
-            return null;
-        }
-
-        // Return correctly formatted response
-        ResponseGetClassInOrganizationDTO responseClassInOrganizationDTO = new ResponseGetClassInOrganizationDTO
-        {
-            Id = selectedClass!.Id,
-            Name = selectedClass.Name,
-            OrganizationId = selectedClass.OrganizationId,
-        };
-        return responseClassInOrganizationDTO;
-    }
-
-    public async Task<List<ResponseGetClassInOrganizationDTO>> GetClassesInOrganizationAsync(int orgId)
-    {
-        // Fetch all class tuples, where the column OrganizationId equals Route parameter org_id
-        var classes = await _db.Classes
-            .Where(c => c.OrganizationId == orgId).AsNoTracking().ToListAsync();
-
-        // List of ClassInOrganizationDTOs
-        List<ResponseGetClassInOrganizationDTO> classesInOrganizationDtoList = new List<ResponseGetClassInOrganizationDTO>();
-
-        foreach (Class selectedClass in classes)
-        {
-            ResponseGetClassInOrganizationDTO responseClassInOrganizationDTO = new ResponseGetClassInOrganizationDTO
+        // Attempt to fetch the class.
+        var organizationClass = await _db.Classes
+            .Where(c => c.OrganizationId == organizationId && c.Id == classId)
+            .Select(c => new ClassResponseDTO
             {
-                Id = selectedClass.Id,
-                Name = selectedClass.Name,
-                OrganizationId = selectedClass.OrganizationId,
-            };
-            // Add each class that has been converted to dto to the list
-            classesInOrganizationDtoList.Add(responseClassInOrganizationDTO);
+                ClassId = c.Id,
+                Name = c.Name,
+                OrganizationId = c.OrganizationId,
+            })
+            .FirstOrDefaultAsync();
+
+        // Check that the class was found.
+        if (organizationClass is null)
+        {
+            return (OrganizationServiceResult.ClassNotFound, null);
         }
-        return classesInOrganizationDtoList;
+
+        return (OrganizationServiceResult.Success, organizationClass);
     }
+
+    public async Task<(OrganizationServiceResult, List<ClassResponseDTO>?)> GetAllClassesInOrganizationAsync(int organizationId)
+    {
+        // Check that the specified organization exists.
+        bool organizationExists = await _db.Organizations
+            .AnyAsync(o => o.Id == organizationId);
+
+        if (!organizationExists)
+        {
+            return (OrganizationServiceResult.OrganizationNotFound, null);
+        }
 
     public async Task<bool> DeleteClassInOrganizationAsync(int orgId, int classId)
     {
