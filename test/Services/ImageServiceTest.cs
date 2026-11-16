@@ -4,7 +4,6 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     private readonly UserSeeder _userSeeder = new();
     private readonly OrganizationSeeder _orgSeeder = new();
     private readonly ClassSeeder _classSeeder = new();
-    private readonly int _seedOffset = 123;
 
     [Fact]
     public async Task GetAllImagesAsync_ReturnsAllImages()
@@ -100,8 +99,9 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     public async Task GetImagesByCitizenIdAsync_ReturnsOnlyImagesRelatedToCitizen()
     {
         await using var db = CreateDbContext();
-        var citizen1 = await _userSeeder.SeedAsync(db, Seed);
-        var citizen2 = await _userSeeder.SeedAsync(db, Seed + _seedOffset);
+        var citizens = await _userSeeder.SeedManyAsync(db, Seed, 2);
+        var citizen1 = citizens[0];
+        var citizen2 = citizens[1];
 
         List<ImageOptions> opt1 = [
             new(ClassId: null, CitizenId: citizen1.User.Id),

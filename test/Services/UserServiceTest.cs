@@ -2,10 +2,6 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-
-    // used to offset seed for different results. (int value doesn't matter as long as not 0)
-    private readonly int _seedOffset = 123;
-
     private readonly UserSeeder _userSeeder = new();
 
     // TODO: add sanitization tests, once sanitization has been made.
@@ -25,7 +21,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         string ogUsername = user.Username;
 
         // generate a different user with another name.
-        var otherUser = _userSeeder.Create(Seed + _seedOffset);
+        var otherUser = _userSeeder.Create(Seed);
 
 
         var service = new UserService(db);
@@ -81,7 +77,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         string ogUsername = user.Username;
 
         // generate different user with another seed
-        User faker = new Faker<NonCitizen>().UseSeed(Seed + _seedOffset)
+        User faker = new Faker<NonCitizen>().UseSeed(Seed)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                                     .RuleFor(u => u.LastName, f => f.Name.LastName())
                                     .RuleFor(u => u.Username, f => f.Internet.UserName());
