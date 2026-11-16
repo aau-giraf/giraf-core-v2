@@ -111,7 +111,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -136,7 +136,7 @@ public class OrganizationServiceTest : TestBase
 
 
         //----- ASSERT -----\\
-        // Be aware that the assertions differ given if the selectedClass was in the organization or not. 
+        // Be aware that the assertions differ given if the selectedClass was in the organization or not.
         if (selectedClass is null && class1.OrganizationId == organization1.Id)
         {
             Assert.True(deletedClassInOrganization);
@@ -165,7 +165,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -255,7 +255,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -294,7 +294,7 @@ public class OrganizationServiceTest : TestBase
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await ClassSeeder.SeedManyAsync(db, Seed, 2, organization1.Id);
         var class1 = classes[0];
         var class2 = classes[1];
 

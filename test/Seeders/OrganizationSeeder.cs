@@ -30,7 +30,7 @@ public static class OrganizationSeeder
         return CreateFaker(seed).Generate();
     }
 
-    // Create x random users.
+    // Create x random organizations.
     private static List<Organization> CreateManyFakers(int seed, int count)
     {
         return CreateFaker(seed).Generate(count);
