@@ -14,9 +14,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         await using var db = CreateDbContext();
 
-        UserOptions opt = new("mypassword");
-
-        var seededUser = await _userSeeder.SeedAsync(db, Seed, opt);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
 
         var user = seededUser.User;
 
@@ -27,7 +25,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         string ogUsername = user.Username;
 
         // generate a different user with another name.
-        var otherUser = _userSeeder.Create(Seed + _seedOffset, opt);
+        var otherUser = _userSeeder.Create(Seed + _seedOffset);
 
 
         var service = new UserService(db);
@@ -72,8 +70,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         await using var db = CreateDbContext();
 
-        UserOptions opt = new("mypassword");
-        var seededUser = await _userSeeder.SeedAsync(db, Seed, opt);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
 
         var user = seededUser.User;
 
@@ -141,8 +138,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         await using var db = CreateDbContext();
 
-        UserOptions opt = new("?");
-        var seededUser = await _userSeeder.SeedAsync(db, Seed, opt);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
         var user = seededUser.User;
 
         var service = new UserService(db);
@@ -214,8 +210,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         await using var db = CreateDbContext();
 
-        UserOptions opt = new("mypassword");
-        var seededUser = await _userSeeder.SeedAsync(db, Seed, opt);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
         var user = seededUser.User;
 
         var service = new UserService(db);
