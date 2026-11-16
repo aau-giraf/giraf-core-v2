@@ -1,10 +1,38 @@
+using System.Net;
+using System.Text.Json;
+
 using giraf_core_v2.DTOs.Images;
+
+using Microsoft.Extensions.Caching.Memory;
 
 using Xunit.Abstractions;
 
 public class ImageServiceTest : TestBase
 {
     public ImageServiceTest(ITestOutputHelper output) : base(output) { }
+
+    public class FakeHttpHandler(HttpStatusCode status = HttpStatusCode.OK) : HttpMessageHandler
+    {
+        public HttpRequestMessage? LastRequest { get; private set; }
+        public string? LastBody { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            LastRequest = request;
+            LastBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
+            return new HttpResponseMessage(status);
+        }
+    }
+
+    private static ImageService CreateService(AppDbContext db, HttpMessageHandler? handler = null)
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var http = new HttpClient(handler ?? new FakeHttpHandler())
+        {
+            BaseAddress = new Uri("http://ai.test/")
+        };
+        return new ImageService(db, cache, http);
+    }
 
     [Fact]
     public async Task GetAllImagesAsync_ReturnsAllImages()
@@ -13,7 +41,7 @@ public class ImageServiceTest : TestBase
         var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 3);
         var expectedIds = seededImages.Select(s => s.Image.Id).OrderBy(id => id).ToList();
 
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var result = await service.GetAllImagesAsync();
 
@@ -25,7 +53,7 @@ public class ImageServiceTest : TestBase
     public async Task GetAllImagesAsync_ReturnsEmptyList_WhenNoImages()
     {
         await using var db = CreateDbContext();
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var result = await service.GetAllImagesAsync();
 
@@ -42,7 +70,7 @@ public class ImageServiceTest : TestBase
 
         var image = seededImage.Image;
 
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var imageById = await service.GetImageByIdAsync(image.Id);
 
@@ -54,7 +82,7 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var imageService = new ImageService(db);
+        var imageService = CreateService(db);
         var nonExistingImageId = 9999;
 
 
@@ -70,7 +98,7 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var citizen = await CitizenSeeder.SeedAsync(db, seed: 1);
         var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, count: 3, citizen.Id);
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
 
@@ -86,7 +114,7 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_UserNotFound_ReturnsNull()
     {
         await using var db = CreateDbContext();
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(42);
 
@@ -101,7 +129,7 @@ public class ImageServiceTest : TestBase
         var citizen2 = await CitizenSeeder.SeedAsync(db, seed: Seed + 2);
         var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen1.Id);
         var irrelevantImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen2.Id);
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen1.Id);
 
@@ -119,7 +147,7 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var citizen = await CitizenSeeder.SeedAsync(db, seed: Seed);
         var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, 0, citizen.Id);
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
 
@@ -141,7 +169,7 @@ public class ImageServiceTest : TestBase
             image.Path = Path.Combine(dir, Path.GetFileName(image.Path));
             await db.SaveChangesAsync();
             File.WriteAllBytes(image.Path, []);
-            var service = new ImageService(db);
+            var service = CreateService(db);
 
             Assert.True(await service.DeleteImageAsync(image.Id));
             Assert.Null(await db.Images.SingleOrDefaultAsync(i => i.Id == image.Id));
@@ -174,7 +202,7 @@ public class ImageServiceTest : TestBase
             File.WriteAllBytes(image1.Path, []); // // opens and close the file
             File.WriteAllBytes(image2.Path, []);
 
-            var service = new ImageService(db);
+            var service = CreateService(db);
 
             Assert.True(await service.DeleteImageAsync(image1.Id));
 
@@ -194,7 +222,7 @@ public class ImageServiceTest : TestBase
     public async Task DeleteImageAsync_ReturnsFalseIfIdDontExists()
     {
         await using var db = CreateDbContext();
-        var service = new ImageService(db);
+        var service = CreateService(db);
         var nonExistingImageId = 9999;
 
         var result = await service.DeleteImageAsync(nonExistingImageId);
@@ -209,7 +237,7 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
-        var service = new ImageService(db);
+        var service = CreateService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -239,7 +267,7 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
-        var service = new ImageService(db);
+        var service = CreateService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -274,7 +302,7 @@ public class ImageServiceTest : TestBase
         var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
         var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, classId: null, citizenId: citizen.Id);
 
-        var service = new ImageService(db);
+        var service = CreateService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -310,7 +338,7 @@ public class ImageServiceTest : TestBase
         var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
         var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, citizenId: null, classId: class_.Id);
 
-        var service = new ImageService(db);
+        var service = CreateService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -342,9 +370,9 @@ public class ImageServiceTest : TestBase
     public async Task MultipleServiceComponentsTest()
     {
         await using var db = CreateDbContext();
-        var organization = OrganizationSeeder.SeedAsync(db, Seed);
+        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
         var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
-        var service = new ImageService(db);
+        var service = CreateService(db);
         string? path = null;
 
         try
@@ -393,10 +421,10 @@ public class ImageServiceTest : TestBase
         await using var db = CreateDbContext();
         var seeded = await ImageSeeder.SeedAsync(db, Seed);
         var image = seeded.Image;
-        var service = new ImageService(db);
+        var service = CreateService(db);
 
         // Act - lookup the seeded image.ticketId to retrieve it from the database
-        var result = await service.IsImageDone(image.TicketId);
+        var result = await service.IsImageDone(image.TicketId!);
         db.ChangeTracker.Clear();
         
         Assert.NotNull(result);
@@ -405,80 +433,94 @@ public class ImageServiceTest : TestBase
     }
 
     [Fact]
-    public async Task PostIsImageDone_ReturnsNull_WhenImageWithTicketDoesNotExist()
+    public async Task PostIsImageDone_ReturnsPending_WhenImageWithTicketDoesNotExist()
     {
-        // Arrange data
+        // Arrange
         await using var db = CreateDbContext();
         await ImageSeeder.SeedAsync(db, Seed);
-        var service = new ImageService(db);
-        db.ChangeTracker.Clear();
-        
-        // Act - Give the servie call a ticketId that does not exist in the database
+        var service = CreateService(db);
+
+        // Act
         var result = await service.IsImageDone(Guid.NewGuid().ToString());
-        
-        Assert.Null(result);
+
+        // Assert that the image status is pending due to no response from the AI backend
+        Assert.Equal(ImageStatus.Pending, result.Status);
+        Assert.Equal(ImageStatus.Pending, result.Status);
     }
 
     [Fact]
     public async Task PostPromptForImageGeneration_ReturnsTicketId()
     {
-        // Arrange - a prompt that can be sent into the service and the user since we need the userId
+        // Arrange
         await using var db = CreateDbContext();
-        var seeded =  await UserSeeder.SeedAsync(db, Seed);
-        var prompt = Guid.NewGuid().ToString();
-        var service = new ImageService(db);
-        var request = new PostImagePromptDTO{ Prompt = prompt };
-        db.ChangeTracker.Clear();
-        
+        var handler = new FakeHttpHandler(HttpStatusCode.OK);
+        var service = CreateService(db, handler);
+        var request = new PostImagePromptDTO { Prompt = "a giraffe" };
+
         // Act
-        var result = await service.GenerateImage(request, seeded.User.Id);
-        
+        var ticketId = await service.GenerateImage(request, userId: 7);
+
         // Assert
-        Assert.NotNull(result);
-        Assert.False(string.IsNullOrEmpty(result!.TicketId));
-        Assert.Equal(request.Prompt, result.Prompt);
-        Assert.Equal(seeded.User.Id, result.UserId);
+        Assert.False(string.IsNullOrEmpty(ticketId));
+        Assert.Equal("http://ai.test/generate", handler.LastRequest!.RequestUri!.ToString());
+
+        var sent = JsonSerializer.Deserialize<AiGenerationRequestDTO>(
+            handler.LastBody!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Assert.Equal("a giraffe", sent!.Prompt);
+        Assert.Equal(7, sent.UserId);
+        Assert.Equal(ticketId, sent.TicketId);
     }
     
     [Fact]
-    public async Task PostIsImageInappropriateImageGeneration_ReturnsTicketIdAndInapropiate()
+    public async Task GenerateImage_ReturnsNull_WhenAiBackendFails()
     {
         // Arrange
         await using var db = CreateDbContext();
-        var service =  new ImageService(db);
-        // A request the AI backend will send with a ticketId and inappropiate is true
-        var request = new InappropiateImageDTO { Inappropiate = true, TicketId = Guid.NewGuid().ToString() };
-        
+        var service = CreateService(db, new FakeHttpHandler(HttpStatusCode.InternalServerError));
+
         // Act
-        var result = await service.InappropiateImage(request);
-        
+        var ticketId = await service.GenerateImage(new PostImagePromptDTO { Prompt = "a giraffe" }, userId: 7);
+
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(request.TicketId, result.TicketId);
-        Assert.True(result.Inappropiate);
+        Assert.Null(ticketId);
     }
 
     [Fact]
-    public async Task PostIsImageInappropriateImageGeneration_ReturnsNull_WhenSendingNoTicketId()
+    public async Task IsImageDone_ReturnsInappropriate_AfterMarkInappropriate()
     {
+        // Arrange
         await using var db = CreateDbContext();
-        var service = new ImageService(db);
-        var request = new InappropiateImageDTO { Inappropiate = true, TicketId = null };
+        var service = CreateService(db);
+        var ticketId = Guid.NewGuid().ToString();
 
-        var result = await service.InappropiateImage(request);
+        // Act - make a service call that sets the imageStatus to Inappropriate
+        service.MarkInappropriate(ticketId);
+        var result = await service.IsImageDone(ticketId);
 
-        Assert.Null(result);
+        // Assert
+        Assert.Equal(ImageStatus.Inappropriate, result.Status);
     }
     
     [Fact]
-    public async Task PostIsImageInappropriateImageGeneration_ReturnsNull_WhenSendingFalseInappropiate()
+    public async Task GenerateImage_ForcesCitizenAsOwner_WhenUserIsCitizen()
     {
+        // Arrange - seed a citizen, send a prompt that tries to target an organization
         await using var db = CreateDbContext();
-        var service = new ImageService(db);
-        var request = new InappropiateImageDTO { Inappropiate = false, TicketId = Guid.NewGuid().ToString() };
+        var seededCitizen = await CitizenSeeder.SeedAsync(db, Seed);
+        var handler = new FakeHttpHandler();
+        var service = CreateService(db, handler);
+        var request = new PostImagePromptDTO { Prompt = "a giraffe", OrganizationId = 99, ClassId = 42 };
+        
+        // Act - call GenerateImage with userId = citizen.Id
+        var result = await service.GenerateImage(request, userId: seededCitizen.Id);
 
-        var result = await service.InappropiateImage(request);
-
-        Assert.Null(result);
+        // Assert - the classId and OrgId is set to null even though the citizen tries to send some Id's with
+        Assert.NotNull(result);
+        var sent = JsonSerializer.Deserialize<AiGenerationRequestDTO>(
+            handler.LastBody!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        // Assert that the expected Id is the exact id thats sent
+        Assert.Equal(seededCitizen.Id, sent!.CitizenId);
+        Assert.Null(sent.ClassId);
+        Assert.Null(sent.OrganizationId);
     }
 }

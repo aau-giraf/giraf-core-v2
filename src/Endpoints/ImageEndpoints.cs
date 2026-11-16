@@ -56,6 +56,5 @@ public static class ImageEndpoints
         var image = await imageService.CreateImagesAsync(imageRequest);
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
     }
-
 }
 public record CreateImageRequest(string Name, int OrganizationId, int? CitizenId, string StorageKey, string FileName, string FileType, long SizeBytes);

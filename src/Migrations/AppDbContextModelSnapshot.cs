@@ -86,7 +86,6 @@ namespace giraf_core_v2.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("TicketId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TitleEn")
@@ -97,6 +96,9 @@ namespace giraf_core_v2.Migrations
                     b.HasIndex("CitizenId");
 
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("TicketId")
+                        .IsUnique();
 
                     b.ToTable("Image");
                 });

@@ -43,5 +43,7 @@ public sealed class ImageConfiguration : IEntityTypeConfiguration<Image>
         builder.HasOne(image => image.Organization)
             .WithMany(organization => organization.Images)
             .HasForeignKey(image => image.OrganizationId);
+        
+        builder.HasIndex(image => image.TicketId).IsUnique();
     }
 }
