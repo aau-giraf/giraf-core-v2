@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 public class PostImageDTOTest(ITestOutputHelper output) : TestBase(output)
 {
+    private readonly ImageSeeder _imageSeeder = new();
 
     [Theory]
     [InlineData(true, false, false)]
@@ -47,21 +48,21 @@ public class PostImageDTOTest(ITestOutputHelper output) : TestBase(output)
     [InlineData("webp")]
     public void Validate_PassesWithCorrectFileExt(string ext)
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed, citizenId: null, classId: null, ext: ext);
+        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null, Ext: ext));
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
     public void Validate_FailsWithIncorrectFileExt()
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed, citizenId: null, classId: null);
+        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null));
         Assert.Single(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
     public void Validate_FailsMultipleErrorsInDTO()
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed);
+        var dto = _imageSeeder.CreateRequestBody(Seed);
         var results = dto.Validate(new ValidationContext(dto)).ToList();
         Assert.Multiple(() =>
         {
