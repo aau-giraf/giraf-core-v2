@@ -29,24 +29,16 @@ public class OrganizationService(AppDbContext db)
         .FirstOrDefaultAsync();
     }
 
-    // Delete organization by org_id from Route parameter
-    public async Task<bool> DeleteOrganizationAsync(int orgId)
+    public async Task<(OrganizationServiceResult, ClassResponseDTO?)> GetClassInOrganizationAsync(int organizationId, int classId)
     {
-        // Fetch organization and delete it
-        if (await _db.Organizations.AnyAsync(o => o.Id == orgId))
-        {
-            var organization = await _db.Organizations
-            .FindAsync(orgId);
+        // Check that the specified organization exists.
+        bool organizationExists = await _db.Organizations
+            .AnyAsync(o => o.Id == organizationId);
 
-            if (organization!.Id == orgId && organization is not null)
-            {
-                _db.Organizations.Remove(organization);
-                await _db.SaveChangesAsync();
-                return true;
-            }
+        if (!organizationExists)
+        {
+            return (OrganizationServiceResult.OrganizationNotFound, null);
         }
-        return false;
-    }
 
         // Attempt to fetch the class.
         var organizationClass = await _db.Classes
