@@ -13,7 +13,7 @@ public static class LegacyClassEndpoints
 
     private static async Task<List<ClassroomResponseDTO>> GetAllClassrooms(OrganizationService organizationService)
     {
-        // as of now, there only exists a single organization, so org_id = 1 is hardcoded. The tests for this method is structured to fail if there suddenly exists additional organizations
+        // as of now, there only exists a single organization, so org_id = 1 is hardcoded.
         var classrooms = await organizationService.GetClassesInOrganizationAsync(1);
         return classrooms.Select(c => new ClassroomResponseDTO
         {
