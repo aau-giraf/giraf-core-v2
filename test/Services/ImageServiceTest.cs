@@ -68,9 +68,9 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         await using var db = CreateDbContext();
         var citizen = await _userSeeder.SeedAsync(db, Seed);
         List<ImageOptions> opt = [
-            new(ClassId: null, OrgId: null, CitizenId: citizen.User.Id),
-            new(ClassId: null, OrgId: null, CitizenId: citizen.User.Id),
-            new(ClassId: null, OrgId: null, CitizenId: citizen.User.Id)
+            new(ClassId: null, CitizenId: citizen.User.Id),
+            new(ClassId: null, CitizenId: citizen.User.Id),
+            new(ClassId: null, CitizenId: citizen.User.Id)
         ];
         var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, opt);
         var service = new ImageService(db);
@@ -104,15 +104,15 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var citizen2 = await _userSeeder.SeedAsync(db, Seed + _seedOffset);
 
         List<ImageOptions> opt1 = [
-            new(ClassId: null, OrgId: null, CitizenId: citizen1.User.Id),
-            new(ClassId: null, OrgId: null, CitizenId: citizen1.User.Id),
-            new(ClassId: null, OrgId: null, CitizenId: citizen1.User.Id)
+            new(ClassId: null, CitizenId: citizen1.User.Id),
+            new(ClassId: null, CitizenId: citizen1.User.Id),
+            new(ClassId: null, CitizenId: citizen1.User.Id)
         ];
 
         List<ImageOptions> opt2 = [
-            new(ClassId: null, OrgId: null, CitizenId: citizen2.User.Id),
-            new(ClassId: null, OrgId: null, CitizenId: citizen2.User.Id),
-            new(ClassId: null, OrgId: null, CitizenId: citizen2.User.Id)
+            new(ClassId: null, CitizenId: citizen2.User.Id),
+            new(ClassId: null, CitizenId: citizen2.User.Id),
+            new(ClassId: null, CitizenId: citizen2.User.Id)
         ];
 
         var seededImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt1);

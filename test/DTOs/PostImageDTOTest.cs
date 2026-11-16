@@ -62,7 +62,7 @@ public class PostImageDTOTest(ITestOutputHelper output) : TestBase(output)
     [Fact]
     public void Validate_FailsMultipleErrorsInDTO()
     {
-        var dto = _imageSeeder.CreateRequestBody(Seed);
+        var dto = _imageSeeder.CreateRequestBody(Seed, new());
         var results = dto.Validate(new ValidationContext(dto)).ToList();
         Assert.Multiple(() =>
         {
