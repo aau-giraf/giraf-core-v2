@@ -200,7 +200,7 @@ public class UserServiceTest : TestBase
 
         var service = new UserService(db);
 
-         // A non-existing user belongs to no organization, so the admin check fails before the lookup
+        // A non-existing user belongs to no organization, so the admin check fails before the lookup
         Assert.Equal(UserServiceResult.Forbidden, await service.DeleteCurrentUserAsync(admin.Id, nonExistingId));
     }
 

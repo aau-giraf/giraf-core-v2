@@ -66,7 +66,7 @@ public static class UserEndpoints
         };
     }
 
-    public static async Task<Results<NoContent, Conflict<string>, BadRequest<string>>> UpdateUserEmail (UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateUserEmailDTO updateEmail)
+    public static async Task<Results<NoContent, Conflict<string>, BadRequest<string>>> UpdateUserEmail(UserService userService, ClaimsPrincipal currentUser, [FromBody] UpdateUserEmailDTO updateEmail)
     {
         var result = await userService.UpdateUserEmailAsync(GetCurrentUserId(currentUser), updateEmail);
 
