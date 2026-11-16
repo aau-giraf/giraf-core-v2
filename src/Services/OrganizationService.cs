@@ -17,9 +17,9 @@ public class OrganizationService(AppDbContext db)
             .ToListAsync();
     }
 
-    public async Task<OrganizationResponseDTO?> GetOrganizationByIdAsync(int organizationId)
+    public async Task<(OrganizationServiceResult, OrganizationResponseDTO?)> GetOrganizationByIdAsync(int organizationId)
     {
-        return await _db.Organizations
+        OrganizationResponseDTO? organization = await _db.Organizations
         .Where(o => o.Id == organizationId)
         .Select(o => new OrganizationResponseDTO
         {
@@ -27,6 +27,13 @@ public class OrganizationService(AppDbContext db)
             Name = o.Name,
         })
         .FirstOrDefaultAsync();
+
+        if (organization is null)
+        {
+            return (OrganizationServiceResult.OrganizationNotFound, null);
+        }
+
+        return (OrganizationServiceResult.Success, organization);
     }
 
     public async Task<(OrganizationServiceResult, ClassResponseDTO?)> GetClassInOrganizationAsync(int organizationId, int classId)

@@ -40,11 +40,16 @@ public static class OrganizationEndpoints
         return TypedResults.Ok(organizations);
     }
 
-    private static async Task<Results<Ok<OrganizationResponseDTO>, NotFound<string>>> GetOrganizationById(int organizationId, OrganizationService organizationService)
+    private static async Task<Results<Ok<OrganizationResponseDTO>, NotFound<string>, InternalServerError>> GetOrganizationById(int organizationId, OrganizationService organizationService)
     {
-        var organization = await organizationService.GetOrganizationByIdAsync(organizationId); // TODO: ensart ved at bruge OrgServiceResult?
+        (OrganizationServiceResult, OrganizationResponseDTO?) response = await organizationService.GetOrganizationByIdAsync(organizationId);
 
-        return organization == null ? TypedResults.NotFound($"Organization with ID {organizationId} not found.") : TypedResults.Ok(organization);
+        return response switch
+        {
+            (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
+            (OrganizationServiceResult.Success, OrganizationResponseDTO organizationResponseDto) => TypedResults.Ok(organizationResponseDto),
+            _ => TypedResults.InternalServerError(),
+        };
     }
 
     private static async Task<Results<Ok<ClassResponseDTO>, NotFound<string>, InternalServerError>> GetClassInOrganization(int organizationId, int classId, OrganizationService organizationService)
