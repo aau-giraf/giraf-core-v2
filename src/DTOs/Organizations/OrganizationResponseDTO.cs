@@ -7,7 +7,7 @@ using Microsoft.Extensions.Validation;
 public class OrganizationResponseDTO
 {
     [Required]
-    public required int Id { get; set; }
+    public required int OrganizationId { get; set; }
 
     [Required]
     [Length(3, 255)]
