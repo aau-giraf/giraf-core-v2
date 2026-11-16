@@ -9,6 +9,8 @@ global using giraf_core_v2.Services;
 
 global using Microsoft.AspNetCore.Mvc.Testing;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Http;
+
 
 
 global using Xunit.Abstractions;
