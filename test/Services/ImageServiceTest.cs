@@ -6,33 +6,6 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     private readonly ClassSeeder _classSeeder = new();
 
     [Fact]
-    public async Task GetAllImagesAsync_ReturnsAllImages()
-    {
-        await using var db = CreateDbContext();
-        var images = await _imageSeeder.SeedManyAsync(db, Seed, 3);
-        var expectedIds = images.Select(s => s.Id).OrderBy(id => id).ToList();
-
-        var service = new ImageService(db);
-
-        var result = await service.GetAllImagesAsync();
-
-        Assert.Equal(3, result.Count);
-        Assert.Equal(expectedIds, result.Select(i => i.Id).OrderBy(id => id));
-    }
-
-    [Fact]
-    public async Task GetAllImagesAsync_ReturnsEmptyList_WhenNoImages()
-    {
-        await using var db = CreateDbContext();
-        var service = new ImageService(db);
-
-        var result = await service.GetAllImagesAsync();
-
-        Assert.NotNull(result);
-        Assert.Empty(result);
-    }
-
-    [Fact]
     public async Task GetIDInImagesAsync_ReturnsImage_WhenImageExists()
     {
         await using var db = CreateDbContext();
@@ -141,6 +114,169 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.NotNull(result);
         Assert.Empty(result);
     }
+
+    [Fact]
+    public async Task GetImagesByClassIdAsync_ClassFound_HasNoImages()
+    {
+        await using var db = CreateDbContext();
+        var class_ = await _classSeeder.SeedAsync(db, seed: Seed);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(class_.Id);
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetImagesByClassIdAsync_returnsTheListOfImages()
+    {
+        await using var db = CreateDbContext();
+        var class_ = await _classSeeder.SeedAsync(db, Seed);
+        List<ImageOptions> opt = [
+            new(ClassId: class_.Id, CitizenId: null),
+            new(ClassId: class_.Id, CitizenId: null),
+            new(ClassId: class_.Id, CitizenId: null)
+        ];
+        var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, opt);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(class_.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result!.Count);
+        Assert.Equal(
+            images.Select(x => x.Id).OrderBy(id => id),
+            result.Select(i => i.Id).OrderBy(id => id)
+        );
+    }
+
+    [Fact]
+    public async Task GetImagesByClassIdAsync_ClassNotFound_ReturnsNull()
+    {
+        await using var db = CreateDbContext();
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(42);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetImagesByClassIdAsync_ReturnsOnlyImagesRelatedToClass()
+    {
+        await using var db = CreateDbContext();
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2);
+        var class1 = classes[0];
+        var class2 = classes[1];
+
+        List<ImageOptions> opt1 = [
+            new(ClassId: class1.Id, CitizenId: null),
+            new(ClassId: class1.Id, CitizenId: null),
+            new(ClassId: class1.Id, CitizenId: null)
+        ];
+
+        List<ImageOptions> opt2 = [
+            new(ClassId: class2.Id, CitizenId: null),
+            new(ClassId: class2.Id, CitizenId: null),
+            new(ClassId: class2.Id, CitizenId: null)
+        ];
+
+        var seededImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt1);
+        var irrelevantImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt2);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(class1.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result!.Count);
+        Assert.Equal(
+            seededImages.Select(x => x.Id).OrderBy(id => id),
+            result.Select(i => i.Id).OrderBy(id => id)
+        );
+    }
+
+    [Fact]
+    public async Task GetImagesByOrganizationIdAsync_OrganizationFound_HasNoImages()
+    {
+        await using var db = CreateDbContext();
+        var organization = await _orgSeeder.SeedAsync(db, seed: Seed);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(organization.Id);
+
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetImagesByOrganizationIdAsync_returnsTheListOfImages()
+    {
+        await using var db = CreateDbContext();
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        List<ImageOptions> opt = [
+            new(ClassId: null, CitizenId: null, OrgId: organization.Id),
+            new(ClassId: null, CitizenId: null, OrgId: organization.Id),
+            new(ClassId: null, CitizenId: null, OrgId: organization.Id)
+        ];
+        var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, opt);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(organization.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result!.Count);
+        Assert.Equal(
+            images.Select(x => x.Id).OrderBy(id => id),
+            result.Select(i => i.Id).OrderBy(id => id)
+        );
+    }
+
+    [Fact]
+    public async Task GetImagesByOrganizationIdAsync_OrganizationNotFound_ReturnsNull()
+    {
+        await using var db = CreateDbContext();
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(42);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetImagesByOrganizationIdAsync_ReturnsOnlyImagesRelatedToOrganization()
+    {
+        await using var db = CreateDbContext();
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organization1 = organizations[0];
+        var organization2 = organizations[1];
+
+        List<ImageOptions> opt1 = [
+            new(ClassId: null, CitizenId: null, OrgId: organization1.Id),
+            new(ClassId: null, CitizenId: null, OrgId: organization1.Id),
+            new(ClassId: null, CitizenId: null, OrgId: organization1.Id)
+        ];
+
+        List<ImageOptions> opt2 = [
+            new(ClassId: null, CitizenId: null, OrgId: organization2.Id),
+            new(ClassId: null, CitizenId: null, OrgId: organization2.Id),
+            new(ClassId: null, CitizenId: null, OrgId: organization2.Id)
+        ];
+
+        var seededImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt1);
+        var irrelevantImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt2);
+        var service = new ImageService(db);
+
+        var result = await service.GetImagesByClassIdAsync(organization1.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result!.Count);
+        Assert.Equal(
+            seededImages.Select(x => x.Id).OrderBy(id => id),
+            result.Select(i => i.Id).OrderBy(id => id)
+        );
+    }
+
 
     [Fact]
     public async Task DeleteImageAsync_DeleteImage()
