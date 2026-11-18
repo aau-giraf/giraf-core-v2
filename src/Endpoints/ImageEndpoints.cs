@@ -30,13 +30,6 @@ public static class ImageEndpoints
         return images is null ? TypedResults.NotFound() : TypedResults.Ok(images);
     }
 
-    // GET all images
-    private static async Task<Ok<List<Image>>> GetAllImages(ImageService imageService)
-    {
-        var images = await imageService.GetAllImagesAsync();
-        return TypedResults.Ok(images);
-    }
-
     // DELETE image by ID
     private static async Task<Results<NoContent, NotFound>> DeleteImage(int image_id, ImageService imageService)
     {

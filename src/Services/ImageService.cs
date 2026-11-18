@@ -24,12 +24,6 @@ public class ImageService(AppDbContext db)
             .ToListAsync();
     }
 
-    public async Task<List<Image>> GetAllImagesAsync()
-    {
-        return await _db.Images
-            .AsNoTracking()
-            .ToListAsync();
-    }
 
     public async Task<bool> DeleteImageAsync(int image_id)
     {
