@@ -233,7 +233,7 @@ public class UserServiceTest : TestBase
         Assert.Equal(fetchedUser!.Id, user.Id);
         Assert.Equal(fetchedUser!.FirstName, user.FirstName);
         Assert.Equal(fetchedUser!.LastName, user.LastName);
-        Assert.Equal(fetchedUser!.Username, user.Username);
+        Assert.Equal(fetchedUser!.UserName, user.Username);
 
     }
 
@@ -285,9 +285,9 @@ public class UserServiceTest : TestBase
 
         Assert.Equal(0, result);
 
-        user = await service.GetCurrentUserAsync(user.Id);
-
-        Assert.NotEqual(user!.Password, newPassword);
+        var afterCallUser = await db.Users.SingleAsync(u => u.Id == user.Id);
+        Assert.True(BCrypt.Net.BCrypt.Verify(password, afterCallUser.Password));
+        Assert.False(BCrypt.Net.BCrypt.Verify(newPassword, afterCallUser.Password));
     }
 
     [Fact]
@@ -297,6 +297,7 @@ public class UserServiceTest : TestBase
 
         var SeededUser = await UserSeeder.SeedAsync(db, Seed);
         var user = SeededUser.User;
+        var password = SeededUser.PlainPassword;
 
         Assert.NotNull(user);
 
@@ -313,9 +314,9 @@ public class UserServiceTest : TestBase
 
         Assert.Equal(1, result);
 
-        user = await service.GetCurrentUserAsync(user.Id);
-
-        Assert.NotEqual(user!.Password, newPassword);
+        var afterCallUser = await db.Users.SingleAsync(u => u.Id == user.Id);
+        Assert.True(BCrypt.Net.BCrypt.Verify(password, afterCallUser.Password));
+        Assert.False(BCrypt.Net.BCrypt.Verify(newPassword, afterCallUser.Password));
     }
 
     [Fact]

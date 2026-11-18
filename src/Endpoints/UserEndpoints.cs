@@ -27,7 +27,7 @@ public static class UserEndpoints
         return int.Parse(currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new Exception("User ID not found in JWT claim!"));
     }
 
-    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider, ClaimsPrincipal currentUser)
+    private static async Task<Results<Ok<GetCurrentUserDTO>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider, ClaimsPrincipal currentUser)
     {
         var user = await userService.GetCurrentUserAsync(GetCurrentUserId(currentUser));
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);

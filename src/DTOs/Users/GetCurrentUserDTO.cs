@@ -1,23 +1,24 @@
 using System.ComponentModel.DataAnnotations;
 
-public class CurrentUserDTO
+public class GetCurrentUserDTO
 {
     [Required]
     public int Id { get; init; }
 
     [Required]
     [MaxLength(255)]
-    public required string Firstname { get; init; }
+    public required string FirstName { get; init; }
 
     [Required]
     [MaxLength(255)]
-    public required string Lastname { get; init; }
+    public required string LastName { get; init; }
 
     [Required]
     [MaxLength(255)]
-    public required string Username { get; init; }
+    public required string UserName { get; init; }
 
     [MaxLength(255)]
+    [ValidEmail]
     public string? Email { get; set; }
     
     [Required]

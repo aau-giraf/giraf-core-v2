@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Validation;
 
@@ -9,30 +8,20 @@ public partial class UpdateUserEmailDTO : IValidatableObject
 {
     [Required]
     [MaxLength(255)]
+    [ValidEmail]
     public required string NewEmail { get; set; }
 
     [Required]
     [MaxLength(255)]
+    [ValidEmail]
     public required string OldEmail { get; set; }
 
     [Required]
     [Length(8, 255)]
     public required string Password { get; set; }
 
-    [GeneratedRegex(@"^[\p{L}0-9._%+-]+@[\p{L}0-9.-]+\.\p{L}{2,}$")]
-    private static partial Regex EmailRegex();
-
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (string.IsNullOrEmpty(NewEmail) || string.IsNullOrEmpty(OldEmail))
-            yield break;
-
-        if (!EmailRegex().IsMatch(OldEmail))
-            yield return new ValidationResult("Invalid email.", [nameof(OldEmail)]);
-
-        if (!EmailRegex().IsMatch(NewEmail))
-            yield return new ValidationResult("Invalid email.", [nameof(NewEmail)]);
-
         if (string.Equals(OldEmail, NewEmail, StringComparison.OrdinalIgnoreCase))
             yield return new ValidationResult(
                 "The new email must be different from the old one",

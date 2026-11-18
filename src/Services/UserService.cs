@@ -36,9 +36,33 @@ public class UserService(AppDbContext db)
         return await _db.Users.OfType<Citizen>().AnyAsync(c => c.Id == targetUserId && adminOrgIds.Contains(c.Class!.OrganizationId));
     }
 
-    public async Task<User?> GetCurrentUserAsync(int id)
+    public async Task<GetCurrentUserDTO?> GetCurrentUserAsync(int id)
     {
-        return await _db.Users.FindAsync(id);
+        var user = await _db.Users.FindAsync(id);
+
+        if (user is null)
+            return null;
+
+        List<int> organizationIds = user is Citizen 
+            ? await _db.Users.OfType<Citizen>()
+                .Where(c => c.Id == id && c.Class != null)
+                .Select(c => c.Class!.OrganizationId)
+                .ToListAsync()
+            : await _db.UserRoles
+                .Where(r => r.NonCitizenId == id)
+                .Select(r => r.OrganizationId)
+                .Distinct() // If a user has multiple roles in the same organization, we only want to return the organization once
+                .ToListAsync();
+
+        return new GetCurrentUserDTO
+        {
+            Id = user.Id,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            UserName = user.Username,
+            Email = user is NonCitizen nonCitizen ? nonCitizen.Email : null,
+            OrganizationIds = organizationIds
+        };
     }
 
     public async Task<UserServiceResult> DeleteCurrentUserAsync(int callerId, int id)
