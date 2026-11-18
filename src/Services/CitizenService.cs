@@ -4,9 +4,9 @@ public class CitizenService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<GetCitizenResponseDTO?> GetCitizenAsync(int userId)
+    public async Task<GetCitizenResponseDTO?> GetCitizenAsync(int citizenId)
     {
-        var citizen = await _db.Citizens.FindAsync(userId);
+        var citizen = await _db.Citizens.FindAsync(citizenId);
 
         if (citizen is null)
         {
@@ -36,8 +36,8 @@ public class CitizenService(AppDbContext db)
             Username = dto.Username,
         };
 
-        var class_ = await _db.Classes.FindAsync(dto.ClassId);
-        if (class_ is null)
+        var schoolClass = await _db.Classes.FindAsync(dto.ClassId);
+        if (schoolClass is null)
         {
             return null;
         }
@@ -55,9 +55,9 @@ public class CitizenService(AppDbContext db)
         };
     }
 
-    public async Task<GetCitizenResponseDTO?> PatchCitizenAsync(int userId, UpdateCitizenRequestDTO dto)
+    public async Task<GetCitizenResponseDTO?> PatchCitizenAsync(int citizenId, UpdateCitizenRequestDTO dto)
     {
-        var citizen = await _db.Citizens.FindAsync(userId);
+        var citizen = await _db.Citizens.FindAsync(citizenId);
 
         if (citizen is null)
         {

@@ -180,9 +180,9 @@ public class NonCitizenService(AppDbContext db)
         foreach (UserRole userRole in userRoles)
         {
             var roleString = userRole.Role.ToString();
-            var orgString = userRole.OrganizationId.ToString();
-            var roleOrgString = roleString + "|" + orgString;
-            roleOrganizationTuples.Add(roleOrgString);
+            var organizationIdText = userRole.OrganizationId.ToString();
+            var roleOrganizationText = roleString + "|" + organizationIdText;
+            roleOrganizationTuples.Add(roleOrganizationText);
         }
 
         return new NonCitizenUserRolesResponseDTO
@@ -269,9 +269,9 @@ public class NonCitizenService(AppDbContext db)
         foreach (var userRole in userRoles)
         {
             var roleString = userRole.Role.ToString();
-            var orgString = userRole.OrganizationId.ToString();
-            var roleOrgString = roleString + "|" + orgString;
-            roleOrganizationTuples.Add(roleOrgString);
+            var organizationIdText = userRole.OrganizationId.ToString();
+            var roleOrganizationText = roleString + "|" + organizationIdText;
+            roleOrganizationTuples.Add(roleOrganizationText);
         }
 
         // Return in correct format

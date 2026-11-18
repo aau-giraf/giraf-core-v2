@@ -373,7 +373,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username,
@@ -396,7 +396,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username,
@@ -415,7 +415,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username + "wrong-name",
@@ -434,7 +434,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username,

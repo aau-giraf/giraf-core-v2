@@ -72,7 +72,7 @@ public static class UserEndpoints
         [FromBody] LoginRequestDTO loginRequestDTO
     )
     {
-        var loginResponse = await userService.Login(loginRequestDTO);
+        var loginResponse = await userService.LoginAsync(loginRequestDTO);
 
         if (loginResponse is null)
         {

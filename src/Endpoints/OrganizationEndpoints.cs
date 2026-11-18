@@ -97,7 +97,7 @@ public static class OrganizationEndpoints
 
     private static async Task<Results<NotFound, NoContent, Created<PutUserRoleResponseDTO>>> PutUserRoleAsync(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        (int, UserRole?) status = await organizationService.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
+        (int, UserRole?) status = await organizationService.CreateOrUpdateUserRoleAsync(organizationId, nonCitizenId, role);
         return status switch
         {
             (-1, null) => TypedResults.NotFound(),
