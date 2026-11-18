@@ -33,7 +33,6 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    // TODO: lorte test, fiks
     public async Task PatchNonCitizen_PatchesCorrectNonCitizen()
     {
         //----- ARRANGE -----\\
@@ -41,13 +40,14 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         List<UserOptions> opt = [new(Type: UserType.NonCitizen), new(Type: UserType.NonCitizen)];
         var seededNonCitizens = await _userSeeder.SeedManyAsync(db, Seed, 2, opt);
+
         var nonCitizen = Assert.IsType<NonCitizen>(seededNonCitizens[0].User);
         var ogPassword = seededNonCitizens[0].PlainPassword;
 
-        string newEmail = "asdkljgn@mail.com";
-
         NonCitizen differentNonCitizen = Assert.IsType<NonCitizen>(seededNonCitizens[1].User);
         string differentNonCitizenPassword = seededNonCitizens[1].PlainPassword;
+
+        string newEmail = new Bogus.Faker().Internet.Email();
 
         var service = new NonCitizenService(db);
 
@@ -61,17 +61,20 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
                 Username = differentNonCitizen.Username,
                 Email = newEmail,
                 OldPassword = ogPassword,
-                NewPassword = differentNonCitizen.Password,
+                NewPassword = differentNonCitizenPassword,
             });
 
         //----- ASSERT -----\\
         Assert.NotNull(fetchedNonCitizen.Item2);
         Assert.Equal(nonCitizen.Id, fetchedNonCitizen.Item2!.Id);
         Assert.Equal(differentNonCitizen.FirstName, fetchedNonCitizen.Item2.FirstName);
-        Assert.Equal(differentNonCitizen.LastName, fetchedNonCitizen!.Item2.LastName);
-        Assert.Equal(differentNonCitizen.Username, fetchedNonCitizen!.Item2.Username);
-        Assert.Equal(newEmail, fetchedNonCitizen!.Item2.Email);
-        Assert.True(BCrypt.Net.BCrypt.Verify(differentNonCitizenPassword, fetchedNonCitizen.Item2.Password));
+        Assert.Equal(differentNonCitizen.LastName, fetchedNonCitizen.Item2.LastName);
+        Assert.Equal(differentNonCitizen.Username, fetchedNonCitizen.Item2.Username);
+        Assert.Equal(newEmail, fetchedNonCitizen.Item2.Email);
+        // EFCore makes seededNonCitizens a reference, so no need to fetch again after update.
+        Assert.True(BCrypt.Net.BCrypt.Verify(
+            differentNonCitizenPassword,
+            seededNonCitizens[0].User.Password));
     }
 
 
