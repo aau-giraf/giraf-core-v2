@@ -1,22 +1,23 @@
-using Xunit.Abstractions;
-
-public class ImageServiceTest : TestBase
+public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    public ImageServiceTest(ITestOutputHelper output) : base(output) { }
+    private readonly ImageSeeder _imageSeeder = new();
+    private readonly UserSeeder _userSeeder = new();
+    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly ClassSeeder _classSeeder = new();
 
     [Fact]
     public async Task GetAllImagesAsync_ReturnsAllImages()
     {
         await using var db = CreateDbContext();
-        var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 3);
-        var expectedIds = seededImages.Select(s => s.Image.Id).OrderBy(id => id).ToList();
+        var images = await _imageSeeder.SeedManyAsync(db, Seed, 3);
+        var expectedIds = images.Select(s => s.Id).OrderBy(id => id).ToList();
 
         var service = new ImageService(db);
 
         var result = await service.GetAllImagesAsync();
 
         Assert.Equal(3, result.Count);
-        Assert.Equal(expectedIds, result.Select(i => i.Id).OrderBy(id => id).ToList());
+        Assert.Equal(expectedIds, result.Select(i => i.Id).OrderBy(id => id));
     }
 
     [Fact]
@@ -36,9 +37,7 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var seededImage = await ImageSeeder.SeedAsync(db, Seed);
-
-        var image = seededImage.Image;
+        var image = await _imageSeeder.SeedAsync(db, Seed);
 
         var service = new ImageService(db);
 
@@ -66,16 +65,21 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
     {
         await using var db = CreateDbContext();
-        var citizen = await CitizenSeeder.SeedAsync(db, seed: 1);
-        var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, count: 3, citizen.Id);
+        var citizen = await _userSeeder.SeedAsync(db, Seed);
+        List<ImageOptions> opt = [
+            new(ClassId: null, CitizenId: citizen.User.Id),
+            new(ClassId: null, CitizenId: citizen.User.Id),
+            new(ClassId: null, CitizenId: citizen.User.Id)
+        ];
+        var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, opt);
         var service = new ImageService(db);
 
-        var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
+        var result = await service.GetImagesByCitizenIdAsync(citizen.User.Id);
 
         Assert.NotNull(result);
         Assert.Equal(3, result!.Count);
         Assert.Equal(
-            seededImages.Select(x => x.Image.Id).OrderBy(id => id),
+            images.Select(x => x.Id).OrderBy(id => id),
             result.Select(i => i.Id).OrderBy(id => id)
         );
     }
@@ -95,18 +99,32 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_ReturnsOnlyImagesRelatedToCitizen()
     {
         await using var db = CreateDbContext();
-        var citizen1 = await CitizenSeeder.SeedAsync(db, seed: Seed + 1);
-        var citizen2 = await CitizenSeeder.SeedAsync(db, seed: Seed + 2);
-        var seededImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen1.Id);
-        var irrelevantImages = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: 1, count: 3, citizen2.Id);
+        var citizens = await _userSeeder.SeedManyAsync(db, Seed, 2);
+        var citizen1 = citizens[0];
+        var citizen2 = citizens[1];
+
+        List<ImageOptions> opt1 = [
+            new(ClassId: null, CitizenId: citizen1.User.Id),
+            new(ClassId: null, CitizenId: citizen1.User.Id),
+            new(ClassId: null, CitizenId: citizen1.User.Id)
+        ];
+
+        List<ImageOptions> opt2 = [
+            new(ClassId: null, CitizenId: citizen2.User.Id),
+            new(ClassId: null, CitizenId: citizen2.User.Id),
+            new(ClassId: null, CitizenId: citizen2.User.Id)
+        ];
+
+        var seededImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt1);
+        var irrelevantImages = await _imageSeeder.SeedManyAsync(db, Seed, count: 3, opt2);
         var service = new ImageService(db);
 
-        var result = await service.GetImagesByCitizenIdAsync(citizen1.Id);
+        var result = await service.GetImagesByCitizenIdAsync(citizen1.User.Id);
 
         Assert.NotNull(result);
         Assert.Equal(3, result!.Count);
         Assert.Equal(
-            seededImages.Select(x => x.Image.Id).OrderBy(id => id),
+            seededImages.Select(x => x.Id).OrderBy(id => id),
             result.Select(i => i.Id).OrderBy(id => id)
         );
     }
@@ -115,11 +133,10 @@ public class ImageServiceTest : TestBase
     public async Task GetImagesByCitizenIdAsync_UserFound_HasNoImages()
     {
         await using var db = CreateDbContext();
-        var citizen = await CitizenSeeder.SeedAsync(db, seed: Seed);
-        var seeded = await ImageSeeder.SeededManyForCitizenImagesAsync(db, seed: Seed, 0, citizen.Id);
+        var citizen = await _userSeeder.SeedAsync(db, seed: Seed);
         var service = new ImageService(db);
 
-        var result = await service.GetImagesByCitizenIdAsync(citizen.Id);
+        var result = await service.GetImagesByCitizenIdAsync(citizen.User.Id);
 
         Assert.NotNull(result);
         Assert.Empty(result);
@@ -130,8 +147,7 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var seededImage = await ImageSeeder.SeedAsync(db, Seed);
-        var image = seededImage.Image;
+        var image = await _imageSeeder.SeedAsync(db, Seed);
         var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(dir);
         try
@@ -156,9 +172,9 @@ public class ImageServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var seededImages = await ImageSeeder.SeedManyAsync(db, Seed, 2);
-        var image1 = seededImages[0].Image;
-        var image2 = seededImages[1].Image;
+        var images = await _imageSeeder.SeedManyAsync(db, Seed, 2);
+        var image1 = images[0];
+        var image2 = images[1];
 
         var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(dir);
@@ -205,8 +221,8 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostImage()
     {
         await using var db = CreateDbContext();
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -235,8 +251,8 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_PostsTheRightImage()
     {
         await using var db = CreateDbContext();
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -267,10 +283,10 @@ public class ImageServiceTest : TestBase
     public async Task FindOrganizationAsync_requestKnowingCitizenId()
     {
         await using var db = CreateDbContext();
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var citizen = await CitizenSeeder.SeedAsync(db, Seed, class_.Id);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, classId: null, citizenId: citizen.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var citizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizen.User.Id));
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -278,7 +294,7 @@ public class ImageServiceTest : TestBase
         {
             Assert.NotNull(created);
             Assert.Equal(request.Name, created!.Name);
-            Assert.Equal(citizen.Id, created.CitizenId);
+            Assert.Equal(citizen.User.Id, created.CitizenId);
             Assert.Null(created.ClassId);
             Assert.Equal(class_.Id, created.OrganizationId);
             Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
@@ -288,7 +304,7 @@ public class ImageServiceTest : TestBase
             Assert.NotNull(stored);
             Assert.Equal(created.Path, stored!.Path);
             Assert.Null(stored.ClassId);
-            Assert.Equal(citizen.Id, stored.CitizenId);
+            Assert.Equal(citizen.User.Id, stored.CitizenId);
             Assert.Equal(class_.OrganizationId, stored.OrganizationId);
         }
         finally
@@ -304,9 +320,9 @@ public class ImageServiceTest : TestBase
     public async Task PostImageAsync_requestKnowingClassId()
     {
         await using var db = CreateDbContext();
-        var organization = await OrganizationSeeder.SeedAsync(db, Seed);
-        var class_ = await ClassSeeder.SeedAsync(db, Seed, organization.Id);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: null, citizenId: null, classId: class_.Id);
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, CitizenId: null, ClassId: class_.Id));
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -340,8 +356,8 @@ public class ImageServiceTest : TestBase
     public async Task MultipleServiceComponentsTest()
     {
         await using var db = CreateDbContext();
-        var organization = OrganizationSeeder.SeedAsync(db, Seed);
-        var request = ImageSeeder.CreateRequestBody(Seed, organizationId: organization.Id, classId: null, citizenId: null);
+        var organization = _orgSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
         var service = new ImageService(db);
         string? path = null;
 
