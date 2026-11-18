@@ -7,16 +7,16 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
 {
     private readonly UserSeeder _userSeeder = new();
     private readonly ClassSeeder _classSeeder = new();
-    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly OrganizationSeeder _organizationSeeder = new();
 
     [Fact]
-    public async Task GetCitizenById_ReturnsCorrectResult()
+    public async Task GetCitizen_CitizenExists_ReturnsOk()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id, Type: UserType.Citizen));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id, Type: UserType.Citizen));
         });
         var client = factory.CreateClient();
         var response = await client.GetAsync($"/citizens/{seededCitizen.User.Id}");
@@ -36,13 +36,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     }
 
     [Fact]
-    public async Task GetCitizenById_ReturnsNotFound()
+    public async Task GetCitizen_CitizenDoesNotExist_ReturnsNotFound()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: schoolClass.Id));
         });
         var client = factory.CreateClient();
         var response = await client.GetAsync($"/citizens/{seededCitizen.User.Id + 1}");
@@ -58,12 +58,12 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     }
 
     [Fact]
-    public async Task CreateCitizen_ReturnsCreatedCitizen()
+    public async Task CreateCitizen_RequestIsValid_ReturnsCreated()
     {
         var seededClass = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            return await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            return await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
         });
 
         CreateCitizenRequestDTO requestBody = new Faker<CreateCitizenRequestDTO>().UseSeed(Seed)
@@ -95,12 +95,12 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     }
 
     [Fact]
-    public async Task CreateCitizen_ReturnsBadRequest()
+    public async Task CreateCitizen_RequestIsInvalid_ReturnsBadRequest()
     {
         var seededClass = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            return await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            return await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
         });
 
         CreateCitizenRequestDTO requestBody = new Faker<CreateCitizenRequestDTO>().UseSeed(Seed)
@@ -142,13 +142,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     [InlineData(false, false, true, false)]
     [InlineData(false, false, false, true)]
     [InlineData(false, false, false, false)]
-    public async Task UpdateCitizen_ReturnsCreatedCitizen(bool isFirstNameChanged, bool isLastNameChanged, bool isClassChanged, bool isUsernameChanged)
+    public async Task UpdateCitizen_CitizenExists_ReturnsOk(bool isFirstNameChanged, bool isLastNameChanged, bool isClassChanged, bool isUsernameChanged)
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: schoolClass.Id));
         });
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
@@ -179,13 +179,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     }
 
     [Fact]
-    public async Task UpdateCitizen_ReturnsBadRequest()
+    public async Task UpdateCitizen_RequestIsNull_ReturnsBadRequest()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: schoolClass.Id));
         });
 
         var client = factory.CreateClient();
@@ -204,13 +204,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
 
 
     [Fact]
-    public async Task UpdateCitizen_ReturnsUserNotFound()
+    public async Task UpdateCitizen_CitizenDoesNotExist_ReturnsNotFound()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
         });
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
         var client = factory.CreateClient();
@@ -235,13 +235,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     }
 
     [Fact]
-    public async Task DeleteCitizen_ReturnsCorrectResult()
+    public async Task DeleteCitizen_CitizenExists_ReturnsNoContent()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: schoolClass.Id));
         });
         var client = factory.CreateClient();
         var response = await client.DeleteAsync($"/citizens/{seededCitizen.User.Id}");
@@ -259,13 +259,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
 
 
     [Fact]
-    public async Task DeleteCitizen_ReturnsNotFound()
+    public async Task DeleteCitizen_CitizenDoesNotExist_ReturnsNotFound()
     {
         var seededCitizen = await factory.ArrangeAsync(async db =>
         {
-            var organization = await _orgSeeder.SeedAsync(db, Seed);
-            var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: class_.Id));
+            var organization = await _organizationSeeder.SeedAsync(db, Seed);
+            var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+            return await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.Citizen, ClassId: schoolClass.Id));
         });
         var client = factory.CreateClient();
         var response = await client.DeleteAsync($"/citizens/{seededCitizen.User.Id + 1}");

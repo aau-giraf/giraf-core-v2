@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
+namespace giraf_core_v2.Tests.DTOs;
+
 public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly ImageSeeder _imageSeeder = new();
@@ -8,15 +10,15 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     [InlineData(true, false, false)]
     [InlineData(false, true, false)]
     [InlineData(false, false, true)]
-    public void Validate_PassesWhenAnyOwnerIdIsSet(bool citizen, bool class_, bool organization)
+    public void Validate_OneOwnerIdIsSet_Passes(bool hasCitizenId, bool hasClassId, bool hasOrganizationId)
     {
         var dto = new PostImageRequestDTO
         {
             Name = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
-            CitizenId = citizen ? 1 : null,
-            ClassId = class_ ? 1 : null,
-            OrganizationId = organization ? 1 : null
+            CitizenId = hasCitizenId ? 1 : null,
+            ClassId = hasClassId ? 1 : null,
+            OrganizationId = hasOrganizationId ? 1 : null
         };
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
@@ -27,15 +29,15 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     [InlineData(true, true, false)]
     [InlineData(true, false, true)]
     [InlineData(false, true, true)]
-    public void Validate_FailsByPassingMultipleIdentifiers(bool citizen, bool class_, bool organization)
+    public void Validate_MultipleOwnerIdsAreSet_Fails(bool hasCitizenId, bool hasClassId, bool hasOrganizationId)
     {
         var dto = new PostImageRequestDTO
         {
             Name = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
-            CitizenId = citizen ? 1 : null,
-            ClassId = class_ ? 1 : null,
-            OrganizationId = organization ? 1 : null
+            CitizenId = hasCitizenId ? 1 : null,
+            ClassId = hasClassId ? 1 : null,
+            OrganizationId = hasOrganizationId ? 1 : null
         };
         Assert.Single(dto.Validate(new ValidationContext(dto)));
     }
@@ -46,21 +48,21 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     [InlineData("png")]
     [InlineData("heic")]
     [InlineData("webp")]
-    public void Validate_PassesWithCorrectFileExt(string ext)
+    public void Validate_FileExtensionIsAllowed_Passes(string fileExtension)
     {
-        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null, Ext: ext));
+        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null, FileExtension: fileExtension));
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
-    public void Validate_FailsWithIncorrectFileExt()
+    public void Validate_FileExtensionIsNotAllowed_Fails()
     {
         var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null));
         Assert.Single(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
-    public void Validate_FailsMultipleErrorsInDTO()
+    public void Validate_OwnerAndFileAreInvalid_ReturnsMultipleErrors()
     {
         var dto = _imageSeeder.CreateRequestBody(Seed, new());
         var results = dto.Validate(new ValidationContext(dto)).ToList();

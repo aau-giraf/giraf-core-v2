@@ -1,12 +1,14 @@
+namespace giraf_core_v2.Tests.Services;
+
 public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly ImageSeeder _imageSeeder = new();
     private readonly UserSeeder _userSeeder = new();
-    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly OrganizationSeeder _organizationSeeder = new();
     private readonly ClassSeeder _classSeeder = new();
 
     [Fact]
-    public async Task GetAllImagesAsync_ReturnsAllImages()
+    public async Task GetAllImages_ImagesExist_ReturnsAllImages()
     {
         await using var db = CreateDbContext();
         var images = await _imageSeeder.SeedManyAsync(db, Seed, 3);
@@ -21,7 +23,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetAllImagesAsync_ReturnsEmptyList_WhenNoImages()
+    public async Task GetAllImages_NoImagesExist_ReturnsEmptyList()
     {
         await using var db = CreateDbContext();
         var service = new ImageService(db);
@@ -33,7 +35,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetIDInImagesAsync_ReturnsImage_WhenImageExists()
+    public async Task GetImageById_ImageExists_ReturnsImage()
     {
         await using var db = CreateDbContext();
 
@@ -47,7 +49,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetIDInImagesAsync_ReturnsNull_IfNotExist()
+    public async Task GetImageById_ImageDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
 
@@ -62,16 +64,16 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
+    public async Task GetImagesByCitizenId_CitizenHasImages_ReturnsImages()
     {
         await using var db = CreateDbContext();
         var citizen = await _userSeeder.SeedAsync(db, Seed);
-        List<ImageOptions> opt = [
+        List<ImageOptions> options = [
             new(ClassId: null, CitizenId: citizen.User.Id),
             new(ClassId: null, CitizenId: citizen.User.Id),
             new(ClassId: null, CitizenId: citizen.User.Id)
         ];
-        var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, opt);
+        var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, options);
         var service = new ImageService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen.User.Id);
@@ -85,7 +87,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetImagesByCitizenIdAsync_UserNotFound_ReturnsNull()
+    public async Task GetImagesByCitizenId_CitizenDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
         var service = new ImageService(db);
@@ -96,7 +98,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetImagesByCitizenIdAsync_ReturnsOnlyImagesRelatedToCitizen()
+    public async Task GetImagesByCitizenId_MultipleCitizensExist_ReturnsRelatedImages()
     {
         await using var db = CreateDbContext();
         var citizens = await _userSeeder.SeedManyAsync(db, Seed, 2);
@@ -130,7 +132,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetImagesByCitizenIdAsync_UserFound_HasNoImages()
+    public async Task GetImagesByCitizenId_CitizenHasNoImages_ReturnsEmptyList()
     {
         await using var db = CreateDbContext();
         var citizen = await _userSeeder.SeedAsync(db, seed: Seed);
@@ -143,7 +145,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteImageAsync_DeleteImage()
+    public async Task DeleteImage_ImageExists_DeletesImage()
     {
         await using var db = CreateDbContext();
 
@@ -168,7 +170,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteImageAsync_DeletesRightImage()
+    public async Task DeleteImage_MultipleImagesExist_DeletesRequestedImage()
     {
         await using var db = CreateDbContext();
 
@@ -205,7 +207,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteImageAsync_ReturnsFalseIfIdDontExists()
+    public async Task DeleteImage_ImageDoesNotExist_ReturnsFalse()
     {
         await using var db = CreateDbContext();
         var service = new ImageService(db);
@@ -218,11 +220,11 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    public async Task PostImageAsync_PostImage()
+    public async Task CreateImages_OrganizationIdIsSet_CreatesImage()
     {
         await using var db = CreateDbContext();
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrganizationId: organization.Id, ClassId: null, CitizenId: null));
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -248,11 +250,11 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task PostImageAsync_PostsTheRightImage()
+    public async Task CreateImages_OrganizationIdIsSet_StoresRequestedImage()
     {
         await using var db = CreateDbContext();
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrganizationId: organization.Id, ClassId: null, CitizenId: null));
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
@@ -280,13 +282,13 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    public async Task FindOrganizationAsync_requestKnowingCitizenId()
+    public async Task CreateImages_CitizenIdIsSet_UsesCitizenOrganization()
     {
         await using var db = CreateDbContext();
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var citizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizen.User.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var citizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrganizationId: null, ClassId: null, CitizenId: citizen.User.Id));
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -296,7 +298,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             Assert.Equal(request.Name, created!.Name);
             Assert.Equal(citizen.User.Id, created.CitizenId);
             Assert.Null(created.ClassId);
-            Assert.Equal(class_.Id, created.OrganizationId);
+            Assert.Equal(schoolClass.Id, created.OrganizationId);
             Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
@@ -305,7 +307,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             Assert.Equal(created.Path, stored!.Path);
             Assert.Null(stored.ClassId);
             Assert.Equal(citizen.User.Id, stored.CitizenId);
-            Assert.Equal(class_.OrganizationId, stored.OrganizationId);
+            Assert.Equal(schoolClass.OrganizationId, stored.OrganizationId);
         }
         finally
         {
@@ -317,12 +319,12 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task PostImageAsync_requestKnowingClassId()
+    public async Task CreateImages_ClassIdIsSet_CreatesImage()
     {
         await using var db = CreateDbContext();
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, CitizenId: null, ClassId: class_.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrganizationId: null, CitizenId: null, ClassId: schoolClass.Id));
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
@@ -331,7 +333,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             Assert.NotNull(created);
             Assert.Equal(request.Name, created!.Name);
             Assert.Null(created.CitizenId);
-            Assert.Equal(class_.Id, created.ClassId);
+            Assert.Equal(schoolClass.Id, created.ClassId);
             Assert.Equal(organization.Id, created.OrganizationId);
             Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
@@ -339,7 +341,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
             Assert.NotNull(stored);
             Assert.Equal(created.Path, stored!.Path);
-            Assert.Equal(class_.Id, stored.ClassId);
+            Assert.Equal(schoolClass.Id, stored.ClassId);
             Assert.Null(stored.CitizenId);
             Assert.Equal(organization.Id, stored.OrganizationId);
         }
@@ -353,11 +355,11 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task MultipleServiceComponentsTest()
+    public async Task CreateImages_ImageIsCreated_CanBeReadAndDeleted()
     {
         await using var db = CreateDbContext();
-        var organization = _orgSeeder.SeedAsync(db, Seed);
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrganizationId: organization.Id, ClassId: null, CitizenId: null));
         var service = new ImageService(db);
         string? path = null;
 

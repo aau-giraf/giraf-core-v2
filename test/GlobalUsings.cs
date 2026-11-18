@@ -15,6 +15,10 @@ global using giraf_core_v2.DTOs.Users;
 global using giraf_core_v2.Models;
 global using giraf_core_v2.Services;
 
+global using giraf_core_v2.Tests;
+global using giraf_core_v2.Tests.Seeders;
+global using giraf_core_v2.Tests.Seeders.Base;
+
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc.Testing;
 global using Microsoft.EntityFrameworkCore;

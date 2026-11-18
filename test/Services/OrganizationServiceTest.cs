@@ -1,18 +1,20 @@
 
 
+namespace giraf_core_v2.Tests.Services;
+
 public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly OrganizationSeeder _organizationSeeder = new();
     private readonly ClassSeeder _classSeeder = new();
     private readonly UserSeeder _userSeeder = new();
 
     [Fact]
-    public async Task GetOrganization_GetsCorrectOrganization()
+    public async Task GetOrganizationById_OrganizationExists_ReturnsOrganization()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
@@ -33,12 +35,12 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task GetOrganizationsList_GetsCorrectOrganizationsList()
+    public async Task GetOrganizations_OrganizationsExist_ReturnsOrganizations()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
@@ -72,12 +74,12 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task DeleteOrganization_DeletesCorrectOrganization()
+    public async Task DeleteOrganization_OrganizationExists_DeletesOrganization()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
@@ -102,18 +104,18 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task DeleteClassInOrganization_DeletesCorrectClassInOrganization()
+    public async Task DeleteClassInOrganization_ClassExists_DeletesClass()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
+        List<ClassOptions> options = [new ClassOptions(OrganizationId: organization1.Id), new ClassOptions(OrganizationId: organization1.Id)];
 
-        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, options);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -158,17 +160,17 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task GetClassInOrganization_GetsCorrectClassInOrganization()
+    public async Task GetClassInOrganization_ClassExists_ReturnsClass()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
-        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
+        List<ClassOptions> options = [new ClassOptions(OrganizationId: organization1.Id), new ClassOptions(OrganizationId: organization1.Id)];
 
-        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, options);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -194,7 +196,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task CreateOrganization_CreatesCorrectOrganization()
+    public async Task CreateOrganization_NameIsAvailable_CreatesOrganization()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -216,12 +218,12 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task UpdateOrganization_UpdatesCorrectOrganization()
+    public async Task UpdateOrganization_NameIsAvailable_UpdatesOrganization()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
         int organization1Id = organization1.Id;
@@ -249,17 +251,17 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
     }
 
     [Fact]
-    public async Task CreateClassInOrganization_CreatesCorrectClassInOrganization()
+    public async Task CreateClassInOrganization_NameIsAvailable_CreatesClass()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
-        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
+        List<ClassOptions> options = [new ClassOptions(OrganizationId: organization1.Id), new ClassOptions(OrganizationId: organization1.Id)];
 
-        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, options);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -289,18 +291,18 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
 
 
     [Fact]
-    public async Task GetClassesInOrganization_GetsCorrectClassesInOrganization()
+    public async Task GetClassesInOrganization_ClassesExist_ReturnsClasses()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        List<ClassOptions> opt = [new ClassOptions(OrgId: organization1.Id), new ClassOptions(OrgId: organization1.Id)];
+        List<ClassOptions> options = [new ClassOptions(OrganizationId: organization1.Id), new ClassOptions(OrganizationId: organization1.Id)];
 
-        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, opt);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2, options);
         var class1 = classes[0];
         var class2 = classes[1];
 
@@ -345,15 +347,15 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         }
     }
     [Fact]
-    public async Task CreateOrUpdateUserRole_CreatesUserRole()
+    public async Task CreateOrUpdateUserRole_UserRoleDoesNotExist_CreatesUserRole()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
 
-        UserOptions userOpt = new(Type: UserType.NonCitizen);
-        var seededUser = await _userSeeder.SeedAsync(db, Seed, userOpt);
+        UserOptions userOptions = new(Type: UserType.NonCitizen);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed, userOptions);
         var role1 = RoleType.Employee;
 
         Assert.NotNull(organization);
@@ -374,15 +376,15 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
 
     /* TODO: Fix
     [Fact]
-    public async Task CreateOrUpdateUserRole_UpdatesUserRole()
+    public async Task CreateOrUpdateUserRole_UserRoleExists_ReturnsNoChange()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
 
-        UserOptions userOpt = new(Type: UserType.NonCitizen);
-        var seededUser = await _userSeeder.SeedAsync(db, Seed, userOpt);
+        UserOptions userOptions = new(Type: UserType.NonCitizen);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed, userOptions);
 
         var role1 = RoleType.Employee;
         //var role2 = RoleType.Parent;
@@ -406,7 +408,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
      */
     /* TODO: Fix
     [Fact]
-    public async Task CreateOrUpdateUserRole_CreateUserRoleFails()
+    public async Task CreateOrUpdateUserRole_OrganizationDoesNotExist_ReturnsNotFound()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
