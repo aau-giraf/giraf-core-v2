@@ -42,7 +42,7 @@ public class ImageService(AppDbContext db)
         return true;
     }
 
-    private async Task<Organization?> FindOrganizationAsync(PostImageDTO imageRequest)
+    private async Task<Organization?> FindOrganizationAsync(PostImageRequestDTO imageRequest)
     {
         if (imageRequest.CitizenId == null)
         {
@@ -65,7 +65,7 @@ public class ImageService(AppDbContext db)
         }
     }
 
-    public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
+    public async Task<Image?> CreateImagesAsync(PostImageRequestDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
 

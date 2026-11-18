@@ -46,7 +46,7 @@ public static class ImageEndpoints
 
     // POST image
     // Needs to be from form for us to upload pictures
-    private static async Task<Results<Created<Image>, BadRequest>> PostImage([FromForm] PostImageDTO? imageRequest, ImageService imageService)
+    private static async Task<Results<Created<Image>, BadRequest>> PostImage([FromForm] PostImageRequestDTO? imageRequest, ImageService imageService)
     {
         if (imageRequest is null)
         {

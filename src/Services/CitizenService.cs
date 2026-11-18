@@ -4,7 +4,7 @@ public class CitizenService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<GetCitizenDTO?> GetCitizenAsync(int userId)
+    public async Task<GetCitizenResponseDTO?> GetCitizenAsync(int userId)
     {
         var citizen = await _db.Citizens.FindAsync(userId);
 
@@ -13,7 +13,7 @@ public class CitizenService(AppDbContext db)
             return null;
         }
 
-        GetCitizenDTO getCitizenDto = new GetCitizenDTO
+        GetCitizenResponseDTO getCitizenDto = new GetCitizenResponseDTO
         {
             UserId = citizen.Id,
             ClassId = citizen.ClassId,
@@ -25,7 +25,7 @@ public class CitizenService(AppDbContext db)
         return getCitizenDto;
     }
 
-    public async Task<GetCitizenDTO?> CreateCitizenAsync(CreateCitizenDTO dto)
+    public async Task<GetCitizenResponseDTO?> CreateCitizenAsync(CreateCitizenRequestDTO dto)
     {
         var citizen = new Citizen
         {
@@ -45,7 +45,7 @@ public class CitizenService(AppDbContext db)
         _db.Citizens.Add(citizen);
         await _db.SaveChangesAsync();
 
-        return new GetCitizenDTO
+        return new GetCitizenResponseDTO
         {
             UserId = citizen.Id,
             ClassId = citizen.ClassId,
@@ -55,7 +55,7 @@ public class CitizenService(AppDbContext db)
         };
     }
 
-    public async Task<GetCitizenDTO?> PatchCitizenAsync(int userId, UpdateCitizenDTO dto)
+    public async Task<GetCitizenResponseDTO?> PatchCitizenAsync(int userId, UpdateCitizenRequestDTO dto)
     {
         var citizen = await _db.Citizens.FindAsync(userId);
 
@@ -80,7 +80,7 @@ public class CitizenService(AppDbContext db)
 
         await _db.SaveChangesAsync();
 
-        return new GetCitizenDTO
+        return new GetCitizenResponseDTO
         {
             UserId = citizen.Id,
             ClassId = citizen.ClassId,

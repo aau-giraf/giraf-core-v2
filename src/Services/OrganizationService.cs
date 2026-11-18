@@ -6,19 +6,19 @@ public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<List<ResponseGetOrganizationDTO>> GetOrganizationsAsync()
+    public async Task<List<GetOrganizationResponseDTO>> GetOrganizationsAsync()
     {
         // Fetch organizations
         var organizations = await _db.Organizations.ToListAsync();
 
         // List of organizationDTOs
-        List<ResponseGetOrganizationDTO> organizationsDtoList = new List<ResponseGetOrganizationDTO>();
+        List<GetOrganizationResponseDTO> organizationsDtoList = new List<GetOrganizationResponseDTO>();
 
         foreach (Organization organization in organizations)
         {
-            ResponseGetOrganizationDTO responseOrganizationDTO = new ResponseGetOrganizationDTO
+            GetOrganizationResponseDTO responseOrganizationDTO = new GetOrganizationResponseDTO
             {
-                Id = organization.Id,
+                OrganizationId = organization.Id,
                 Name = organization.Name,
             };
             // Add each organization that has been converted to dto to the list
@@ -28,7 +28,7 @@ public class OrganizationService(AppDbContext db)
     }
 
     // Fetch the organization by org_id from Route parameter
-    public async Task<ResponseGetOrganizationDTO?> GetOrganizationByIdAsync(int orgId)
+    public async Task<GetOrganizationResponseDTO?> GetOrganizationByIdAsync(int orgId)
     {
         var organization = await _db.Organizations.FindAsync(orgId);
 
@@ -37,9 +37,9 @@ public class OrganizationService(AppDbContext db)
             return null;
         }
 
-        ResponseGetOrganizationDTO responseOrganizationDTO = new ResponseGetOrganizationDTO
+        GetOrganizationResponseDTO responseOrganizationDTO = new GetOrganizationResponseDTO
         {
-            Id = organization!.Id,
+            OrganizationId = organization!.Id,
             Name = organization.Name,
         };
         return responseOrganizationDTO;
@@ -64,7 +64,7 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseGetClassInOrganizationDTO?> GetClassInOrganizationAsync(int orgId, int classId)
+    public async Task<GetClassInOrganizationResponseDTO?> GetClassInOrganizationAsync(int orgId, int classId)
     {
         // Fetch the class tuple, where the column OrganizationId equals org_id and
         // the column Id equals class_id from Route parameter
@@ -77,29 +77,29 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Return correctly formatted response
-        ResponseGetClassInOrganizationDTO responseClassInOrganizationDTO = new ResponseGetClassInOrganizationDTO
+        GetClassInOrganizationResponseDTO responseClassInOrganizationDTO = new GetClassInOrganizationResponseDTO
         {
-            Id = selectedClass!.Id,
+            ClassId = selectedClass!.Id,
             Name = selectedClass.Name,
             OrganizationId = selectedClass.OrganizationId,
         };
         return responseClassInOrganizationDTO;
     }
 
-    public async Task<List<ResponseGetClassInOrganizationDTO>> GetClassesInOrganizationAsync(int orgId)
+    public async Task<List<GetClassInOrganizationResponseDTO>> GetClassesInOrganizationAsync(int orgId)
     {
         // Fetch all class tuples, where the column OrganizationId equals Route parameter org_id
         var classes = await _db.Classes
             .Where(c => c.OrganizationId == orgId).AsNoTracking().ToListAsync();
 
         // List of ClassInOrganizationDTOs
-        List<ResponseGetClassInOrganizationDTO> classesInOrganizationDtoList = new List<ResponseGetClassInOrganizationDTO>();
+        List<GetClassInOrganizationResponseDTO> classesInOrganizationDtoList = new List<GetClassInOrganizationResponseDTO>();
 
         foreach (Class selectedClass in classes)
         {
-            ResponseGetClassInOrganizationDTO responseClassInOrganizationDTO = new ResponseGetClassInOrganizationDTO
+            GetClassInOrganizationResponseDTO responseClassInOrganizationDTO = new GetClassInOrganizationResponseDTO
             {
-                Id = selectedClass.Id,
+                ClassId = selectedClass.Id,
                 Name = selectedClass.Name,
                 OrganizationId = selectedClass.OrganizationId,
             };
@@ -127,7 +127,7 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<ResponseCreateClassDTO?> CreateClassInOrganizationAsync(RequestCreateClassDTO createClass, int orgId)
+    public async Task<CreateClassResponseDTO?> CreateClassInOrganizationAsync(CreateClassRequestDTO createClass, int orgId)
     {
         // Fetch organization instance from db (Required in Class model)
         var organization = await _db.Organizations.FindAsync(orgId);
@@ -169,9 +169,9 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Return correctly formatted response
-        ResponseCreateClassDTO responseClass = new ResponseCreateClassDTO
+        CreateClassResponseDTO responseClass = new CreateClassResponseDTO
         {
-            Id = newClass!.Id,
+            ClassId = newClass!.Id,
             Name = newClass.Name,
             OrganizationId = newClass.OrganizationId,
         };
@@ -181,7 +181,7 @@ public class OrganizationService(AppDbContext db)
     }
 
 
-    public async Task<ResponseGetOrganizationDTO?> CreateOrganizationAsync(RequestCreateOrganizationDTO createOrganization)
+    public async Task<GetOrganizationResponseDTO?> CreateOrganizationAsync(CreateOrganizationRequestDTO createOrganization)
     {
         // Check if the name specified in the requestbody is already taken
         bool checkNameAlreadyExist = await _db.Organizations.AnyAsync(o => o.Name == createOrganization.Name);
@@ -210,9 +210,9 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Return correctly formatted response
-        ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
+        GetOrganizationResponseDTO responseOrganization = new GetOrganizationResponseDTO
         {
-            Id = newOrganization.Id,
+            OrganizationId = newOrganization.Id,
             Name = newOrganization.Name,
         };
 
@@ -220,7 +220,7 @@ public class OrganizationService(AppDbContext db)
 
     }
 
-    public async Task<ResponseGetOrganizationDTO?> UpdateOrganizationAsync(RequestCreateOrganizationDTO updateOrganization, int orgId)
+    public async Task<GetOrganizationResponseDTO?> UpdateOrganizationAsync(CreateOrganizationRequestDTO updateOrganization, int orgId)
     {
         // Find the organization in db
         var organization = await _db.Organizations.FindAsync(orgId);
@@ -250,9 +250,9 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Return correctly formatted response
-        ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
+        GetOrganizationResponseDTO responseOrganization = new GetOrganizationResponseDTO
         {
-            Id = updatedOrganization!.Id,
+            OrganizationId = updatedOrganization!.Id,
             Name = updatedOrganization.Name,
         };
 

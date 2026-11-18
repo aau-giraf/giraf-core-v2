@@ -1,10 +1,13 @@
-public static class GuardianshipSeeder
+// Record of optional parameters. Non-positive numbers result in random postive integer.
+internal record GuardianshipOptions(int CitizenId = -9999, int NonCitizenId = -9999);
+
+internal class GuardianshipSeeder : Seeder<Guardianship, GuardianshipOptions>
 {
 
     // Create a random Guardianship and add it to mock database.
-    public static async Task<Guardianship> SeedAsync(AppDbContext db, int seed, int? citizenId = null, int? nonCitizenId = null)
+    public override async Task<Guardianship> SeedAsync(AppDbContext db, int seed, GuardianshipOptions? opt = null)
     {
-        var guardianship = Create(seed, citizenId, nonCitizenId);
+        var guardianship = Create(seed, opt);
 
         db.Guardianships.Add(guardianship);
         await db.SaveChangesAsync();
@@ -13,9 +16,9 @@ public static class GuardianshipSeeder
     }
 
     // Create x random Guardianship and add them to mock database.
-    public static async Task<List<Guardianship>> SeedManyAsync(AppDbContext db, int seed, List<(int, int)> citizenNonCitizenTuples)
+    public override async Task<List<Guardianship>> SeedManyAsync(AppDbContext db, int seed, int count, List<GuardianshipOptions>? opt = null)
     {
-        var guardianships = CreateManyFakers(seed, citizenNonCitizenTuples);
+        var guardianships = CreateMany(seed, count, opt);
 
         db.Guardianships.AddRange(guardianships);
         await db.SaveChangesAsync();
@@ -23,31 +26,12 @@ public static class GuardianshipSeeder
         return guardianships;
     }
 
-    // Generate a random Guardianship.
-    private static Guardianship Create(int seed, int? citizenId = null, int? nonCitizenId = null)
-    {
-        return CreateFaker(seed, citizenId, nonCitizenId).Generate();
-    }
-
-    // Create x random Guardianships
-    private static List<Guardianship> CreateManyFakers(int seed, List<(int, int)> citizenNonCitizenTuples)
-    {
-        List<Guardianship> guardianFakers = [];
-
-        foreach (var citizenNonCitizenTuple in citizenNonCitizenTuples)
-        {
-            guardianFakers.Add(CreateFaker(seed, citizenNonCitizenTuple.Item1, citizenNonCitizenTuple.Item2).Generate());
-        }
-        return guardianFakers;
-    }
-
     // Create a random test Guardianship using bogus.
-    private static Faker<Guardianship> CreateFaker(int seed, int? citizenId = null, int? nonCitizenId = null)
+    public override Faker<Guardianship> CreateFaker(int seed, GuardianshipOptions? opt = null)
     {
-
         return new Faker<Guardianship>()
             .UseSeed(seed)
-            .RuleFor(gs => gs.CitizenId, f => citizenId != null ? citizenId : f.Random.Int(1, 1000000))
-            .RuleFor(gs => gs.GuardianId, f => nonCitizenId != null ? nonCitizenId : f.Random.Int(1, 1000000));
+            .RuleFor(gs => gs.CitizenId, f => opt is not null && opt.CitizenId > 0 ? opt.CitizenId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(gs => gs.GuardianId, f => opt is not null && opt.NonCitizenId > 0 ? opt.NonCitizenId : f.Random.Int(1, Int32.MaxValue));
     }
 }

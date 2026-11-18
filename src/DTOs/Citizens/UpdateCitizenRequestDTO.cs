@@ -1,20 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 
-using Microsoft.Extensions.Validation;
+namespace giraf_core_v2.DTOs.Citizens;
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-[ValidatableType]
-public class UpdateUserDTO
+public class UpdateCitizenRequestDTO
 {
-    [Length(2, 255)]
+    [Range(1, int.MaxValue)]
+    public int? ClassId { get; set; }
+    [Length(3, 255)]
     public string? FirstName { get; set; }
-
-    [Length(2, 255)]
+    [Length(3, 255)]
     public string? LastName { get; set; }
-
-    [EmailAddress]
-    public string? Email { get; set; }
-
     [Length(3, 255)]
     public string? Username { get; set; }
 }

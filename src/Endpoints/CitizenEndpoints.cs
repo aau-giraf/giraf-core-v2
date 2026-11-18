@@ -15,21 +15,21 @@ public static class CitizenEndpoints
         group.MapDelete("/{citizenId}", DeleteCitizen);
     }
 
-    private static async Task<Results<Ok<GetCitizenDTO>, NotFound>> GetCitizen(int citizenId, CitizenService citizenService)
+    private static async Task<Results<Ok<GetCitizenResponseDTO>, NotFound>> GetCitizen(int citizenId, CitizenService citizenService)
     {
         var citizen = await citizenService.GetCitizenAsync(citizenId);
 
         return citizen != null ? TypedResults.Ok(citizen) : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Created<GetCitizenDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenDTO createCitizen)
+    private static async Task<Results<Created<GetCitizenResponseDTO>, BadRequest>> CreateCitizen(CitizenService citizenService, [FromBody] CreateCitizenRequestDTO createCitizen)
     {
         var citizen = await citizenService.CreateCitizenAsync(createCitizen);
 
         return citizen != null ? TypedResults.Created("/citizen", citizen) : TypedResults.BadRequest();
     }
 
-    private static async Task<Results<Ok<GetCitizenDTO>, NotFound, BadRequest>> UpdateCitizen(int citizenId, CitizenService citizenService, [FromBody] UpdateCitizenDTO? updateCitizen)
+    private static async Task<Results<Ok<GetCitizenResponseDTO>, NotFound, BadRequest>> UpdateCitizen(int citizenId, CitizenService citizenService, [FromBody] UpdateCitizenRequestDTO? updateCitizen)
     {
         if (updateCitizen is null)
         {

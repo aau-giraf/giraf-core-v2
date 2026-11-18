@@ -24,7 +24,7 @@ public class UserService(AppDbContext db)
         return false;
     }
 
-    public async Task<User?> UpdateCurrentUserAsync(int Id, UpdateUserDTO inputUser)
+    public async Task<User?> UpdateCurrentUserAsync(int Id, UpdateUserRequestDTO inputUser)
     {
         var user = await _db.Users.FindAsync(Id);
 
@@ -56,7 +56,7 @@ public class UserService(AppDbContext db)
         return user;
     }
 
-    public async Task<int> UpdateUserPasswordAsync(int Id, UpdatePasswordDTO updatePassword)
+    public async Task<int> UpdateUserPasswordAsync(int Id, UpdatePasswordRequestDTO updatePassword)
     {
         var user = await _db.Users.FindAsync(Id);
 

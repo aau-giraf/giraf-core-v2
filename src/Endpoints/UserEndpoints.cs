@@ -37,7 +37,7 @@ public static class UserEndpoints
     }
 
     private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUser(
-        UserService userService, [FromBody] UpdateUserDTO? inputUser)
+        UserService userService, [FromBody] UpdateUserRequestDTO? inputUser)
     {
         // TODO: get ID from authentication
         if (inputUser is null)
@@ -49,7 +49,7 @@ public static class UserEndpoints
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPassword(UserService userService, [FromBody] UpdatePasswordDTO? updatePassword)
+    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPassword(UserService userService, [FromBody] UpdatePasswordRequestDTO? updatePassword)
     {
         if (updatePassword is null)
         {

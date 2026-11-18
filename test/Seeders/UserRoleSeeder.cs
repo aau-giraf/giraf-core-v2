@@ -1,10 +1,13 @@
-public static class UserRoleSeeder
+// Record of optional parameters. Non-positive numbers result in random postive integer.
+internal record UserRoleOptions(int OrgId = -9999, int NonCitizenId = -9999);
+
+internal class UserRoleSeeder : Seeder<UserRole, UserRoleOptions>
 {
 
     // Create a random UserRole and add it to mock database.
-    public static async Task<UserRole> SeedAsync(AppDbContext db, int seed, int? organizationId = null, int? nonCitizenId = null)
+    public override async Task<UserRole> SeedAsync(AppDbContext db, int seed, UserRoleOptions? opt = null)
     {
-        var userRole = Create(seed, organizationId, nonCitizenId);
+        var userRole = Create(seed, opt);
 
         db.UserRoles.Add(userRole);
         await db.SaveChangesAsync();
@@ -13,9 +16,9 @@ public static class UserRoleSeeder
     }
 
     // Create x random UserRole and add them to mock database.
-    public static async Task<List<UserRole>> SeedManyAsync(AppDbContext db, int seed, List<(int, int)> nonCitizenOrganizationTuples)
+    public override async Task<List<UserRole>> SeedManyAsync(AppDbContext db, int seed, int count, List<UserRoleOptions>? opt = null)
     {
-        var userRoles = CreateManyFakers(seed, nonCitizenOrganizationTuples);
+        var userRoles = CreateMany(seed, count, opt);
 
         db.UserRoles.AddRange(userRoles);
         await db.SaveChangesAsync();
@@ -23,33 +26,13 @@ public static class UserRoleSeeder
         return userRoles;
     }
 
-    // Generate a random userRole.
-    private static UserRole Create(int seed, int? organizationId = null, int? nonCitizenId = null)
-    {
-        return CreateFaker(seed, organizationId, nonCitizenId).Generate();
-    }
-
-    // Create x random userRoles.
-    private static List<UserRole> CreateManyFakers(int seed, List<(int, int)> nonCitizenOrganizationTuples)
-    {
-
-        List<UserRole> userRoleFakers = [];
-
-        foreach (var nonCitizenOrganizationTuple in nonCitizenOrganizationTuples)
-        {
-            userRoleFakers.Add(CreateFaker(seed, nonCitizenOrganizationTuple.Item1, nonCitizenOrganizationTuple.Item2).Generate());
-        }
-        return userRoleFakers;
-    }
-
     // Create a random test userRole using bogus.
-    private static Faker<UserRole> CreateFaker(int seed, int? organizationId = null, int? nonCitizenId = null)
+    public override Faker<UserRole> CreateFaker(int seed, UserRoleOptions? opt)
     {
-
         return new Faker<UserRole>()
             .UseSeed(seed)
-            .RuleFor(ur => ur.NonCitizenId, f => nonCitizenId != null ? nonCitizenId : null)
-            .RuleFor(ur => ur.OrganizationId, f => organizationId != null ? organizationId : f.Random.Int(1, 1000))
+            .RuleFor(ur => ur.NonCitizenId, f => opt is not null && opt.NonCitizenId > 0 ? opt.NonCitizenId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(ur => ur.OrganizationId, f => opt is not null && opt.OrgId > 0 ? opt.OrgId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(ur => ur.Role, f => f.PickRandom<RoleType>());
     }
 }

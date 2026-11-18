@@ -1,4 +1,13 @@
 global using giraf_core_v2.Data;
+global using giraf_core_v2.DTOs.Citizens;
+global using giraf_core_v2.DTOs.Classes;
+global using giraf_core_v2.DTOs.Guardianships;
+global using giraf_core_v2.DTOs.Images;
+global using giraf_core_v2.DTOs.NonCitizens;
+global using giraf_core_v2.DTOs.Organizations;
+global using giraf_core_v2.DTOs.UserOrganization;
+global using giraf_core_v2.DTOs.UserRoles;
+global using giraf_core_v2.DTOs.Users;
 global using giraf_core_v2.Endpoints;
 global using giraf_core_v2.Models;
 global using giraf_core_v2.Services;
