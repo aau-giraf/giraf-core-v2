@@ -378,6 +378,7 @@ public class UserServiceTest : TestBase
         Assert.False(BCrypt.Net.BCrypt.Verify(newPassword, user2!.Password));
     }
 
+    // Virker ikke
     [Fact]
     public async Task Login_ReturnsExpectedDTOWithCorrectCredentials()
     {
@@ -404,6 +405,7 @@ public class UserServiceTest : TestBase
         Assert.NotEmpty(result.Jwt);
     }
 
+    // Virker ikke
     [Fact]
     public async Task Login_ReturnsNullWithIncorrectPassword()
     {
@@ -423,6 +425,7 @@ public class UserServiceTest : TestBase
         Assert.Null(result);
     }
 
+    // Virker ikke
     [Fact]
     public async Task Login_ReturnsNullWithIncorrectUsername()
     {
@@ -442,6 +445,7 @@ public class UserServiceTest : TestBase
         Assert.Null(result);
     }
 
+    // Virker ikke
     [Fact]
     public async Task Login_CorrectCredentialsReturnsValidJwt()
     {
