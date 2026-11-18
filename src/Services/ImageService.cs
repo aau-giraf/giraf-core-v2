@@ -24,6 +24,19 @@ public class ImageService(AppDbContext db)
             .ToListAsync();
     }
 
+    public async Task<List<Image>?> GetImagesByClassIdAsync(int classId)
+    {
+        var class_ = await _db.Classes.FindAsync(classId);
+
+        return class_ == null ? null : await _db.Images.AsNoTracking().Where(i => i.ClassId == classId).ToListAsync();
+    }
+
+    public async Task<List<Image>?> GetImagesByOrganizationIdAsync(int organizationId)
+    {
+        var organization = await _db.Organizations.FindAsync(organizationId);
+
+        return organization == null ? null : await _db.Images.AsNoTracking().Where(i => i.OrganizationId == organizationId).ToListAsync();
+    }
 
     public async Task<bool> DeleteImageAsync(int image_id)
     {
