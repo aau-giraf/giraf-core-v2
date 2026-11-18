@@ -12,20 +12,20 @@ public static class UserEndpoints
     {
         var group = app.MapGroup("/users");
 
-        group.MapGet("/me", GetCurrentUser).RequireAuthorization();
-        group.MapDelete("/me", DeleteCurrentUser).RequireAuthorization();
-        group.MapPatch("/me", UpdateCurrentUser).RequireAuthorization();
-        group.MapPut("/me/password", UpdateUserPassword).RequireAuthorization();
-        group.MapPost("/login", Login).RequireRateLimiting("rateLimitByIp");
+        group.MapGet("/me", GetCurrentUserAsync).RequireAuthorization();
+        group.MapDelete("/me", DeleteCurrentUserAsync).RequireAuthorization();
+        group.MapPatch("/me", UpdateCurrentUserAsync).RequireAuthorization();
+        group.MapPut("/me/password", UpdateUserPasswordAsync).RequireAuthorization();
+        group.MapPost("/login", LoginAsync).RequireRateLimiting("rateLimitByIp");
     }
 
-    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUser(UserService userService, TokenProvider tokenProvider)
+    private static async Task<Results<Ok<User>, NotFound>> GetCurrentUserAsync(UserService userService, TokenProvider tokenProvider)
     {
         var user = await userService.GetCurrentUserAsync(1);
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUser(UserService userService)
+    private static async Task<Results<NoContent, NotFound, BadRequest>> DeleteCurrentUserAsync(UserService userService)
     {
         // TODO: Get ID when authentication is enabled.
         // if (id is null)
@@ -36,7 +36,7 @@ public static class UserEndpoints
         return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUser(
+    private static async Task<Results<BadRequest, NotFound, Ok<User>>> UpdateCurrentUserAsync(
         UserService userService, [FromBody] UpdateUserRequestDTO? inputUser)
     {
         // TODO: get ID from authentication
@@ -49,7 +49,7 @@ public static class UserEndpoints
         return user == null ? TypedResults.NotFound() : TypedResults.Ok(user);
     }
 
-    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPassword(UserService userService, [FromBody] UpdatePasswordRequestDTO? updatePassword)
+    private static async Task<Results<BadRequest, NotFound, UnauthorizedHttpResult, NoContent>> UpdateUserPasswordAsync(UserService userService, [FromBody] UpdatePasswordRequestDTO? updatePassword)
     {
         if (updatePassword is null)
         {
@@ -66,7 +66,7 @@ public static class UserEndpoints
         };
     }
 
-    private static async Task<Results<Ok<LoginResultDTO>, UnauthorizedHttpResult>> Login(
+    private static async Task<Results<Ok<LoginResultDTO>, UnauthorizedHttpResult>> LoginAsync(
         UserService userService,
         HttpContext httpContext,
         [FromBody] LoginRequestDTO loginRequestDTO

@@ -55,6 +55,7 @@
 ## Abbreviations
 
 - Spell names out. Example: `ClassId`, `OrganizationId`.
+- Abbreviations are allowed in lambda function. 
 - Avoid short forms such as `orgId` and `cit_id`.
 
 ## Tests
