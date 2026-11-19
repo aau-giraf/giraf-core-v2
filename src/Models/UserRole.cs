@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace giraf_core_v2.Models;
 
-//Configure a composite key in order. Based on usage, introduce Id primary key if needed.
-[PrimaryKey(nameof(NonCitizenId), nameof(Role), nameof(OrganizationId))]
 public class UserRole
 {
+    public int Id { get; init; }
+
     public int NonCitizenId { get; init; }
     public NonCitizen? NonCitizen { get; init; }
 
@@ -16,12 +16,15 @@ public class UserRole
     //A role is in relation to an organization
     public required int OrganizationId { get; init; }
     public Organization? Organization { get; init; }
+
+    //Navigational property: class assignments involving this organizational role
+    public ICollection<ClassAssignment> ClassAssignments { get; } = [];
 }
 
 public enum RoleType
 {
     //Based on use cases, further determine which needed enum values
-    Employee, Parent
+    Employee
 }
 
 public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
@@ -31,5 +34,9 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         //Store RoleType enum as string, rather than the backing integer. Fragility if addition or reordering, e.g. Pedagogue added in the middle.
         builder.Property(userRole => userRole.Role)
             .HasConversion<string>();
+
+        //Alternate composite key - Prevent duplicate (non-citizen, role, organization) tuples
+        builder.HasAlternateKey(userRole => new { userRole.NonCitizenId, userRole.Role, userRole.OrganizationId });
+
     }
 }
