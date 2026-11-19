@@ -1,3 +1,5 @@
+using giraf_core_v2.DTOs.Images;
+
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +17,8 @@ public static class ImageEndpoints
         group.MapGet("/Citizen/{cit_id}", GetImagesByCitizenId);
         group.MapPost("/", PostImage).DisableAntiforgery(); // needed for us to sent a Form via Postman/bruno
         group.MapDelete("/{image_id}", DeleteImage);
+        group.MapPost("/generated", PostGeneratedImage).DisableAntiforgery();
+        group.MapGet("/done/{ticketId}", IsImageDone).RequireAuthorization();
     }
     // GET imagees by ID
     private static async Task<Results<Ok<Image>, NotFound>> GetImageById(int image_id, ImageService imageService)
@@ -55,6 +59,30 @@ public static class ImageEndpoints
 
         var image = await imageService.CreateImagesAsync(imageRequest);
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
+    }
+    
+    // This endpoint is similar to the "PostImage" yet there are some differences like this has to get a TicketId in the body
+    private static async Task<Results<Created<Image>, BadRequest<string>>> PostGeneratedImage([FromForm] PostImageDTO imageRequest, ImageService imageService)
+    {
+        // An AI-generated image must belong to a ticket, otherwise the client can never find it
+        if (string.IsNullOrWhiteSpace(imageRequest.TicketId))
+        {
+            return TypedResults.BadRequest("TicketId is required");
+        }
+
+        // Call the service with the imageRequest (DTO)
+        var image = await imageService.CreateImagesAsync(imageRequest);
+
+        return image is null
+            ? TypedResults.BadRequest("Could not find an organization for the image")
+            : TypedResults.Created($"/images/{image.Id}", image);
+    }
+    
+    private static async Task<Ok<IsImageDoneRequestDTO>> IsImageDone(string ticketId, ImageService imageService)
+    {
+        var req = await imageService.IsImageDone(ticketId);
+
+        return TypedResults.Ok(req);
     }
 }
 public record CreateImageRequest(string Name, int OrganizationId, int? CitizenId, string StorageKey, string FileName, string FileType, long SizeBytes);

@@ -1,6 +1,4 @@
 using System.Net;
-using System.Text.Json;
-
 using giraf_core_v2.DTOs.Images;
 
 using Microsoft.Extensions.Caching.Memory;
@@ -446,81 +444,5 @@ public class ImageServiceTest : TestBase
         // Assert that the image status is pending due to no response from the AI backend
         Assert.Equal(ImageStatus.Pending, result.Status);
         Assert.Equal(ImageStatus.Pending, result.Status);
-    }
-
-    [Fact]
-    public async Task PostPromptForImageGeneration_ReturnsTicketId()
-    {
-        // Arrange
-        await using var db = CreateDbContext();
-        var handler = new FakeHttpHandler(HttpStatusCode.OK);
-        var service = CreateService(db, handler);
-        var request = new PostImagePromptDTO { Prompt = "a giraffe" };
-
-        // Act
-        var ticketId = await service.GenerateImage(request, userId: 7);
-
-        // Assert
-        Assert.False(string.IsNullOrEmpty(ticketId));
-        Assert.Equal("http://ai.test/generate", handler.LastRequest!.RequestUri!.ToString());
-
-        var sent = JsonSerializer.Deserialize<AiGenerationRequestDTO>(
-            handler.LastBody!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        Assert.Equal("a giraffe", sent!.Prompt);
-        Assert.Equal(7, sent.UserId);
-        Assert.Equal(ticketId, sent.TicketId);
-    }
-
-    [Fact]
-    public async Task GenerateImage_ReturnsNull_WhenAiBackendFails()
-    {
-        // Arrange
-        await using var db = CreateDbContext();
-        var service = CreateService(db, new FakeHttpHandler(HttpStatusCode.InternalServerError));
-
-        // Act
-        var ticketId = await service.GenerateImage(new PostImagePromptDTO { Prompt = "a giraffe" }, userId: 7);
-
-        // Assert
-        Assert.Null(ticketId);
-    }
-
-    [Fact]
-    public async Task IsImageDone_ReturnsInappropriate_AfterMarkInappropriate()
-    {
-        // Arrange
-        await using var db = CreateDbContext();
-        var service = CreateService(db);
-        var ticketId = Guid.NewGuid().ToString();
-
-        // Act - make a service call that sets the imageStatus to Inappropriate
-        service.MarkInappropriate(ticketId);
-        var result = await service.IsImageDone(ticketId);
-
-        // Assert
-        Assert.Equal(ImageStatus.Inappropriate, result.Status);
-    }
-
-    [Fact]
-    public async Task GenerateImage_ForcesCitizenAsOwner_WhenUserIsCitizen()
-    {
-        // Arrange - seed a citizen, send a prompt that tries to target an organization
-        await using var db = CreateDbContext();
-        var seededCitizen = await CitizenSeeder.SeedAsync(db, Seed);
-        var handler = new FakeHttpHandler();
-        var service = CreateService(db, handler);
-        var request = new PostImagePromptDTO { Prompt = "a giraffe", OrganizationId = 99, ClassId = 42 };
-
-        // Act - call GenerateImage with userId = citizen.Id
-        var result = await service.GenerateImage(request, userId: seededCitizen.Id);
-
-        // Assert - the classId and OrgId is set to null even though the citizen tries to send some Id's with
-        Assert.NotNull(result);
-        var sent = JsonSerializer.Deserialize<AiGenerationRequestDTO>(
-            handler.LastBody!, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        // Assert that the expected Id is the exact id thats sent
-        Assert.Equal(seededCitizen.Id, sent!.CitizenId);
-        Assert.Null(sent.ClassId);
-        Assert.Null(sent.OrganizationId);
     }
 }

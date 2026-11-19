@@ -88,6 +88,9 @@ namespace giraf_core_v2.Migrations
                     b.Property<string>("TicketId")
                         .HasColumnType("text");
 
+                    b.Property<string>("TitleDa")
+                        .HasColumnType("text");
+
                     b.Property<string>("TitleEn")
                         .HasColumnType("text");
 

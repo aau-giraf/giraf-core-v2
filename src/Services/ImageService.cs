@@ -97,64 +97,23 @@ public class ImageService(AppDbContext db, IMemoryCache cache, HttpClient http)
         return await GetImageByIdAsync(image.Id);
     }
 
-    public async Task<string?> GenerateImage(PostImagePromptDTO postImagePromptDto, int userId)
+    // Service for foodplanner/vta to call after they have generated an image using the AI-backend
+    public async Task<IsImageDoneRequestDTO> IsImageDone(string ticketId)
     {
-        var ticketId = Guid.NewGuid().ToString();
-
-        var isCitizen = await _db.Citizens.AnyAsync(c => c.Id == userId);
-        if (isCitizen)
-        {
-            // A citizen can only generate images for themselves
-            postImagePromptDto.CitizenId = userId;
-            postImagePromptDto.ClassId = null;
-            postImagePromptDto.OrganizationId = null;
-        }
-
-        var request = new AiGenerationRequestDTO
-        {
-            TicketId = ticketId,
-            UserId = userId,
-            Prompt = postImagePromptDto.Prompt,
-            CitizenId = postImagePromptDto.CitizenId,
-            ClassId = postImagePromptDto.ClassId,
-            OrganizationId = postImagePromptDto.OrganizationId,
-        };
-
-        try
-        {
-            // We need to get the generate endpoint from AI, where they should accept the AiGenerationRequestDTO
-            var response = await http.PostAsJsonAsync("generate", request);
-            return response.IsSuccessStatusCode ? ticketId : null;
-        }
-        catch (HttpRequestException) { return null; }  // AI backend is down
-        catch (TaskCanceledException) { return null; }  // timeout
-    }
-
-    public void MarkInappropriate(string ticketId)
-    {
-        // Set the ticketId inappropriate to true, meaning the ticketId will not get an image generated
-        cache.Set(ticketId, true, RejectedTicketLifetime);
-    }
-
-    public async Task<ReqIsImageDoneDTO> IsImageDone(string ticketId)
-    {
-        // lookup the image from the ticket id, if it returns null its not yet created
+        // Lookup the image in the db using the TicketId 
         var image = await _db.Images
             .AsNoTracking()
             .FirstOrDefaultAsync(i => i.TicketId == ticketId);
 
+        // If the lookup returns null its not yet created
         if (image == null)
         {
-            // lookup in the in-memory what the ticketId status is
-            if (cache.TryGetValue(ticketId, out _))
-            {
-                return new ReqIsImageDoneDTO { Status = ImageStatus.Inappropriate, TicketId = ticketId };
-            }
             // Return image status pending
-            return new ReqIsImageDoneDTO { Status = ImageStatus.Pending, TicketId = ticketId };
+            return new IsImageDoneRequestDTO { Status = ImageStatus.Pending, TicketId = ticketId };
         }
 
-        var requestDTO = new ReqIsImageDoneDTO() { TicketId = ticketId, TitleEn = image.TitleEn, Status = ImageStatus.Done, ImageId = image.Id };
+        // Else return the DTO with the given instance that VTA/Foodplanner can use
+        var requestDTO = new IsImageDoneRequestDTO() { TicketId = ticketId, TitleEn = image.TitleEn, TitleDa = image.TitleDa, Status = ImageStatus.Done, ImageId = image.Id };
 
         return requestDTO;
     }
