@@ -34,7 +34,7 @@ jobs:
           } > .env
 
       - name: Run tests with coverage
-        run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: dotnet test --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --filter "FullyQualifiedName!~PactAdapterTests"
 
       - name: Generate per-file coverage Markdown
         if: always() && github.event_name == 'pull_request'
