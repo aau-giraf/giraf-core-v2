@@ -9,7 +9,7 @@ public static class LegacyClassEndpoints
 {
     public static void MapLegacyClassEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/legacy/class");
+        var group = app.MapGroup("/legacy/foodplanner/api/Classrooms");
 
         group.MapPost("/Create", CreateClassInOrganization); //Kræver admin authorization
         group.MapGet("/GetAll", GetAllClassrooms);
