@@ -50,8 +50,8 @@ public sealed class ImageConfiguration : IEntityTypeConfiguration<Image>
         builder.HasOne(image => image.Organization)
             .WithMany(organization => organization.Images)
             .HasForeignKey(image => image.OrganizationId);
-        
-         //Store enum as string, rather than the backing integer. Fragility if addition or reordering, e.g. adding new value in the middle.
+
+        //Store enum as string, rather than the backing integer. Fragility if addition or reordering, e.g. adding new value in the middle.
         builder.Property(image => image.OriginApp)
             .HasConversion<string>();
     }
