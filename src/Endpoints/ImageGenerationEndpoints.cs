@@ -32,9 +32,9 @@ public static class ImageGenerateEndpoints
         return ticketId is null ? TypedResults.Problem("Image generation is unavailable right now", statusCode: 503) : TypedResults.Ok(ticketId);
     }
 
-    private static Ok InappropriateImage([FromBody] InappropriateImageDTO inappropriateImageDto, ImageService imageService)
+    private static Ok InappropriateImage([FromBody] EtEllerAndetFedt etEllerAndetFedt, ImageService imageService)
     {
-        imageService.MarkInappropriate(inappropriateImageDto.TicketId);
+        imageService.MarkInappropriate(etEllerAndetFedt.TicketId);
         return TypedResults.Ok();
     }
 
