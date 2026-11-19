@@ -1,4 +1,3 @@
-global using giraf_core_v2;
 global using giraf_core_v2.Data;
 global using giraf_core_v2.DTOs.Citizens;
 global using giraf_core_v2.DTOs.Classes;
