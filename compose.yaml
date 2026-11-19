@@ -10,6 +10,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    volumes:
+      - images:/app/images
 
   db:
     image: postgres
@@ -48,3 +50,4 @@ services:
 
 volumes:
   pgdata:
+  images:

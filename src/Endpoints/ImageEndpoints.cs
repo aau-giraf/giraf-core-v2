@@ -15,6 +15,7 @@ public static class ImageEndpoints
         group.MapGet("/citizens/{citizenId}", GetImagesByCitizenIdAsync);
         group.MapPost("/", PostImageAsync).DisableAntiforgery(); // needed for us to sent a Form via Postman/bruno
         group.MapDelete("/{imageId}", DeleteImageAsync);
+        group.MapGet("/{filename}/hejsa.png", showImage);
     }
     // GET imagees by ID
     private static async Task<Results<Ok<Image>, NotFound>> GetImageByIdAsync(int imageId, ImageService imageService)
@@ -55,6 +56,11 @@ public static class ImageEndpoints
 
         var image = await imageService.CreateImagesAsync(imageRequest);
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
+    }
+
+    private static IResult showImage(string filename)
+    {
+        return Results.File(Path.GetFullPath(Path.Combine("images", filename)));
     }
 
 }
