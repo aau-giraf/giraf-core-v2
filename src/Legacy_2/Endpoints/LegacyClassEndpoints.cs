@@ -8,7 +8,7 @@ namespace giraf_core_v2.Legacy_2;
 public static class LegacyClassEndpoints
 {
     public static void MapLegacyClassEndpoints(this WebApplication app)
-    {
+    {        
         var group = app.MapGroup("/legacy/foodplanner/api/Classrooms");
 
         group.MapPost("/Create", CreateClassInOrganization); //Kræver admin authorization
