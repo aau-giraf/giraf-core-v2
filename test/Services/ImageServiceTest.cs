@@ -6,35 +6,6 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     private readonly ClassSeeder _classSeeder = new();
 
     [Fact]
-    public async Task GetIDInImagesAsync_ReturnsImage_WhenImageExists()
-    {
-        await using var db = CreateDbContext();
-
-        var image = await _imageSeeder.SeedAsync(db, Seed);
-
-        var service = new ImageService(db);
-
-        var imageById = await service.GetImageByIdAsync(image.Id);
-
-        Assert.Equal(image.Id, imageById!.Id);
-    }
-
-    [Fact]
-    public async Task GetIDInImagesAsync_ReturnsNull_IfNotExist()
-    {
-        await using var db = CreateDbContext();
-
-        var imageService = new ImageService(db);
-        var nonExistingImageId = 9999;
-
-
-        var result = await imageService.GetImageByIdAsync(nonExistingImageId);
-
-
-        Assert.Null(result);
-    }
-
-    [Fact]
     public async Task GetImagesByCitizenIdAsync_returnsTheListOfImages()
     {
         await using var db = CreateDbContext();
@@ -53,7 +24,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(3, result!.Count);
         Assert.Equal(
             images.Select(x => x.Id).OrderBy(id => id),
-            result.Select(i => i.Id).OrderBy(id => id)
+            result.Select(i => i.ImageId).OrderBy(id => id)
         );
     }
 
@@ -98,7 +69,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(3, result!.Count);
         Assert.Equal(
             seededImages.Select(x => x.Id).OrderBy(id => id),
-            result.Select(i => i.Id).OrderBy(id => id)
+            result.Select(i => i.ImageId).OrderBy(id => id)
         );
     }
 
@@ -147,7 +118,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(3, result!.Count);
         Assert.Equal(
             images.Select(x => x.Id).OrderBy(id => id),
-            result.Select(i => i.Id).OrderBy(id => id)
+            result.Select(i => i.ImageId).OrderBy(id => id)
         );
     }
 
@@ -192,7 +163,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(3, result!.Count);
         Assert.Equal(
             seededImages.Select(x => x.Id).OrderBy(id => id),
-            result.Select(i => i.Id).OrderBy(id => id)
+            result.Select(i => i.ImageId).OrderBy(id => id)
         );
     }
 
@@ -228,7 +199,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(3, result!.Count);
         Assert.Equal(
             images.Select(x => x.Id).OrderBy(id => id),
-            result.Select(i => i.Id).OrderBy(id => id)
+            result.Select(i => i.ImageId).OrderBy(id => id)
         );
     }
 
@@ -273,7 +244,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(3, result!.Count);
         Assert.Equal(
             seededImages.Select(x => x.Id).OrderBy(id => id),
-            result.Select(i => i.Id).OrderBy(id => id)
+            result.Select(i => i.ImageId).OrderBy(id => id)
         );
     }
 
@@ -364,13 +335,13 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.Name, created!.Title);
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
             Assert.Equal(request.ClassId, created.ClassId);
             Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
-            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
+            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.ImageId);
             Assert.NotNull(stored);
             Assert.Equal(created.Path, stored!.Path);
         }
@@ -396,7 +367,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             Assert.NotNull(created);
             var allImages = await db.Images.ToListAsync();
             var stored = Assert.Single(allImages);
-            Assert.Equal(created!.Id, stored.Id);
+            Assert.Equal(created!.ImageId, stored.Id);
             Assert.Equal(request.Name, stored.Name);
             Assert.Equal(request.OrganizationId, stored.OrganizationId);
             Assert.Equal(request.CitizenId, stored.CitizenId);
@@ -429,14 +400,14 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.Name, created!.Title);
             Assert.Equal(citizen.User.Id, created.CitizenId);
             Assert.Null(created.ClassId);
             Assert.Equal(class_.Id, created.OrganizationId);
             Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
-            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
+            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.ImageId);
             Assert.NotNull(stored);
             Assert.Equal(created.Path, stored!.Path);
             Assert.Null(stored.ClassId);
@@ -465,14 +436,14 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.Name, created!.Title);
             Assert.Null(created.CitizenId);
             Assert.Equal(class_.Id, created.ClassId);
             Assert.Equal(organization.Id, created.OrganizationId);
             Assert.Equal(Path.GetExtension(request.File.FileName), Path.GetExtension(created.Path));
             Assert.True(File.Exists(created.Path));
 
-            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.Id);
+            var stored = await db.Images.SingleOrDefaultAsync(i => i.Id == created.ImageId);
             Assert.NotNull(stored);
             Assert.Equal(created.Path, stored!.Path);
             Assert.Equal(class_.Id, stored.ClassId);
@@ -492,8 +463,11 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     public async Task MultipleServiceComponentsTest()
     {
         await using var db = CreateDbContext();
-        var organization = _orgSeeder.SeedAsync(db, Seed);
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
+        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var request = _imageSeeder.CreateRequestBody(
+            Seed,
+            new(OrgId: organization.Id, ClassId: null, CitizenId: null));
+
         var service = new ImageService(db);
         string? path = null;
 
@@ -501,31 +475,38 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         {
             // POST
             var created = await service.CreateImagesAsync(request);
+
             Assert.NotNull(created);
             path = created.Path;
             Assert.True(File.Exists(path));
+
             db.ChangeTracker.Clear();
 
-            // GET
-            var fetched = await service.GetImageByIdAsync(created.Id);
+            // GET by OrganizationId
+            var fetched = await service.GetImagesByOrganizationIdAsync(organization.Id);
+
             Assert.NotNull(fetched);
-            Assert.Equal(created.Id, fetched.Id);
-            Assert.Equal(request.Name, fetched.Name);
-            Assert.Equal(request.OrganizationId, fetched.OrganizationId);
-            Assert.Equal(request.CitizenId, fetched.CitizenId);
-            Assert.Equal(request.ClassId, fetched.ClassId);
-            Assert.Equal(created.Path, fetched.Path);
+            Assert.Single(fetched);
+
+            var fetchedImage = fetched[0];
+
+            Assert.Equal(created.ImageId, fetchedImage.ImageId);
+            Assert.Equal(created.Title, fetchedImage.Title);
+
             db.ChangeTracker.Clear();
 
-            // Delete
-            Assert.True(await service.DeleteImageAsync(created.Id));
+            // DELETE
+            Assert.True(await service.DeleteImageAsync(created.ImageId));
+
             db.ChangeTracker.Clear();
 
-            // GET after Delete
-            Assert.Null(await service.GetImageByIdAsync(created.Id));
+            // GET after DELETE
+            var imagesAfterDelete = await service.GetImagesByOrganizationIdAsync(organization.Id);
+
+            Assert.NotNull(imagesAfterDelete);
+            Assert.Empty(imagesAfterDelete);
             Assert.Empty(await db.Images.ToListAsync());
             Assert.False(File.Exists(path));
-
         }
         finally
         {
