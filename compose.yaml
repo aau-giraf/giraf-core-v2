@@ -10,6 +10,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    volumes:
+      - images:/app/images
 
   db:
     image: postgres
@@ -25,7 +27,6 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
-
 
   test:
     profiles: ["test"]
@@ -48,3 +49,4 @@ services:
 
 volumes:
   pgdata:
+  images:

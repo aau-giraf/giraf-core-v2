@@ -6,36 +6,66 @@ public class ImageService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<Image?> GetImageByIdAsync(int image_id)
+    private List<ImageResponseDTO>? ConvertImagesToDTO(List<Image> images)
     {
-        var image = await _db.Images
-            .AsNoTracking()
-            .FirstOrDefaultAsync(i => i.Id == image_id);
-        return image;
+        if (images is null)
+        {
+            return null;
+        }
+
+        List<ImageResponseDTO> imagesDTO = [];
+        foreach (Image image in images)
+        {
+            imagesDTO.Add(new ImageResponseDTO
+            {
+                Title = image.Name,
+                File = Results.File(Path.GetFullPath(Path.Combine("images", image.Name)))
+            });
+        }
+
+        return imagesDTO;
     }
 
-    public async Task<List<Image>?> GetImagesByCitizenIdAsync(int cit_id)
+    public async Task<List<ImageResponseDTO>?> GetImagesByCitizenIdAsync(int cit_id)
     {
         var citizen = await _db.Citizens.FindAsync(cit_id);
 
-        return citizen == null ? null : await _db.Images
-            .AsNoTracking()
-            .Where(i => i.CitizenId == cit_id)
-            .ToListAsync();
+        if (citizen is null)
+        {
+            return null;
+        }
+
+        List<Image> images = await _db.Images.AsNoTracking()
+                                             .Where(i => i.CitizenId == cit_id)
+                                             .ToListAsync();
+
+        return ConvertImagesToDTO(images);
     }
 
-    public async Task<List<Image>?> GetImagesByClassIdAsync(int classId)
+    public async Task<List<ImageResponseDTO>?> GetImagesByClassIdAsync(int classId)
     {
         var class_ = await _db.Classes.FindAsync(classId);
+        if (class_ is null)
+        {
+            return null;
+        }
 
-        return class_ == null ? null : await _db.Images.AsNoTracking().Where(i => i.ClassId == classId).ToListAsync();
+        List<Image> images = await _db.Images.AsNoTracking().Where(i => i.ClassId == classId).ToListAsync();
+
+        return ConvertImagesToDTO(images);
     }
 
-    public async Task<List<Image>?> GetImagesByOrganizationIdAsync(int organizationId)
+    public async Task<List<ImageResponseDTO>?> GetImagesByOrganizationIdAsync(int organizationId)
     {
         var organization = await _db.Organizations.FindAsync(organizationId);
+        if (organization is null)
+        {
+            return null;
+        }
 
-        return organization == null ? null : await _db.Images.AsNoTracking().Where(i => i.OrganizationId == organizationId).ToListAsync();
+        List<Image> images = await _db.Images.AsNoTracking().Where(i => i.OrganizationId == organizationId).ToListAsync();
+
+        return ConvertImagesToDTO(images);
     }
 
     public async Task<bool> DeleteImageAsync(int image_id)
@@ -72,7 +102,7 @@ public class ImageService(AppDbContext db)
         }
     }
 
-    public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
+    public async Task<ImageResponseDTO?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
 
@@ -95,8 +125,15 @@ public class ImageService(AppDbContext db)
         _db.Images.Add(image);
         await _db.SaveChangesAsync();
 
-        return await GetImageByIdAsync(image.Id);
+        image = await _db.Images.FindAsync(image.Id);
+
+        return image is null ? null : new ImageResponseDTO
+        {
+            Title = image.Name,
+            File = Results.File(Path.GetFullPath(Path.Combine("images", image.Name)))
+        };
     }
+
     // stores image on core machine
     private static async Task<string> StoreImageAsync(IFormFile file)
     {
