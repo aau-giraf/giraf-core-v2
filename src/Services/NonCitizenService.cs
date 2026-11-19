@@ -350,16 +350,6 @@ public class NonCitizenService(AppDbContext db)
             return (HttpReponseType.NotFound, null);
         }
 
-        // Check if guardianship exists
-        var guardianshipExists = await _db.Guardianships.AnyAsync(
-            gs => gs.CitizenId == requestGuardianshipDTO.CitizenId &&
-            gs.GuardianId == nonCitizenId);
-
-        if (guardianshipExists is true)
-        {
-            return (HttpReponseType.Conflict, null);
-        }
-
         var createdGuardianship = new Guardianship()
         {
             CitizenId = requestGuardianshipDTO.CitizenId,
@@ -369,7 +359,19 @@ public class NonCitizenService(AppDbContext db)
         };
 
         _db.Guardianships.Add(createdGuardianship);
-        await _db.SaveChangesAsync();
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateException exception)
+        {
+            if (exception is not null)
+            {
+                return (HttpReponseType.Conflict, null);
+            }
+        }
+
 
         // Find the updated list of citizens
         var guardianships = await _db.Guardianships.Where(gs => gs.GuardianId == nonCitizenId).ToListAsync();

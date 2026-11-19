@@ -4,6 +4,5 @@ public enum HttpReponseType
     Unauthorized,
     Ok,
     BadRequest,
-
     Conflict
 }
