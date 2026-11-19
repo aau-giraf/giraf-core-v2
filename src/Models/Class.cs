@@ -11,6 +11,9 @@ public class Class
     //Navigational property for citizens belonging to a class
     public ICollection<Citizen> Citizens { get; } = [];
 
+    //Navigational property: (class, non-citizen-role) pairs related to this class
+    public ICollection<ClassRole> ClassRoles { get; } = [];
+
     //Navigational property: images related to this class
     public ICollection<Image> Images { get; } = [];
 }
