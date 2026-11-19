@@ -57,4 +57,3 @@ public static class ImageEndpoints
     }
 
 }
-public record CreateImageRequest(string Name, int OrganizationId, int? CitizenId, string StorageKey, string FileName, string FileType, long SizeBytes);
