@@ -35,7 +35,7 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
 
         return new Faker<Image>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.Title, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.OrganizationId, f => options.OrgId != null && options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))

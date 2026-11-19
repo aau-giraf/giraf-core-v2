@@ -10,11 +10,14 @@ public class Image
 {
     [Key]
     public int Id { get; init; }
-    public required string Name { get; set; }
+    public required string Title { get; set; }
     //Optional foreign key to the Citizen the image belongs to
     public int? CitizenId { get; set; }
-    public int? ClassId { get; set; }
     public Citizen? Citizen { get; set; }
+
+    public int? ClassId { get; set; }
+    public Class? Class { get; set; }
+
     public required string Path { get; set; }
 
     //Foreign key to the Organization the image is scoped to. If connected to a citizen it should be found by though the citizen and never be NULL
@@ -22,6 +25,14 @@ public class Image
     public Organization? Organization { get; set; }
 
     public DateTime CreatedAt { get; init; }
+
+    public required OriginApp OriginApp { get; init; }
+}
+
+public enum OriginApp
+{
+    FP,
+    VTA
 }
 
 // Explicitly configures database mapping of Image model - constraints, defaults and delete behavior cannot be expressed by conventions
@@ -39,5 +50,9 @@ public sealed class ImageConfiguration : IEntityTypeConfiguration<Image>
         builder.HasOne(image => image.Organization)
             .WithMany(organization => organization.Images)
             .HasForeignKey(image => image.OrganizationId);
+        
+         //Store enum as string, rather than the backing integer. Fragility if addition or reordering, e.g. adding new value in the middle.
+        builder.Property(image => image.OriginApp)
+            .HasConversion<string>();
     }
 }
