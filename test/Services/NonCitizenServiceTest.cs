@@ -438,7 +438,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ASSERT -----\\
         Assert.Null(fetchedNonCitizen.Item2);
         Assert.True(BCrypt.Net.BCrypt.Verify(newPassword, nonCitizenFaker.Password));
-        Assert.Equal(HttpReponseType.Unauthorized.ToString(), fetchedNonCitizen.Item1.ToString());
+        Assert.Equal(HttpResponseType.Unauthorized.ToString(), fetchedNonCitizen.Item1.ToString());
     }
 
     [Fact]
@@ -474,7 +474,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
         Assert.Null(fetchedNonCitizen.Item2);
-        Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedNonCitizen.Item1.ToString());
+        Assert.Equal(HttpResponseType.Conflict.ToString(), fetchedNonCitizen.Item1.ToString());
     }
 
     // ---------- /nonCitizens/userRoles on invalid inputs ---------- \\
@@ -507,7 +507,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
         Assert.Null(fetchedUserRoles.Item2);
-        Assert.Equal(HttpReponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
+        Assert.Equal(HttpResponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
     }
 
     // ---------- /nonCitizens/guardianships on invalid inputs ---------- \\
@@ -543,7 +543,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
         Assert.Null(fetchedGuardianships.Item2);
-        Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedGuardianships.Item1.ToString());
+        Assert.Equal(HttpResponseType.Conflict.ToString(), fetchedGuardianships.Item1.ToString());
     }
 
 }

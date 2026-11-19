@@ -12,7 +12,7 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     [InlineData(false, false, true)]
     public void Validate_OneOwnerIdIsSet_Passes(bool hasCitizenId, bool hasClassId, bool hasOrganizationId)
     {
-        var dto = new PostImageRequestDTO
+        var imageRequest = new PostImageRequestDTO
         {
             Name = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
@@ -20,7 +20,7 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
             ClassId = hasClassId ? 1 : null,
             OrganizationId = hasOrganizationId ? 1 : null
         };
-        Assert.Empty(dto.Validate(new ValidationContext(dto)));
+        Assert.Empty(imageRequest.Validate(new ValidationContext(imageRequest)));
     }
 
     [Theory]
@@ -31,7 +31,7 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     [InlineData(false, true, true)]
     public void Validate_MultipleOwnerIdsAreSet_Fails(bool hasCitizenId, bool hasClassId, bool hasOrganizationId)
     {
-        var dto = new PostImageRequestDTO
+        var imageRequest = new PostImageRequestDTO
         {
             Name = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
@@ -39,7 +39,7 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
             ClassId = hasClassId ? 1 : null,
             OrganizationId = hasOrganizationId ? 1 : null
         };
-        Assert.Single(dto.Validate(new ValidationContext(dto)));
+        Assert.Single(imageRequest.Validate(new ValidationContext(imageRequest)));
     }
 
     [Theory]
@@ -50,22 +50,22 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     [InlineData("webp")]
     public void Validate_FileExtensionIsAllowed_Passes(string fileExtension)
     {
-        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null, FileExtension: fileExtension));
-        Assert.Empty(dto.Validate(new ValidationContext(dto)));
+        var imageRequest = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null, FileExtension: fileExtension));
+        Assert.Empty(imageRequest.Validate(new ValidationContext(imageRequest)));
     }
 
     [Fact]
     public void Validate_FileExtensionIsNotAllowed_Fails()
     {
-        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null));
-        Assert.Single(dto.Validate(new ValidationContext(dto)));
+        var imageRequest = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null));
+        Assert.Single(imageRequest.Validate(new ValidationContext(imageRequest)));
     }
 
     [Fact]
     public void Validate_OwnerAndFileAreInvalid_ReturnsMultipleErrors()
     {
-        var dto = _imageSeeder.CreateRequestBody(Seed, new());
-        var results = dto.Validate(new ValidationContext(dto)).ToList();
+        var imageRequest = _imageSeeder.CreateRequestBody(Seed, new());
+        var results = imageRequest.Validate(new ValidationContext(imageRequest)).ToList();
         Assert.Multiple(() =>
         {
             Assert.Equal(2, results.Count);

@@ -7,7 +7,6 @@ public static class CitizenEndpoints
     public static void MapCitizenEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/citizens");
-        var groupOrg = app.MapGroup("/organizations");
 
         group.MapGet("/{citizenId}", GetCitizenAsync);
         group.MapPost("", CreateCitizenAsync);

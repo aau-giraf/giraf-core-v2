@@ -25,18 +25,18 @@ public class CitizenService(AppDbContext db)
         return getCitizenDto;
     }
 
-    public async Task<GetCitizenResponseDTO?> CreateCitizenAsync(CreateCitizenRequestDTO dto)
+    public async Task<GetCitizenResponseDTO?> CreateCitizenAsync(CreateCitizenRequestDTO createCitizen)
     {
         var citizen = new Citizen
         {
-            ClassId = dto.ClassId,
-            FirstName = dto.FirstName,
-            LastName = dto.LastName,
-            Password = BCrypt.Net.BCrypt.HashPassword(dto.Password, 12),
-            Username = dto.Username,
+            ClassId = createCitizen.ClassId,
+            FirstName = createCitizen.FirstName,
+            LastName = createCitizen.LastName,
+            Password = BCrypt.Net.BCrypt.HashPassword(createCitizen.Password, 12),
+            Username = createCitizen.Username,
         };
 
-        var schoolClass = await _db.Classes.FindAsync(dto.ClassId);
+        var schoolClass = await _db.Classes.FindAsync(createCitizen.ClassId);
         if (schoolClass is null)
         {
             return null;
@@ -55,7 +55,7 @@ public class CitizenService(AppDbContext db)
         };
     }
 
-    public async Task<GetCitizenResponseDTO?> PatchCitizenAsync(int citizenId, UpdateCitizenRequestDTO dto)
+    public async Task<GetCitizenResponseDTO?> PatchCitizenAsync(int citizenId, UpdateCitizenRequestDTO updateCitizen)
     {
         var citizen = await _db.Citizens.FindAsync(citizenId);
 
@@ -64,19 +64,19 @@ public class CitizenService(AppDbContext db)
             return null;
         }
 
-        if (dto.ClassId is not null)
+        if (updateCitizen.ClassId is not null)
         {
-            var schoolClass = await _db.Classes.FindAsync(dto.ClassId.Value);
+            var schoolClass = await _db.Classes.FindAsync(updateCitizen.ClassId.Value);
             if (schoolClass is null)
             {
                 return null;
             }
-            citizen.ClassId = dto.ClassId.Value;
+            citizen.ClassId = updateCitizen.ClassId.Value;
         }
 
-        if (dto.FirstName is not null) citizen.FirstName = dto.FirstName;
-        if (dto.LastName is not null) citizen.LastName = dto.LastName;
-        if (dto.Username is not null) citizen.Username = dto.Username;
+        if (updateCitizen.FirstName is not null) citizen.FirstName = updateCitizen.FirstName;
+        if (updateCitizen.LastName is not null) citizen.LastName = updateCitizen.LastName;
+        if (updateCitizen.Username is not null) citizen.Username = updateCitizen.Username;
 
         await _db.SaveChangesAsync();
 

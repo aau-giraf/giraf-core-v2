@@ -216,13 +216,13 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
         var client = factory.CreateClient();
 
 
-        UpdateCitizenRequestDTO updateCitizenDTO = new Faker<UpdateCitizenRequestDTO>().UseSeed(Seed)
+        UpdateCitizenRequestDTO updateCitizen = new Faker<UpdateCitizenRequestDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
             .RuleFor(u => u.ClassId, citizen.Id)
             .RuleFor(u => u.Username, f => f.Person.UserName);
 
-        var response = await client.PatchAsJsonAsync($"/citizens/{citizen.Id + 1}", updateCitizenDTO);
+        var response = await client.PatchAsJsonAsync($"/citizens/{citizen.Id + 1}", updateCitizen);
 
         try
         {

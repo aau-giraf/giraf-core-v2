@@ -83,12 +83,12 @@ public class UserService(AppDbContext db)
         return 2;
     }
 
-    public async Task<LoginResponseDTO?> LoginAsync(LoginRequestDTO loginRequestDTO)
+    public async Task<LoginResponseDTO?> LoginAsync(LoginRequestDTO loginRequest)
     {
-        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequestDTO.Username);
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequest.Username);
 
         // If user doesn't exist or password is incorrect, return null.
-        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
+        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
             return null;
         }

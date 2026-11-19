@@ -66,13 +66,13 @@ public static class UserEndpoints
         };
     }
 
-    private static async Task<Results<Ok<LoginResultDTO>, UnauthorizedHttpResult>> LoginAsync(
+    private static async Task<Results<Ok<LoginResultResponseDTO>, UnauthorizedHttpResult>> LoginAsync(
         UserService userService,
         HttpContext httpContext,
-        [FromBody] LoginRequestDTO loginRequestDTO
+        [FromBody] LoginRequestDTO loginRequest
     )
     {
-        var loginResponse = await userService.LoginAsync(loginRequestDTO);
+        var loginResponse = await userService.LoginAsync(loginRequest);
 
         if (loginResponse is null)
         {
@@ -91,7 +91,7 @@ public static class UserEndpoints
             Path = "/" // The cookie can be used for all request paths.
         });
 
-        return TypedResults.Ok(new LoginResultDTO
+        return TypedResults.Ok(new LoginResultResponseDTO
         {
             FirstName = loginResponse.FirstName,
             LastName = loginResponse.LastName,

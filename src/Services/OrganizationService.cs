@@ -16,13 +16,13 @@ public class OrganizationService(AppDbContext db)
 
         foreach (Organization organization in organizations)
         {
-            GetOrganizationResponseDTO responseOrganizationDTO = new GetOrganizationResponseDTO
+            GetOrganizationResponseDTO responseOrganization = new GetOrganizationResponseDTO
             {
                 OrganizationId = organization.Id,
                 Name = organization.Name,
             };
             // Add each organization that has been converted to dto to the list
-            organizationsDtoList.Add(responseOrganizationDTO);
+            organizationsDtoList.Add(responseOrganization);
         }
         return organizationsDtoList;
     }
@@ -37,12 +37,12 @@ public class OrganizationService(AppDbContext db)
             return null;
         }
 
-        GetOrganizationResponseDTO responseOrganizationDTO = new GetOrganizationResponseDTO
+        GetOrganizationResponseDTO responseOrganization = new GetOrganizationResponseDTO
         {
             OrganizationId = organization!.Id,
             Name = organization.Name,
         };
-        return responseOrganizationDTO;
+        return responseOrganization;
     }
 
     // Delete organization by organizationId from the route parameter
@@ -77,13 +77,13 @@ public class OrganizationService(AppDbContext db)
         }
 
         // Return correctly formatted response
-        GetClassInOrganizationResponseDTO responseClassInOrganizationDTO = new GetClassInOrganizationResponseDTO
+        GetClassInOrganizationResponseDTO responseClassInOrganization = new GetClassInOrganizationResponseDTO
         {
             ClassId = selectedClass!.Id,
             Name = selectedClass.Name,
             OrganizationId = selectedClass.OrganizationId,
         };
-        return responseClassInOrganizationDTO;
+        return responseClassInOrganization;
     }
 
     public async Task<List<GetClassInOrganizationResponseDTO>> GetClassesInOrganizationAsync(int organizationId)
@@ -97,14 +97,14 @@ public class OrganizationService(AppDbContext db)
 
         foreach (Class selectedClass in classes)
         {
-            GetClassInOrganizationResponseDTO responseClassInOrganizationDTO = new GetClassInOrganizationResponseDTO
+            GetClassInOrganizationResponseDTO responseClassInOrganization = new GetClassInOrganizationResponseDTO
             {
                 ClassId = selectedClass.Id,
                 Name = selectedClass.Name,
                 OrganizationId = selectedClass.OrganizationId,
             };
             // Add each class that has been converted to dto to the list
-            classesInOrganizationDtoList.Add(responseClassInOrganizationDTO);
+            classesInOrganizationDtoList.Add(responseClassInOrganization);
         }
         return classesInOrganizationDtoList;
     }

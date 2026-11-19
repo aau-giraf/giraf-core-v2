@@ -204,17 +204,17 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        CreateOrganizationRequestDTO requestCreateOrganizationDTO = new()
+        CreateOrganizationRequestDTO createOrganization = new()
         {
             Name = "SchoolOfIdoha",
         };
 
         //----- ACT -----\\
-        var createdOrganization = await service.CreateOrganizationAsync(requestCreateOrganizationDTO);
+        var createdOrganization = await service.CreateOrganizationAsync(createOrganization);
 
         //----- ASSERT -----\\
         Assert.NotNull(createdOrganization);
-        Assert.True(requestCreateOrganizationDTO.Name == createdOrganization.Name);
+        Assert.True(createOrganization.Name == createdOrganization.Name);
     }
 
     [Fact]
@@ -234,17 +234,17 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        CreateOrganizationRequestDTO requestUpdateOrganizationDTO = new()
+        CreateOrganizationRequestDTO updateOrganization = new()
         {
             Name = "SchoolOfNY",
         };
 
         //----- ACT -----\\
-        var updatedOrganization = await service.UpdateOrganizationAsync(requestUpdateOrganizationDTO, organization1.Id);
+        var updatedOrganization = await service.UpdateOrganizationAsync(updateOrganization, organization1.Id);
 
         //----- ASSERT -----\\
         Assert.NotNull(updatedOrganization);
-        Assert.Equal(requestUpdateOrganizationDTO.Name, updatedOrganization.Name);
+        Assert.Equal(updateOrganization.Name, updatedOrganization.Name);
         Assert.True(organization1Id == updatedOrganization.OrganizationId);
         // Asserts that you cant rename and organization to an existing one
         Assert.NotEqual(organization1Name, updatedOrganization.Name);
@@ -273,18 +273,18 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         // Create the dummy DTO for the requestbody
-        CreateClassRequestDTO requestCreateClassinOrganizationDTO = new()
+        CreateClassRequestDTO createClass = new()
         {
             Name = "4a",
         };
 
         //----- ACT -----\\
         // Create a class in organization1
-        var createdClassInOrganization = await service.CreateClassInOrganizationAsync(requestCreateClassinOrganizationDTO, organization1.Id);
+        var createdClassInOrganization = await service.CreateClassInOrganizationAsync(createClass, organization1.Id);
 
         //----- ASSERT -----\\
         Assert.NotNull(createdClassInOrganization);
-        Assert.True(requestCreateClassinOrganizationDTO.Name == createdClassInOrganization.Name);
+        Assert.True(createClass.Name == createdClassInOrganization.Name);
         Assert.True(organization1.Id == createdClassInOrganization.OrganizationId);
 
     }

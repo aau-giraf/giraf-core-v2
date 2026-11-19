@@ -38,10 +38,10 @@ public class PostImageRequestDTO : IValidatableObject
         {
             ".jpeg", ".jpg", ".png", ".heic", ".webp"
         };
-        string ext = Path.GetExtension(File.FileName);
+        string fileExtension = Path.GetExtension(File.FileName);
 
         // Returns error if DTO isn't the right type
-        if (!string.IsNullOrEmpty(ext) && !allowedExtensions.Contains(ext))
+        if (!string.IsNullOrEmpty(fileExtension) && !allowedExtensions.Contains(fileExtension))
         {
             yield return new ValidationResult(
                 "The file extension needs to be either '.jpeg', '.jpg', '.png', '.heic' or '.webp' ",

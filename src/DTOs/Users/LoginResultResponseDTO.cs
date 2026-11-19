@@ -6,7 +6,7 @@ namespace giraf_core_v2.DTOs.Users;
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 [ValidatableType]
-public class LoginResultDTO
+public class LoginResultResponseDTO
 {
     [Required]
     [Length(3, 255)]

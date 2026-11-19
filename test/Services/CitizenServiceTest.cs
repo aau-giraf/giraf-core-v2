@@ -142,18 +142,18 @@ public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
         var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
-        int ogClassId = citizen.ClassId;
+        int originalClassId = citizen.ClassId;
 
         var service = new CitizenService(db);
 
         // No classes are seeded, so this class does not exist
         var updated = await service.PatchCitizenAsync(
             citizen.Id,
-            new UpdateCitizenRequestDTO { ClassId = ogClassId + 1 });
+            new UpdateCitizenRequestDTO { ClassId = originalClassId + 1 });
 
         // Assert that the service returns null and the citizen keeps its class
         Assert.Null(updated);
-        Assert.Equal(ogClassId, citizen.ClassId);
+        Assert.Equal(originalClassId, citizen.ClassId);
     }
 
     [Fact]

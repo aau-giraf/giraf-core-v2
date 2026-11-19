@@ -71,21 +71,21 @@ public static class OrganizationEndpoints
         return selectedClass ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<CreateClassResponseDTO>, NotFound>> CreateClassInOrganizationAsync([FromForm] CreateClassRequestDTO requestCreateClassDTO, int organizationId, OrganizationService organizationService)
+    private static async Task<Results<Ok<CreateClassResponseDTO>, NotFound>> CreateClassInOrganizationAsync([FromForm] CreateClassRequestDTO createClass, int organizationId, OrganizationService organizationService)
     {
-        var createdClass = await organizationService.CreateClassInOrganizationAsync(requestCreateClassDTO, organizationId);
+        var createdClass = await organizationService.CreateClassInOrganizationAsync(createClass, organizationId);
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
 
-    private static async Task<Results<Ok<GetOrganizationResponseDTO>, NotFound>> CreateOrganizationAsync([FromForm] CreateOrganizationRequestDTO requestCreateOrganizationDTO, OrganizationService organizationService)
+    private static async Task<Results<Ok<GetOrganizationResponseDTO>, NotFound>> CreateOrganizationAsync([FromForm] CreateOrganizationRequestDTO createOrganization, OrganizationService organizationService)
     {
-        var createdOrganization = await organizationService.CreateOrganizationAsync(requestCreateOrganizationDTO);
+        var createdOrganization = await organizationService.CreateOrganizationAsync(createOrganization);
         return createdOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdOrganization);
     }
 
-    private static async Task<Results<Ok<GetOrganizationResponseDTO>, NotFound>> UpdateOrganizationAsync([FromForm] CreateOrganizationRequestDTO requestCreateOrganizationDTO, int organizationId, OrganizationService organizationService)
+    private static async Task<Results<Ok<GetOrganizationResponseDTO>, NotFound>> UpdateOrganizationAsync([FromForm] CreateOrganizationRequestDTO updateOrganization, int organizationId, OrganizationService organizationService)
     {
-        var updatedOrganization = await organizationService.UpdateOrganizationAsync(requestCreateOrganizationDTO, organizationId);
+        var updatedOrganization = await organizationService.UpdateOrganizationAsync(updateOrganization, organizationId);
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
 
