@@ -336,8 +336,7 @@ public class NonCitizenService(AppDbContext db)
     {
 
         // Check nonCitizen exists
-        // var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
-        var nonCitizen = await _db.NonCitizens.AsNoTracking().FirstAsync(nc => nc.Id == nonCitizenId);
+        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
         if (nonCitizen is null)
         {
@@ -345,8 +344,7 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check citizen exists
-        // var citizen = await _db.Citizens.AsNoTracking().FindAsync(requestGuardianshipDTO.CitizenId);
-        var citizen = await _db.Citizens.AsNoTracking().FirstAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
+        var citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId);
 
         if (citizen is null)
         {
@@ -381,7 +379,7 @@ public class NonCitizenService(AppDbContext db)
 
         }
 
-        // Find the updated list of citizens
+        // Find the updated list of citizens from changetracker in-memory via identity resolution
         var guardianships = await _db.Guardianships.Where(gs => gs.GuardianId == nonCitizenId).ToListAsync();
 
         // Select only the needed from guardianships
