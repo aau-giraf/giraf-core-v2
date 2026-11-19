@@ -107,3 +107,5 @@ flowchart TD
 ## Contributing
 
 Before creating a pull request, please run `dotnet format`. This ensures consistent formatting between developers and reduces conflicts when merging.
+
+When coding ensure that `README.Naming.md` is followed
