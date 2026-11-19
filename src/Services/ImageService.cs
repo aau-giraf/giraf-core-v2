@@ -18,6 +18,7 @@ public class ImageService(AppDbContext db)
         {
             imagesDTO.Add(new ImageResponseDTO
             {
+                ImageId = image.Id,
                 Title = image.Name,
                 File = Results.File(Path.GetFullPath(Path.Combine("images", image.Name)))
             });
@@ -102,7 +103,7 @@ public class ImageService(AppDbContext db)
         }
     }
 
-    public async Task<ImageResponseDTO?> CreateImagesAsync(PostImageDTO imageRequest)
+    public async Task<CreateImageResponseDTO?> CreateImagesAsync(PostImageDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
 
@@ -127,10 +128,16 @@ public class ImageService(AppDbContext db)
 
         image = await _db.Images.FindAsync(image.Id);
 
-        return image is null ? null : new ImageResponseDTO
+        return image is null ? null : new CreateImageResponseDTO
         {
+            ImageId = image.Id,
             Title = image.Name,
-            File = Results.File(Path.GetFullPath(Path.Combine("images", image.Name)))
+            File = Results.File(Path.GetFullPath(Path.Combine("images", image.Name))),
+            OrganizationId = image.OrganizationId,
+            CitizenId = image.CitizenId ?? null,
+            ClassId = image.ClassId ?? null,
+            Path = image.Path,
+            CreatedAt = image.CreatedAt
         };
     }
 

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Validation;
 [ValidatableType]
 public class ImageResponseDTO
 {
+    public required int ImageId { get; set; }
+
     [Length(3, 255)]
     public required string Title { get; set; }
 
