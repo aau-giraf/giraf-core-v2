@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Runtime.CompilerServices;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
 
@@ -336,7 +338,8 @@ public class NonCitizenService(AppDbContext db)
     {
 
         // Check nonCitizen exists
-        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+        // var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+        var nonCitizen = await _db.NonCitizens.AsNoTracking().FirstAsync(nc => nc.Id == nonCitizenId);
 
         if (nonCitizen is null)
         {
@@ -344,7 +347,8 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check citizen exists
-        var citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId);
+        // var citizen = await _db.Citizens.AsNoTracking().FindAsync(requestGuardianshipDTO.CitizenId);
+        var citizen = await _db.Citizens.AsNoTracking().FirstAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
 
         if (citizen is null)
         {
