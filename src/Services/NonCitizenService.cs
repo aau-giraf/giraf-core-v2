@@ -344,9 +344,9 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check citizen exists
-        var citizen = await _db.Citizens.AnyAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
+        var citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId);
 
-        if (citizen == false)
+        if (citizen is null)
         {
             return (HttpReponseType.NotFound, null);
         }
@@ -354,7 +354,7 @@ public class NonCitizenService(AppDbContext db)
         var createdGuardianship = new Guardianship()
         {
             CitizenId = requestGuardianshipDTO.CitizenId,
-            Citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId),
+            Citizen = citizen,
             GuardianId = nonCitizenId,
             Guardian = nonCitizen
         };
