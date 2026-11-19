@@ -343,6 +343,7 @@ public class NonCitizenService(AppDbContext db)
             return (HttpReponseType.NotFound, null);
         }
 
+        // Check citizen exists
         var citizen = await _db.Citizens.AnyAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
 
         if (citizen == false)
@@ -368,10 +369,15 @@ public class NonCitizenService(AppDbContext db)
         {
             if (exception is not null)
             {
+
+                foreach (var entry in exception.Entries)
+                {
+                    entry.State = EntityState.Detached;
+                }
+
                 return (HttpReponseType.Conflict, null);
             }
         }
-
 
         // Find the updated list of citizens
         var guardianships = await _db.Guardianships.Where(gs => gs.GuardianId == nonCitizenId).ToListAsync();
