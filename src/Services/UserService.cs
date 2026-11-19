@@ -2,19 +2,21 @@ using giraf_core_v2.Auth;
 
 using Microsoft.EntityFrameworkCore;
 
+namespace giraf_core_v2.Services;
+
 public class UserService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<User?> GetCurrentUserAsync(int Id)
+    public async Task<User?> GetCurrentUserAsync(int userId)
     {
-        return await _db.Users.FindAsync(Id);
+        return await _db.Users.FindAsync(userId);
     }
 
-    public async Task<bool> DeleteCurrentUserAsync(int Id)
+    public async Task<bool> DeleteCurrentUserAsync(int userId)
     {
         // return true on successful update
-        if (await _db.Users.FindAsync(Id) is User user)
+        if (await _db.Users.FindAsync(userId) is User user)
         {
             _db.Users.Remove(user);
             await _db.SaveChangesAsync();
@@ -24,9 +26,9 @@ public class UserService(AppDbContext db)
         return false;
     }
 
-    public async Task<User?> UpdateCurrentUserAsync(int Id, UpdateUserDTO inputUser)
+    public async Task<User?> UpdateCurrentUserAsync(int userId, UpdateUserRequestDTO inputUser)
     {
-        var user = await _db.Users.FindAsync(Id);
+        var user = await _db.Users.FindAsync(userId);
 
         // Return null if user does not exist.
         if (user is null)
@@ -56,9 +58,9 @@ public class UserService(AppDbContext db)
         return user;
     }
 
-    public async Task<int> UpdateUserPasswordAsync(int Id, UpdatePasswordDTO updatePassword)
+    public async Task<int> UpdateUserPasswordAsync(int userId, UpdatePasswordRequestDTO updatePassword)
     {
-        var user = await _db.Users.FindAsync(Id);
+        var user = await _db.Users.FindAsync(userId);
 
         // Return 0 if user does not exist.
         if (user is null)
@@ -81,12 +83,12 @@ public class UserService(AppDbContext db)
         return 2;
     }
 
-    public async Task<LoginResponseDTO?> Login(LoginRequestDTO loginRequestDTO)
+    public async Task<LoginResponseDTO?> LoginAsync(LoginRequestDTO loginRequest)
     {
-        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequestDTO.Username);
+        var user = await _db.Users.SingleOrDefaultAsync(u => u.Username == loginRequest.Username);
 
         // If user doesn't exist or password is incorrect, return null.
-        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequestDTO.Password, user.Password))
+        if (user is null || !BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
         {
             return null;
         }

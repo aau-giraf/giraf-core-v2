@@ -1,9 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Validation;
+
+namespace giraf_core_v2.DTOs.Images;
+
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 [ValidatableType]
-public class PostImageDTO : IValidatableObject
+public class PostImageRequestDTO : IValidatableObject
 {
     [Required]
     [Length(3, 255)]
@@ -27,7 +30,7 @@ public class PostImageDTO : IValidatableObject
         {
             yield return new ValidationResult(
                 "You can pass only 1 identifying paramters (CitizenId, ClassId, OrganizationId)",
-                new[] { nameof(PostImageDTO) }
+                new[] { nameof(PostImageRequestDTO) }
             );
         }
 
@@ -35,10 +38,10 @@ public class PostImageDTO : IValidatableObject
         {
             ".jpeg", ".jpg", ".png", ".heic", ".webp"
         };
-        string ext = Path.GetExtension(File.FileName);
+        string fileExtension = Path.GetExtension(File.FileName);
 
         // Returns error if DTO isn't the right type
-        if (!string.IsNullOrEmpty(ext) && !allowedExtensions.Contains(ext))
+        if (!string.IsNullOrEmpty(fileExtension) && !allowedExtensions.Contains(fileExtension))
         {
             yield return new ValidationResult(
                 "The file extension needs to be either '.jpeg', '.jpg', '.png', '.heic' or '.webp' ",

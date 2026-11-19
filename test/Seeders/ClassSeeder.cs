@@ -1,23 +1,25 @@
 // Record of optional parameters. Non-positive numbers result in random postive integer.
-internal record ClassOptions(string ClassName = "", int OrgId = -9999);
+namespace giraf_core_v2.Tests.Seeders;
+
+internal record ClassOptions(string ClassName = "", int OrganizationId = -9999);
 
 internal class ClassSeeder : Seeder<Class, ClassOptions>
 {
     // Create a random class and add it to mock database.
-    public override async Task<Class> SeedAsync(AppDbContext db, int seed, ClassOptions? opt = null)
+    public override async Task<Class> SeedAsync(AppDbContext db, int seed, ClassOptions? options = null)
     {
-        var class_ = Create(seed, opt);
+        var schoolClass = Create(seed, options);
 
-        db.Classes.Add(class_);
+        db.Classes.Add(schoolClass);
         await db.SaveChangesAsync();
 
-        return class_;
+        return schoolClass;
     }
 
     // Create x random classes and add them to mock database.
-    public override async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count, List<ClassOptions>? opt = null)
+    public override async Task<List<Class>> SeedManyAsync(AppDbContext db, int seed, int count, List<ClassOptions>? options = null)
     {
-        var classes = CreateMany(seed, count, opt);
+        var classes = CreateMany(seed, count, options);
 
         db.Classes.AddRange(classes);
         await db.SaveChangesAsync();
@@ -26,12 +28,12 @@ internal class ClassSeeder : Seeder<Class, ClassOptions>
     }
 
     // Create a random test class using bogus.
-    public override Faker<Class> CreateFaker(int seed, ClassOptions? opt = null)
+    public override Faker<Class> CreateFaker(int seed, ClassOptions? options = null)
     {
         return new Faker<Class>()
             .UseSeed(seed)
-            .RuleFor(c => c.Name, f => opt is not null && !String.IsNullOrEmpty(opt.ClassName) ? opt.ClassName : f.Commerce.Department())
-            .RuleFor(c => c.OrganizationId, f => opt is not null && opt.OrgId > 0 ? opt.OrgId : f.Random.Int(1, Int32.MaxValue));
+            .RuleFor(c => c.Name, f => options is not null && !String.IsNullOrEmpty(options.ClassName) ? options.ClassName : f.Commerce.Department())
+            .RuleFor(c => c.OrganizationId, f => options is not null && options.OrganizationId > 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue));
     }
 
 }

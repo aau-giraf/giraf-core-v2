@@ -1,17 +1,19 @@
 // Optional Image seeding parameters.
 // ClassId & CitizenId: IDs == 0 -> random id, IDs == null -> null, IDs != 0 -> supplied int.
-// OrgId:
+// OrganizationId:
 //      CreateFaker(...): ID == 0 || null -> random id, else it will be the supplied int.
 //      CreateFakerRequest(...): IDs == 0 -> random id, IDs == null -> null, IDs != 0 -> supplied int.
-// Ext == null -> random not in BlockedFileExtensions, else Ext -> supplied extension
-internal record ImageOptions(int? ClassId = 0, int? OrgId = 0, int? CitizenId = 0, string? Ext = null);
+// FileExtension == null -> random not in BlockedFileExtensions, else FileExtension -> supplied extension
+namespace giraf_core_v2.Tests.Seeders;
+
+internal record ImageOptions(int? ClassId = 0, int? OrganizationId = 0, int? CitizenId = 0, string? FileExtension = null);
 
 internal class ImageSeeder : Seeder<Image, ImageOptions>
 {
 
-    public override async Task<Image> SeedAsync(AppDbContext db, int seed, ImageOptions? opt = null)
+    public override async Task<Image> SeedAsync(AppDbContext db, int seed, ImageOptions? options = null)
     {
-        var image = Create(seed, opt);
+        var image = Create(seed, options);
 
         db.Images.Add(image);
         await db.SaveChangesAsync();
@@ -19,9 +21,9 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
         return image;
     }
 
-    public override async Task<List<Image>> SeedManyAsync(AppDbContext db, int seed, int count, List<ImageOptions>? opt = null)
+    public override async Task<List<Image>> SeedManyAsync(AppDbContext db, int seed, int count, List<ImageOptions>? options = null)
     {
-        var images = CreateMany(seed, count, opt);
+        var images = CreateMany(seed, count, options);
 
         db.Images.AddRange(images);
         await db.SaveChangesAsync();
@@ -29,40 +31,40 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
         return images;
     }
 
-    public override Faker<Image> CreateFaker(int seed, ImageOptions? opt = null)
+    public override Faker<Image> CreateFaker(int seed, ImageOptions? options = null)
     {
-        var options = opt ?? new(ClassId: null, OrgId: 0, CitizenId: null);
+        options ??= new(ClassId: null, OrganizationId: 0, CitizenId: null);
 
         return new Faker<Image>()
             .UseSeed(seed)
             .RuleFor(i => i.Name, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
-            .RuleFor(i => i.OrganizationId, f => options.OrgId != null && options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.OrganizationId, f => options.OrganizationId != null && options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.Path, f => f.System.FileName())
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
-    public PostImageDTO CreateRequestBody(int seed, ImageOptions? opt = null)
+    public PostImageRequestDTO CreateRequestBody(int seed, ImageOptions? options = null)
     {
-        return CreateFakerRequest(seed, opt).Generate();
+        return CreateFakerRequest(seed, options).Generate();
     }
 
-    private Faker<PostImageDTO> CreateFakerRequest(int seed, ImageOptions? opt = null)
+    private Faker<PostImageRequestDTO> CreateFakerRequest(int seed, ImageOptions? options = null)
     {
-        var options = opt ?? new(ClassId: null, OrgId: 0, CitizenId: null);
+        options ??= new(ClassId: null, OrganizationId: 0, CitizenId: null);
 
-        return new Faker<PostImageDTO>()
+        return new Faker<PostImageRequestDTO>()
             .UseSeed(seed)
             .RuleFor(i => i.Name, f => f.Lorem.Word())
-            .RuleFor(i => i.OrganizationId, f => options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.OrganizationId, f => options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.File, f =>
             {
                 var bytes = f.Random.Bytes(32);
                 var stream = new MemoryStream(bytes);
-                var chosen = options.Ext ?? RandomCommonFileExt(f);
+                var chosen = options.FileExtension ?? RandomCommonFileExtension(f);
                 return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.{chosen}");
             });
     }
@@ -72,7 +74,7 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
         "jpeg", "jpg", "png", "heic", "webp"
     };
 
-    private static string RandomCommonFileExt(Faker f)
+    private static string RandomCommonFileExtension(Faker f)
     {
         string extension;
         do

@@ -9,7 +9,7 @@ public class NonCitizenService(AppDbContext db)
     // ---------- /nonCitizens ---------- \\
 
     // Fetch the NonCitizen by NonCitizenId from Route parameter
-    public async Task<ResponseNonCitizenDTO?> GetNonCitizenByIdAsync(int nonCitizenId)
+    public async Task<GetNonCitizenResponseDTO?> GetNonCitizenByIdAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
@@ -18,9 +18,9 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
-        ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
+        GetNonCitizenResponseDTO responseNonCitizen = new GetNonCitizenResponseDTO
         {
-            Id = nonCitizen.Id,
+            NonCitizenId = nonCitizen.Id,
             FirstName = nonCitizen.FirstName,
             LastName = nonCitizen.LastName,
             Email = nonCitizen.Email,
@@ -30,59 +30,59 @@ public class NonCitizenService(AppDbContext db)
         return responseNonCitizen;
     }
 
-    public async Task<(HttpReponseType, ResponseNonCitizenDTO?)> PatchNonCitizenAsync(int nonCitizenId, RequestPatchNonCitizenDTO requestPatchNonCitizenDTO)
+    public async Task<(HttpResponseType, GetNonCitizenResponseDTO?)> PatchNonCitizenAsync(int nonCitizenId, PatchNonCitizenRequestDTO patchNonCitizen)
     {
         //----- Changes to NonCitizen relation -----\\
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
         if (nonCitizen is null)
         {
-            return (HttpReponseType.NotFound, null);
+            return (HttpResponseType.NotFound, null);
         }
 
-        if (requestPatchNonCitizenDTO.FirstName is not null)
+        if (patchNonCitizen.FirstName is not null)
         {
-            nonCitizen!.FirstName = requestPatchNonCitizenDTO.FirstName;
+            nonCitizen!.FirstName = patchNonCitizen.FirstName;
         }
-        if (requestPatchNonCitizenDTO.LastName is not null)
+        if (patchNonCitizen.LastName is not null)
         {
-            nonCitizen!.LastName = requestPatchNonCitizenDTO.LastName;
+            nonCitizen!.LastName = patchNonCitizen.LastName;
         }
-        if (requestPatchNonCitizenDTO.Username is not null)
+        if (patchNonCitizen.Username is not null)
         {
-            nonCitizen!.Username = requestPatchNonCitizenDTO.Username;
+            nonCitizen!.Username = patchNonCitizen.Username;
         }
-        if (requestPatchNonCitizenDTO.Email is not null && await _db.NonCitizens.AnyAsync(nc => nc.Email == requestPatchNonCitizenDTO.Email) == false)
+        if (patchNonCitizen.Email is not null && await _db.NonCitizens.AnyAsync(nc => nc.Email == patchNonCitizen.Email) == false)
         {
-            nonCitizen!.Email = requestPatchNonCitizenDTO.Email;
+            nonCitizen!.Email = patchNonCitizen.Email;
         }
-        else if (requestPatchNonCitizenDTO.Email is not null && await _db.NonCitizens.AnyAsync(nc => nc.Email == requestPatchNonCitizenDTO.Email) == true)
+        else if (patchNonCitizen.Email is not null && await _db.NonCitizens.AnyAsync(nc => nc.Email == patchNonCitizen.Email) == true)
         {
-            return (HttpReponseType.Conflict, null);
+            return (HttpResponseType.Conflict, null);
         }
-        if (requestPatchNonCitizenDTO.NewPassword is not null && BCrypt.Net.BCrypt.Verify(requestPatchNonCitizenDTO.OldPassword, nonCitizen!.Password) == true)
+        if (patchNonCitizen.NewPassword is not null && BCrypt.Net.BCrypt.Verify(patchNonCitizen.OldPassword, nonCitizen!.Password) == true)
         {
-            nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(requestPatchNonCitizenDTO.NewPassword, 12);
+            nonCitizen!.Password = BCrypt.Net.BCrypt.HashPassword(patchNonCitizen.NewPassword, 12);
         }
-        else if (requestPatchNonCitizenDTO.NewPassword is not null && BCrypt.Net.BCrypt.Verify(requestPatchNonCitizenDTO.OldPassword, nonCitizen.Password) == false)
+        else if (patchNonCitizen.NewPassword is not null && BCrypt.Net.BCrypt.Verify(patchNonCitizen.OldPassword, nonCitizen.Password) == false)
         {
-            return (HttpReponseType.Unauthorized, null);
+            return (HttpResponseType.Unauthorized, null);
         }
 
 
         // Save changes made to nonCitizen relation
         await _db.SaveChangesAsync();
 
-        ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
+        GetNonCitizenResponseDTO responseNonCitizen = new GetNonCitizenResponseDTO
         {
-            Id = nonCitizen.Id,
+            NonCitizenId = nonCitizen.Id,
             FirstName = nonCitizen.FirstName,
             LastName = nonCitizen.LastName,
             Email = nonCitizen!.Email,
             Username = nonCitizen.Username
         };
 
-        return (HttpReponseType.Ok, responseNonCitizen);
+        return (HttpResponseType.Ok, responseNonCitizen);
     }
 
     public async Task<bool> DeleteNonCitizenAsync(int nonCitizenId)
@@ -103,31 +103,31 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<(HttpReponseType, ResponseNonCitizenDTO?)> PostNonCitizenAsync(RequestPostNonCitizenDTO requestPostNonCitizenDTO)
+    public async Task<(HttpResponseType, GetNonCitizenResponseDTO?)> PostNonCitizenAsync(PostNonCitizenRequestDTO postNonCitizen)
     {
-        var isNotUnique = await _db.NonCitizens.AnyAsync(nc => nc.Email == requestPostNonCitizenDTO.Email);
+        var isNotUnique = await _db.NonCitizens.AnyAsync(nc => nc.Email == postNonCitizen.Email);
 
         if (isNotUnique == true)
         {
-            return (HttpReponseType.Conflict, null);
+            return (HttpResponseType.Conflict, null);
         }
 
         if (
-            requestPostNonCitizenDTO.FirstName is not null &&
-            requestPostNonCitizenDTO.LastName is not null &&
-            requestPostNonCitizenDTO.Email is not null &&
-            requestPostNonCitizenDTO.Username is not null &&
-            requestPostNonCitizenDTO.Password is not null
+            postNonCitizen.FirstName is not null &&
+            postNonCitizen.LastName is not null &&
+            postNonCitizen.Email is not null &&
+            postNonCitizen.Username is not null &&
+            postNonCitizen.Password is not null
         )
         {
             // Create new instance of NonCitizen
             NonCitizen createdNonCitizen = new NonCitizen
             {
-                FirstName = requestPostNonCitizenDTO.FirstName,
-                LastName = requestPostNonCitizenDTO.LastName,
-                Username = requestPostNonCitizenDTO.Username,
-                Password = BCrypt.Net.BCrypt.HashPassword(requestPostNonCitizenDTO.Password, 12),
-                Email = requestPostNonCitizenDTO.Email
+                FirstName = postNonCitizen.FirstName,
+                LastName = postNonCitizen.LastName,
+                Username = postNonCitizen.Username,
+                Password = BCrypt.Net.BCrypt.HashPassword(postNonCitizen.Password, 12),
+                Email = postNonCitizen.Email
             };
 
             // Add the new nonCitizen instance to the db
@@ -137,33 +137,33 @@ public class NonCitizenService(AppDbContext db)
 
         // Find created nonCitizen in db
         var nonCitizen = await _db.NonCitizens.FirstOrDefaultAsync(
-            nc => nc.Username == requestPostNonCitizenDTO.Username &&
-            nc.FirstName == requestPostNonCitizenDTO.FirstName &&
-            nc.LastName == requestPostNonCitizenDTO.LastName &&
-            nc.Email == requestPostNonCitizenDTO.Email
+            nc => nc.Username == postNonCitizen.Username &&
+            nc.FirstName == postNonCitizen.FirstName &&
+            nc.LastName == postNonCitizen.LastName &&
+            nc.Email == postNonCitizen.Email
         );
 
         if (nonCitizen is null)
         {
-            return (HttpReponseType.NotFound, null);
+            return (HttpResponseType.NotFound, null);
         }
 
-        ResponseNonCitizenDTO responseNonCitizen = new ResponseNonCitizenDTO
+        GetNonCitizenResponseDTO responseNonCitizen = new GetNonCitizenResponseDTO
         {
-            Id = nonCitizen!.Id,
+            NonCitizenId = nonCitizen!.Id,
             FirstName = nonCitizen.FirstName!,
             LastName = nonCitizen.LastName!,
             Email = nonCitizen.Email!,
             Username = nonCitizen.Username!
         };
 
-        return (HttpReponseType.Ok, responseNonCitizen);
+        return (HttpResponseType.Ok, responseNonCitizen);
     }
 
 
     // ---------- /userRoles ---------- \\
 
-    public async Task<ResponseNonCitizenUserRolesDTO?> GetUserRolesAsync(int nonCitizenId)
+    public async Task<GetNonCitizenUserRolesResponseDTO?> GetUserRolesAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
@@ -180,33 +180,33 @@ public class NonCitizenService(AppDbContext db)
         foreach (UserRole userRole in userRoles)
         {
             var roleString = userRole.Role.ToString();
-            var orgString = userRole.OrganizationId.ToString();
-            var roleOrgString = roleString + "|" + orgString;
-            roleOrganizationTuples.Add(roleOrgString);
+            var organizationIdText = userRole.OrganizationId.ToString();
+            var roleOrganizationText = roleString + "|" + organizationIdText;
+            roleOrganizationTuples.Add(roleOrganizationText);
         }
 
-        return new ResponseNonCitizenUserRolesDTO
+        return new GetNonCitizenUserRolesResponseDTO
         {
             NonCitizenId = nonCitizen!.Id,
             RoleOrganizationTuples = roleOrganizationTuples
         };
     }
 
-    public async Task<bool> DeleteUserRoleAsync(int nonCitizenId, RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO)
+    public async Task<bool> DeleteUserRoleAsync(int nonCitizenId, NonCitizenUserRoleRequestDTO nonCitizenUserRole)
     {
         if (await _db.UserRoles.AnyAsync(ur =>
              ur.NonCitizenId == nonCitizenId &&
-             ur.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId &&
-             ur.Role == requestNonCitizenUserRoleDTO.Role
+             ur.OrganizationId == nonCitizenUserRole.OrganizationId &&
+             ur.Role == nonCitizenUserRole.Role
              ))
         {
             var userRole = await _db.UserRoles
-            .FindAsync(nonCitizenId, requestNonCitizenUserRoleDTO.Role, requestNonCitizenUserRoleDTO.OrganizationId);
+            .FindAsync(nonCitizenId, nonCitizenUserRole.Role, nonCitizenUserRole.OrganizationId);
 
             if (
                 userRole!.NonCitizenId == nonCitizenId &&
-                userRole.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId &&
-                userRole.Role == requestNonCitizenUserRoleDTO.Role &&
+                userRole.OrganizationId == nonCitizenUserRole.OrganizationId &&
+                userRole.Role == nonCitizenUserRole.Role &&
                 userRole is not null
                 )
             {
@@ -218,7 +218,7 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<(HttpReponseType, ResponseNonCitizenUserRolesDTO?)> PostUserRoleAsync(int nonCitizenId, RequestNonCitizenUserRoleDTO requestNonCitizenUserRoleDTO)
+    public async Task<(HttpResponseType, GetNonCitizenUserRolesResponseDTO?)> PostUserRoleAsync(int nonCitizenId, NonCitizenUserRoleRequestDTO nonCitizenUserRole)
     {
 
         // Check nonCitizen exists
@@ -226,35 +226,35 @@ public class NonCitizenService(AppDbContext db)
 
         if (nonCitizen is null)
         {
-            return (HttpReponseType.NotFound, null);
+            return (HttpResponseType.NotFound, null);
         }
 
         // Check organization exists
-        var organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.OrganizationId);
+        var organization = await _db.Organizations.FindAsync(nonCitizenUserRole.OrganizationId);
         if (organization is null)
         {
-            return (HttpReponseType.NotFound, null);
+            return (HttpResponseType.NotFound, null);
         }
 
         // Check if userRole exists
         var userRoleExists = await _db.UserRoles.AnyAsync(ur =>
              ur.NonCitizenId == nonCitizenId &&
-             ur.Role == requestNonCitizenUserRoleDTO.Role &&
-             ur.OrganizationId == requestNonCitizenUserRoleDTO.OrganizationId
+             ur.Role == nonCitizenUserRole.Role &&
+             ur.OrganizationId == nonCitizenUserRole.OrganizationId
             );
 
         if (userRoleExists is true)
         {
-            return (HttpReponseType.Conflict, null);
+            return (HttpResponseType.Conflict, null);
         }
 
         var createdUserRole = new UserRole()
         {
-            Role = requestNonCitizenUserRoleDTO.Role,
+            Role = nonCitizenUserRole.Role,
             NonCitizenId = nonCitizen.Id,
             NonCitizen = nonCitizen,
-            OrganizationId = requestNonCitizenUserRoleDTO.OrganizationId,
-            Organization = await _db.Organizations.FindAsync(requestNonCitizenUserRoleDTO.OrganizationId)
+            OrganizationId = nonCitizenUserRole.OrganizationId,
+            Organization = await _db.Organizations.FindAsync(nonCitizenUserRole.OrganizationId)
         };
 
         _db.UserRoles.Add(createdUserRole);
@@ -269,13 +269,13 @@ public class NonCitizenService(AppDbContext db)
         foreach (var userRole in userRoles)
         {
             var roleString = userRole.Role.ToString();
-            var orgString = userRole.OrganizationId.ToString();
-            var roleOrgString = roleString + "|" + orgString;
-            roleOrganizationTuples.Add(roleOrgString);
+            var organizationIdText = userRole.OrganizationId.ToString();
+            var roleOrganizationText = roleString + "|" + organizationIdText;
+            roleOrganizationTuples.Add(roleOrganizationText);
         }
 
         // Return in correct format
-        return (HttpReponseType.Ok, new ResponseNonCitizenUserRolesDTO()
+        return (HttpResponseType.Ok, new GetNonCitizenUserRolesResponseDTO()
         {
             NonCitizenId = nonCitizen.Id,
             RoleOrganizationTuples = roleOrganizationTuples
@@ -283,7 +283,7 @@ public class NonCitizenService(AppDbContext db)
     }
 
     // ---------- /guardianships ---------- \\
-    public async Task<ResponseGuardianshipsDTO?> GetGuardianshipsAsync(int nonCitizenId)
+    public async Task<GetGuardianshipsResponseDTO?> GetGuardianshipsAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
@@ -301,26 +301,26 @@ public class NonCitizenService(AppDbContext db)
             citizens.Add(guardian.CitizenId);
         }
 
-        return new ResponseGuardianshipsDTO
+        return new GetGuardianshipsResponseDTO
         {
             CitizenIds = citizens,
             NonCitizenId = nonCitizen.Id
         };
     }
 
-    public async Task<bool> DeleteGuardianshipAsync(int nonCitizenId, RequestGuardianshipDTO requestGuardianshipDTO)
+    public async Task<bool> DeleteGuardianshipAsync(int nonCitizenId, GuardianshipRequestDTO guardianshipRequest)
     {
         if (await _db.Guardianships.AnyAsync(gs =>
-             gs.CitizenId == requestGuardianshipDTO.CitizenId &&
+             gs.CitizenId == guardianshipRequest.CitizenId &&
              gs.GuardianId == nonCitizenId
              ))
         {
             var guardianship = await _db.Guardianships
-            .FindAsync(requestGuardianshipDTO.CitizenId, nonCitizenId);
+            .FindAsync(guardianshipRequest.CitizenId, nonCitizenId);
 
             if (
                 guardianship!.GuardianId == nonCitizenId &&
-                guardianship.CitizenId == requestGuardianshipDTO.CitizenId &&
+                guardianship.CitizenId == guardianshipRequest.CitizenId &&
                 guardianship is not null
                 )
             {
@@ -332,7 +332,7 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<(HttpReponseType, ResponseGuardianshipsDTO?)> PostGuardianshipAsync(int nonCitizenId, RequestGuardianshipDTO requestGuardianshipDTO)
+    public async Task<(HttpResponseType, GetGuardianshipsResponseDTO?)> PostGuardianshipAsync(int nonCitizenId, GuardianshipRequestDTO guardianshipRequest)
     {
 
         // Check nonCitizen exists
@@ -340,30 +340,30 @@ public class NonCitizenService(AppDbContext db)
 
         if (nonCitizen is null)
         {
-            return (HttpReponseType.NotFound, null);
+            return (HttpResponseType.NotFound, null);
         }
 
-        var citizen = await _db.Citizens.AnyAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
+        var citizen = await _db.Citizens.AnyAsync(c => c.Id == guardianshipRequest.CitizenId);
 
         if (citizen == false)
         {
-            return (HttpReponseType.NotFound, null);
+            return (HttpResponseType.NotFound, null);
         }
 
         // Check if guardianship exists
         var guardianshipExists = await _db.Guardianships.AnyAsync(
-            gs => gs.CitizenId == requestGuardianshipDTO.CitizenId &&
+            gs => gs.CitizenId == guardianshipRequest.CitizenId &&
             gs.GuardianId == nonCitizenId);
 
         if (guardianshipExists is true)
         {
-            return (HttpReponseType.Conflict, null);
+            return (HttpResponseType.Conflict, null);
         }
 
         var createdGuardianship = new Guardianship()
         {
-            CitizenId = requestGuardianshipDTO.CitizenId,
-            Citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId),
+            CitizenId = guardianshipRequest.CitizenId,
+            Citizen = await _db.Citizens.FindAsync(guardianshipRequest.CitizenId),
             GuardianId = nonCitizenId,
             Guardian = nonCitizen
         };
@@ -383,7 +383,7 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Return in correct format
-        return (HttpReponseType.Ok, new ResponseGuardianshipsDTO()
+        return (HttpResponseType.Ok, new GetGuardianshipsResponseDTO()
         {
             NonCitizenId = nonCitizen.Id,
             CitizenIds = citizens

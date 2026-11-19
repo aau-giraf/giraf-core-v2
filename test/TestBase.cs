@@ -1,4 +1,6 @@
 // Base test class for creating in memory db for tests.
+namespace giraf_core_v2.Tests;
+
 public abstract class TestBase
 {
     protected int Seed { get; }
