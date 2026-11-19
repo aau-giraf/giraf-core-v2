@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile
       target: test
     working_dir: /source
-    command: dotnet test
+    command: dotnet test --filter "FullyQualifiedName!~PactAdapterTests" # pact tests excluded since they require core-v2 running locally
     env_file:
       - .env
     # Integration tests start Postgres with Testcontainers, which needs the host daemon.
