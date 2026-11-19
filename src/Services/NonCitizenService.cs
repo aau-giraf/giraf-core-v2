@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
 
@@ -371,9 +369,8 @@ public class NonCitizenService(AppDbContext db)
         }
         catch (DbUpdateException exception)
         {
-            if (exception is not null)
-            {
 
+            {
                 foreach (var entry in exception.Entries)
                 {
                     entry.State = EntityState.Detached;
@@ -381,6 +378,7 @@ public class NonCitizenService(AppDbContext db)
 
                 return (HttpReponseType.Conflict, null);
             }
+
         }
 
         // Find the updated list of citizens
