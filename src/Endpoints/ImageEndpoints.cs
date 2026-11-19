@@ -60,7 +60,7 @@ public static class ImageEndpoints
         var image = await imageService.CreateImagesAsync(imageRequest);
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
     }
-    
+
     // This endpoint is similar to the "PostImage" yet there are some differences like this has to get a TicketId in the body
     private static async Task<Results<Created<Image>, BadRequest<string>>> PostGeneratedImage([FromForm] PostImageDTO imageRequest, ImageService imageService)
     {
@@ -77,7 +77,7 @@ public static class ImageEndpoints
             ? TypedResults.BadRequest("Could not find an organization for the image")
             : TypedResults.Created($"/images/{image.Id}", image);
     }
-    
+
     private static async Task<Ok<IsImageDoneRequestDTO>> IsImageDone(string ticketId, ImageService imageService)
     {
         var req = await imageService.IsImageDone(ticketId);
