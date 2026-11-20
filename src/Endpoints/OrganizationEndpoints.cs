@@ -87,10 +87,30 @@ public static class OrganizationEndpoints
         };
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> CreateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, OrganizationService organizationService)
+    private static async Task<Results<NotFound<string>, Conflict<string>, Created<UserRoleResponseDTO>, InternalServerError>> AddRoleToUser(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        var createdOrganization = await organizationService.CreateOrganizationAsync(requestCreateOrganizationDTO);
-        return createdOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(createdOrganization);
+        (OrganizationServiceResult, UserRoleResponseDTO?) response = await organizationService.AddRoleToUserAsync(organizationId, nonCitizenId, role);
+
+        return response switch
+        {
+            (OrganizationServiceResult.UserNotFound, null) => TypedResults.NotFound($"User with ID {nonCitizenId} not found."),
+            (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
+            (OrganizationServiceResult.UserRoleAlreadyExists, null) => TypedResults.Conflict($"Target user already has the proposed role."),
+            (OrganizationServiceResult.Success, UserRoleResponseDTO userRoleResponseDto) => TypedResults.Created($"/organizations/{organizationId}/members/{nonCitizenId}/{role}", userRoleResponseDto),
+            _ => TypedResults.InternalServerError(),
+        };
+    }
+
+    private static async Task<Results<Ok<OrganizationResponseDTO>, NotFound<string>, InternalServerError>> UpdateOrganization([FromBody] OrganizationDTO updateOrganizationDto, int organizationId, OrganizationService organizationService)
+    {
+        (OrganizationServiceResult, OrganizationResponseDTO?) response = await organizationService.UpdateOrganizationAsync(updateOrganizationDto, organizationId);
+
+        return response switch
+        {
+            (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
+            (OrganizationServiceResult.Success, OrganizationResponseDTO organizationResponseDto) => TypedResults.Ok(organizationResponseDto),
+            _ => TypedResults.InternalServerError(),
+        };
     }
 
     private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int orgId, OrganizationService organizationService)
