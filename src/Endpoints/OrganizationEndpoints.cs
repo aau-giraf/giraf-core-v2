@@ -64,7 +64,7 @@ public static class OrganizationEndpoints
         return response.result == OrganizationServiceResult.OrganizationNotFound ? TypedResults.NotFound($"Organization with ID {organizationId} not found.") : TypedResults.Ok(response.classResponseDtoList);
     }
 
-    private static async Task<Results<Ok<ClassResponseDTO>, NotFound<string>, Conflict<string>, InternalServerError>> CreateClassInOrganization([FromBody] CreateClassDTO createClassDto, int organizationId, OrganizationService organizationService)
+    private static async Task<Results<Created<ClassResponseDTO>, NotFound<string>, Conflict<string>, InternalServerError>> CreateClassInOrganization([FromBody] CreateClassDTO createClassDto, int organizationId, OrganizationService organizationService)
     {
         (OrganizationServiceResult, ClassResponseDTO?) response = await organizationService.CreateClassInOrganizationAsync(createClassDto, organizationId);
 
@@ -77,7 +77,7 @@ public static class OrganizationEndpoints
         };
     }
 
-    private static async Task<Results<Ok<OrganizationResponseDTO>, Conflict<string>, InternalServerError>> CreateOrganization([FromBody] OrganizationDTO createOrganizationDto, OrganizationService organizationService)
+    private static async Task<Results<Created<OrganizationResponseDTO>, Conflict<string>, InternalServerError>> CreateOrganization([FromBody] OrganizationDTO createOrganizationDto, OrganizationService organizationService)
     {
         (OrganizationServiceResult, OrganizationResponseDTO?) response = await organizationService.CreateOrganizationAsync(createOrganizationDto);
 
