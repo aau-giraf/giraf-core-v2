@@ -12,7 +12,6 @@ public enum OrganizationServiceResult
     UserNotFound,
     UserRoleAlreadyExists,
     UserRoleNotFound,
-    ClassAlreadyExists,
 }
 
 public class OrganizationService(AppDbContext db)
