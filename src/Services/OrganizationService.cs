@@ -137,12 +137,6 @@ public class OrganizationService(AppDbContext db)
             Name = createOrganizationDto.Name.ToLower(),
         };
 
-        // Return null if proposed organization already exists.
-        if (await _db.Organizations.AnyAsync(o => o.Name.ToLower().Equals(newOrganization.Name)))
-        {
-            return (OrganizationServiceResult.OrganizationAlreadyExists, null);
-        }
-
         _db.Organizations.Add(newOrganization);
 
         await _db.SaveChangesAsync();
