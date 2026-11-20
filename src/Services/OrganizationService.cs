@@ -210,34 +210,35 @@ public class OrganizationService(AppDbContext db)
         });
     }
 
-        if (updatedOrganization is null)
-        {
-            return null;
-        }
-
-        // Return correctly formatted response
-        ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
-        {
-            Id = updatedOrganization!.Id,
-            Name = updatedOrganization.Name,
-        };
-
-        return responseOrganization;
-    }
-
-    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
+    public async Task<OrganizationServiceResult> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
-        /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
-        * Be aware of composite key ordering of UserRole. */
-        if (await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId) is UserRole userRole)
+        // Ensure that the target user exists.
+        if (!await _db.Users.AnyAsync(u => u.Id == nonCitizenId))
         {
-            _db.UserRoles.Remove(userRole);
-            await _db.SaveChangesAsync();
-            //Deletion occured, indicate for HTTP response
-            return true;
+            return OrganizationServiceResult.UserNotFound;
         }
-        //Corresponding row didn't exist, no deletion occurred, indicate for HTTP response
-        return false;
+
+        // Ensure that the specified organization exists.
+        if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId))
+        {
+            return OrganizationServiceResult.OrganizationNotFound;
+        }
+
+        // Find the user role to remove.
+        UserRole? userRole = await _db.UserRoles.FirstOrDefaultAsync(ur =>
+            ur.NonCitizenId == nonCitizenId &&
+            ur.OrganizationId == organizationId &&
+            ur.Role == role);
+
+        if (userRole is null)
+        {
+            return OrganizationServiceResult.UserRoleNotFound;
+        }
+
+        _db.UserRoles.Remove(userRole);
+        await _db.SaveChangesAsync();
+
+        return OrganizationServiceResult.Success;
     }
 
     public async Task<(int, UserRole?)> CreateOrUpdateUserRole(int organizationId, int nonCitizenId, RoleType role)
