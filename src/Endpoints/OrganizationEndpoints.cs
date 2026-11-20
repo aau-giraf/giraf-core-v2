@@ -71,8 +71,7 @@ public static class OrganizationEndpoints
         return response switch
         {
             (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
-            (OrganizationServiceResult.ClassAlreadyExists, null) => TypedResults.Conflict($"Class with name '{createClassDto.Name.ToLower()}' already exists."),
-            (OrganizationServiceResult.Success, ClassResponseDTO classResponseDto) => TypedResults.Ok(classResponseDto),
+            (OrganizationServiceResult.Success, ClassResponseDTO classResponseDto) => TypedResults.Created($"/organizations/{organizationId}/classes/{classResponseDto.ClassId}", classResponseDto),
             _ => TypedResults.InternalServerError(),
         };
     }
