@@ -57,7 +57,7 @@ public static class OrganizationEndpoints
 
     private static async Task<Results<Ok<List<ClassResponseDTO>>, NotFound<string>>> GetAllClassesInOrganization(int organizationId, OrganizationService organizationService)
     {
-        (OrganizationServiceResult result, List<ClassResponseDTO>? classResponseDtoList) response = await organizationService.GetAllClassesInOrganizationAsync(organizationId);
+        (OrganizationServiceResult result, List<ClassResponseDTO> classResponseDtoList) response = await organizationService.GetAllClassesInOrganizationAsync(organizationId);
 
         return response.result == OrganizationServiceResult.OrganizationNotFound ? TypedResults.NotFound($"Organization with ID {organizationId} not found.") : TypedResults.Ok(response.classResponseDtoList);
     }

@@ -81,12 +81,12 @@ public class OrganizationService(AppDbContext db)
         return (OrganizationServiceResult.ClassNotFound, null);
     }
 
-    public async Task<(OrganizationServiceResult, List<ClassResponseDTO>?)> GetAllClassesInOrganizationAsync(int organizationId)
+    public async Task<(OrganizationServiceResult, List<ClassResponseDTO>)> GetAllClassesInOrganizationAsync(int organizationId)
     {
         // Ensure that the specified organization exists.
         if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId))
         {
-            return (OrganizationServiceResult.OrganizationNotFound, null);
+            return (OrganizationServiceResult.OrganizationNotFound, []);
         }
 
         // Fetch the classes and return the list.
