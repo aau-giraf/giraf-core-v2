@@ -1,3 +1,5 @@
+using giraf_core_v2.DTOs.Images;
+
 public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly ImageSeeder _imageSeeder = new();
@@ -228,7 +230,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.TitleEn, created!.TitleEn);
             Assert.Equal(request.OrganizationId, created.OrganizationId);
             Assert.Equal(request.CitizenId, created.CitizenId);
             Assert.Equal(request.ClassId, created.ClassId);
@@ -261,7 +263,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             var allImages = await db.Images.ToListAsync();
             var stored = Assert.Single(allImages);
             Assert.Equal(created!.Id, stored.Id);
-            Assert.Equal(request.Name, stored.Name);
+            Assert.Equal(request.TitleEn, stored.TitleEn);
             Assert.Equal(request.OrganizationId, stored.OrganizationId);
             Assert.Equal(request.CitizenId, stored.CitizenId);
             Assert.Equal(request.ClassId, stored.ClassId);
@@ -293,7 +295,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.TitleEn, created!.TitleEn);
             Assert.Equal(citizen.User.Id, created.CitizenId);
             Assert.Null(created.ClassId);
             Assert.Equal(class_.Id, created.OrganizationId);
@@ -317,6 +319,41 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
+    public async Task FindOrganizationAsync_PicksOrganizationOfRequestedCitizen_WhenSeveralCitizensExist()
+    {
+        await using var db = CreateDbContext();
+
+        // Two citizens, each in their own class and organization
+        var organization1 = await _orgSeeder.SeedAsync(db, Seed);
+        var class1 = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization1.Id));
+        await _userSeeder.SeedAsync(db, Seed, new(ClassId: class1.Id));
+
+        var organization2 = await _orgSeeder.SeedAsync(db, Seed + 1);
+        var class2 = await _classSeeder.SeedAsync(db, Seed + 1, new(OrgId: organization2.Id));
+        var citizen2 = await _userSeeder.SeedAsync(db, Seed + 1, new(ClassId: class2.Id));
+
+        // The image belongs to the second citizen, so "the first citizen in the table" would be wrong
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizen2.User.Id));
+
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+        try
+        {
+            Assert.NotNull(created);
+            Assert.Equal(citizen2.User.Id, created!.CitizenId);
+            Assert.Equal(organization2.Id, created.OrganizationId);
+            Assert.NotEqual(organization1.Id, created.OrganizationId);
+        }
+        finally
+        {
+            if (created?.Path is not null && File.Exists(created.Path))
+            {
+                File.Delete(created.Path);
+            }
+        }
+    }
+
+    [Fact]
     public async Task PostImageAsync_requestKnowingClassId()
     {
         await using var db = CreateDbContext();
@@ -329,7 +366,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(request.Name, created!.Name);
+            Assert.Equal(request.TitleEn, created!.TitleEn);
             Assert.Null(created.CitizenId);
             Assert.Equal(class_.Id, created.ClassId);
             Assert.Equal(organization.Id, created.OrganizationId);
@@ -374,7 +411,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             var fetched = await service.GetImageByIdAsync(created.Id);
             Assert.NotNull(fetched);
             Assert.Equal(created.Id, fetched.Id);
-            Assert.Equal(request.Name, fetched.Name);
+            Assert.Equal(request.TitleEn, fetched.TitleEn);
             Assert.Equal(request.OrganizationId, fetched.OrganizationId);
             Assert.Equal(request.CitizenId, fetched.CitizenId);
             Assert.Equal(request.ClassId, fetched.ClassId);
@@ -398,5 +435,38 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
                 File.Delete(path);
             }
         }
+    }
+
+    [Fact]
+    public async Task PostIsImageDone_ReturnsTicketId_WhenImageWithTicketExists()
+    {
+        // Arrange data
+        await using var db = CreateDbContext();
+        var image = await _imageSeeder.SeedAsync(db, Seed);
+        var service = new ImageService(db);
+
+        // Act - lookup the seeded image.ticketId to retrieve it from the database
+        var result = await service.IsImageDone(image.TicketId!);
+        db.ChangeTracker.Clear();
+
+        Assert.NotNull(result);
+        Assert.Equal(image.TicketId, result!.TicketId);
+        Assert.Equal(image.TitleEn, result.TitleEn);
+    }
+
+    [Fact]
+    public async Task PostIsImageDone_ReturnsPending_WhenImageWithTicketDoesNotExist()
+    {
+        // Arrange
+        await using var db = CreateDbContext();
+        await _imageSeeder.SeedAsync(db, Seed);
+        var service = new ImageService(db);
+
+        // Act
+        var result = await service.IsImageDone(Guid.NewGuid().ToString());
+
+        // Assert that the image status is pending due to no response from the AI backend
+        Assert.Equal(ImageStatus.Pending, result.Status);
+        Assert.Equal(ImageStatus.Pending, result.Status);
     }
 }

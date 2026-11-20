@@ -7,10 +7,15 @@ public class PostImageDTO : IValidatableObject
 {
     [Required]
     [Length(3, 255)]
-    public required string Name { get; set; }
+    public string? TitleEn { get; set; }
+
+    [Length(3, 255)]
+    public string? TitleDa { get; set; }
 
     [Required]
     public required IFormFile File { get; set; }
+
+    public string? TicketId { get; set; }
 
     public int? CitizenId { get; set; }
     public int? ClassId { get; set; }

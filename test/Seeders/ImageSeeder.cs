@@ -35,11 +35,13 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
 
         return new Faker<Image>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.OrganizationId, f => options.OrgId != null && options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.Path, f => f.System.FileName())
+            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5))
+            .RuleFor(i => i.TicketId, f => f.Lorem.Word())
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
@@ -54,7 +56,7 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
 
         return new Faker<PostImageDTO>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
             .RuleFor(i => i.OrganizationId, f => options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
@@ -64,7 +66,8 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
                 var stream = new MemoryStream(bytes);
                 var chosen = options.Ext ?? RandomCommonFileExt(f);
                 return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.{chosen}");
-            });
+            })
+            .RuleFor(i => i.TicketId, f => f.Lorem.Word());
     }
 
     private static readonly HashSet<string> BlockedFileExtensions = new(StringComparer.OrdinalIgnoreCase)
