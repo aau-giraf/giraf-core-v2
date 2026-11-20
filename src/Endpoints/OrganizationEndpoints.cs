@@ -51,7 +51,7 @@ public static class OrganizationEndpoints
         return response switch
         {
             (OrganizationServiceResult.OrganizationNotFound, null) => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
-            (OrganizationServiceResult.ClassNotFound, null) => TypedResults.NotFound($"Organization with ID {classId} not found."),
+            (OrganizationServiceResult.ClassNotFound, null) => TypedResults.NotFound($"Class with ID {classId} not found."),
             (OrganizationServiceResult.Success, ClassResponseDTO classResponseDto) => TypedResults.Ok(classResponseDto),
             _ => TypedResults.InternalServerError(),
         };
