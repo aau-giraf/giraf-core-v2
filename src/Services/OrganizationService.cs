@@ -116,11 +116,7 @@ public class OrganizationService(AppDbContext db)
             OrganizationId = organizationId,
         };
 
-        // Return null if proposed class already exists.
-        if (await _db.Classes.AnyAsync(c => c.Name.ToLower().Equals(newClass.Name) && c.OrganizationId == organizationId))
-        {
-            return (OrganizationServiceResult.ClassAlreadyExists, null);
-        }
+        // TODO: Ask group 16 if we should enforce class name uniqueness.
 
         _db.Classes.Add(newClass);
 
