@@ -189,29 +189,26 @@ public class OrganizationService(AppDbContext db)
         });
     }
 
-    public async Task<ResponseGetOrganizationDTO?> UpdateOrganizationAsync(RequestCreateOrganizationDTO updateOrganization, int orgId)
+    public async Task<(OrganizationServiceResult, OrganizationResponseDTO?)> UpdateOrganizationAsync(OrganizationDTO updateOrganizationDto, int organizationId)
     {
-        // Find the organization in db
-        var organization = await _db.Organizations.FindAsync(orgId);
+        // Ensure that the specified organization exists.
+        Organization? organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == organizationId);
 
         if (organization is null)
         {
-            return null;
+            return (OrganizationServiceResult.OrganizationNotFound, null);
         }
 
-        // Check if the name specified in the request is already taken, including if the name is not changed it is taken. 
-        bool nameAlreadyExist = await _db.Organizations.AnyAsync(o => o.Name == updateOrganization.Name);
+        organization.Name = updateOrganizationDto.Name.ToLower();
 
-        if (organization!.Id == orgId && nameAlreadyExist is false && updateOrganization.Name is not null)
-        {
-            organization.Name = updateOrganization.Name;
-        }
-
-        // Save the updated organization in db. 
         await _db.SaveChangesAsync();
 
-        // Find the updated organization in db
-        var updatedOrganization = await _db.Organizations.FindAsync(orgId);
+        return (OrganizationServiceResult.Success, new OrganizationResponseDTO
+        {
+            OrganizationId = organization.Id,
+            Name = organization.Name,
+        });
+    }
 
         if (updatedOrganization is null)
         {
