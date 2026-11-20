@@ -82,8 +82,7 @@ public static class OrganizationEndpoints
 
         return response switch
         {
-            (OrganizationServiceResult.OrganizationAlreadyExists, null) => TypedResults.Conflict($"Organization with name '{createOrganizationDto.Name.ToLower()}' already exists."),
-            (OrganizationServiceResult.Success, OrganizationResponseDTO organizationResponseDto) => TypedResults.Ok(organizationResponseDto),
+            (OrganizationServiceResult.Success, OrganizationResponseDTO organizationResponseDto) => TypedResults.Created($"/organizations/{organizationResponseDto.OrganizationId}", organizationResponseDto),
             _ => TypedResults.InternalServerError(),
         };
     }
