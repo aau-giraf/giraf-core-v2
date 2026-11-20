@@ -11,5 +11,5 @@ public class ImageResponseDTO
     [Length(3, 255)]
     public required string Title { get; set; }
 
-    public required IResult File { get; set; }
+    public required string Base64File { get; set; }
 }

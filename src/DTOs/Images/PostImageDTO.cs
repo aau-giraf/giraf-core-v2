@@ -22,6 +22,10 @@ public class PostImageDTO : IValidatableObject
         nullCount = CitizenId == null ? nullCount + 1 : nullCount;
         nullCount = ClassId == null ? nullCount + 1 : nullCount;
         nullCount = OrganizationId == null ? nullCount + 1 : nullCount;
+
+        Console.WriteLine($"cit: {(CitizenId is null ? "null" : CitizenId)}");
+        Console.WriteLine($"cit: {(ClassId is null ? "null" : ClassId)}");
+        Console.WriteLine($"cit: {(OrganizationId is null ? "null" : OrganizationId)}");
         // Returns error if there is no way to identify who the Returns error if there is no way to identify who the picture belogs to
         if (nullCount != 2)
         {

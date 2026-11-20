@@ -1,3 +1,6 @@
+using System.Security.Claims;
+
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
@@ -20,11 +23,46 @@ public class ImageService(AppDbContext db)
             {
                 ImageId = image.Id,
                 Title = image.Name,
-                File = Results.File(Path.GetFullPath(Path.Combine("images", image.Name)))
+                Base64File = Convert.ToBase64String(File.ReadAllBytes(image.Path))
             });
         }
 
         return imagesDTO;
+    }
+
+    public async Task<Results<FileContentHttpResult, NotFound, ForbidHttpResult>> GetImageById(
+        int id,
+        ClaimsPrincipal user,
+        IWebHostEnvironment environment)
+    {
+        var image = await _db.Images.FindAsync(id);
+
+        if (image == null)
+            return TypedResults.NotFound();
+
+        //         var organizationId = user.FindFirst("OrganizationId")?.Value;
+        //
+        //         if (!int.TryParse(organizationId, out var orgId))
+        //             return TypedResults.Forbid();
+        //
+        //         if (image.OrganizationId != orgId)
+        //             return TypedResults.Forbid();
+
+        var filePath = Path.Combine(
+            environment.ContentRootPath,
+            "images",
+            image.Path
+        );
+
+        if (!File.Exists(filePath))
+            return TypedResults.NotFound();
+
+        var imageBytes = await File.ReadAllBytesAsync(filePath);
+
+        return TypedResults.File(
+            imageBytes,
+            "image/png"
+        );
     }
 
     public async Task<List<ImageResponseDTO>?> GetImagesByCitizenIdAsync(int cit_id)

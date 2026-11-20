@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +12,29 @@ public static class ImageEndpoints
     {
         var group = application.MapGroup("/images");
 
+        group.MapGet("/{imageId}", GetImageById);
         group.MapGet("/Citizen/{cit_id}", GetImagesByCitizenId);
         group.MapGet("/Organization/{organizationId}", GetImagesByOrganizationId);
         group.MapGet("/Class/{classId}", GetImagesByClassId);
         group.MapPost("/", PostImage).DisableAntiforgery(); // needed for us to sent a Form via Postman/bruno
         group.MapDelete("/{image_id}", DeleteImage);
+    }
+
+    private static async Task<Results<
+        FileContentHttpResult,
+        NotFound,
+        ForbidHttpResult
+    >> GetImageById(
+        int imageId,
+        ClaimsPrincipal userJwt,
+        IWebHostEnvironment environment,
+        ImageService imageService)
+    {
+        return await imageService.GetImageById(
+            imageId,
+            userJwt,
+            environment
+        );
     }
 
     // GET images with a specific Citizen id and returns a list with all images
