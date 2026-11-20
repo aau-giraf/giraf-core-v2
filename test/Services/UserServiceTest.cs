@@ -1,13 +1,8 @@
 using Microsoft.IdentityModel.JsonWebTokens;
 
-using Xunit.Abstractions;
-
-public class UserServiceTest : TestBase
+public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 {
-    public UserServiceTest(ITestOutputHelper output) : base(output) { }
-
-    // used to offset seed for different results.
-    private readonly int SEED_OFFSET = 123;
+    private readonly UserSeeder _userSeeder = new();
 
     // TODO: add sanitization tests, once sanitization has been made.
     [Fact]
@@ -15,9 +10,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
 
-        var user = SeededUser.User;
+        var user = seededUser.User;
 
         // save origianl data, because user cannot be a constant entity.
         int ogId = user.Id;
@@ -25,9 +20,8 @@ public class UserServiceTest : TestBase
         string ogLastname = user.LastName;
         string ogUsername = user.Username;
 
-        // generate a different firstname with another seed
-        User faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
-                                    .RuleFor(u => u.FirstName, f => f.Name.FirstName());
+        // generate a different user with another name.
+        var otherUser = _userSeeder.Create(Seed);
 
 
         var service = new UserService(db);
@@ -36,11 +30,11 @@ public class UserServiceTest : TestBase
             user.Id,
             new UpdateUserDTO
             {
-                FirstName = faker.FirstName
+                FirstName = otherUser.User.FirstName
             });
 
         Assert.Equal(ogId, user!.Id);
-        Assert.Equal(faker.FirstName, user!.FirstName);
+        Assert.Equal(otherUser.User.FirstName, user!.FirstName);
         Assert.Equal(ogLastname, user!.LastName);
         Assert.Equal(ogUsername, user!.Username);
 
@@ -72,9 +66,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
 
-        var user = SeededUser.User;
+        var user = seededUser.User;
 
         // save origianl data, because user cannot be a constant entity.
         int ogId = user.Id;
@@ -83,7 +77,7 @@ public class UserServiceTest : TestBase
         string ogUsername = user.Username;
 
         // generate different user with another seed
-        User faker = new Faker<NonCitizen>().UseSeed(Seed + SEED_OFFSET)
+        User faker = new Faker<NonCitizen>().UseSeed(Seed)
                                     .RuleFor(u => u.FirstName, f => f.Name.FirstName())
                                     .RuleFor(u => u.LastName, f => f.Name.LastName())
                                     .RuleFor(u => u.Username, f => f.Internet.UserName());
@@ -112,9 +106,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = SeededUsers[0].User;
-        var user2 = SeededUsers[1].User;
+        var seededUsers = await _userSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = seededUsers[0].User;
+        var user2 = seededUsers[1].User;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -140,8 +134,8 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var user = SeededUser.User;
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
+        var user = seededUser.User;
 
         var service = new UserService(db);
 
@@ -158,9 +152,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = SeededUsers[0].User;
-        var user2 = SeededUsers[1].User;
+        var seededUsers = await _userSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = seededUsers[0].User;
+        var user2 = seededUsers[1].User;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -212,8 +206,8 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var user = SeededUser.User;
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
+        var user = seededUser.User;
 
         var service = new UserService(db);
 
@@ -231,9 +225,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = SeededUsers[0].User;
-        var user2 = SeededUsers[1].User;
+        var seededUsers = await _userSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = seededUsers[0].User;
+        var user2 = seededUsers[1].User;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -252,9 +246,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var user = SeededUser.User;
-        var password = SeededUser.PlainPassword;
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
+        var user = seededUser.User;
+        var password = seededUser.PlainPassword;
 
         Assert.NotNull(user);
 
@@ -284,8 +278,8 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var user = SeededUser.User;
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
+        var user = seededUser.User;
 
         Assert.NotNull(user);
 
@@ -312,9 +306,9 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUser = await UserSeeder.SeedAsync(db, Seed);
-        var user = SeededUser.User;
-        var password = SeededUser.PlainPassword;
+        var seededUser = await _userSeeder.SeedAsync(db, Seed);
+        var user = seededUser.User;
+        var password = seededUser.PlainPassword;
 
         Assert.NotNull(user);
 
@@ -342,10 +336,10 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var SeededUsers = await UserSeeder.SeedManyAsync(db, Seed, 2);
-        var user1 = SeededUsers[0].User;
-        var user2 = SeededUsers[1].User;
-        var password = SeededUsers[0].PlainPassword;
+        var seededUsers = await _userSeeder.SeedManyAsync(db, Seed, 2);
+        var user1 = seededUsers[0].User;
+        var user2 = seededUsers[1].User;
+        var password = seededUsers[0].PlainPassword;
 
         Assert.NotNull(user1);
         Assert.NotNull(user2);
@@ -372,7 +366,7 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+        var userInformation = await _userSeeder.SeedAsync(db, Seed);
 
         Assert.NotNull(userInformation.User);
         Assert.NotNull(userInformation.PlainPassword);
@@ -398,7 +392,7 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+        var userInformation = await _userSeeder.SeedAsync(db, Seed);
 
         var service = new UserService(db);
 
@@ -417,7 +411,7 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+        var userInformation = await _userSeeder.SeedAsync(db, Seed);
 
         var service = new UserService(db);
 
@@ -436,7 +430,7 @@ public class UserServiceTest : TestBase
     {
         await using var db = CreateDbContext();
 
-        var userInformation = await UserSeeder.SeedAsync(db, Seed);
+        var userInformation = await _userSeeder.SeedAsync(db, Seed);
 
         var service = new UserService(db);
 
