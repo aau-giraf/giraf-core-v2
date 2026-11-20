@@ -2,6 +2,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;
 
+public enum OrganizationServiceResult
+{
+    Success,
+    OrganizationNotFound,
+    ClassNotFound,
+    UserNotFound,
+    UserRoleAlreadyExists,
+    UserRoleNotFound,
+    ClassAlreadyExists,
+}
+
 public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
