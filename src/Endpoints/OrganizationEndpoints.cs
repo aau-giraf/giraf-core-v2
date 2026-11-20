@@ -9,28 +9,20 @@ public static class OrganizationEndpoints
 {
     public static void MapOrganizationEndpoints(this WebApplication application)
     {
-        var group = application.MapGroup("/organizations");
+        var group = application.MapGroup("/organizations").RequireAuthorization();
 
+        // TODO: Add role requirements
         group.MapGet("/", GetAllOrganizations);
-        group.MapGet("/{orgId:int}", GetOrganizationById);
-        group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization);
-
-        group.MapGet("/{org_id:int}/classes", GetClassesInOrganization);
-
-        group.MapPost("/{orgId:int}/classes", CreateClassInOrganization);
-
+        group.MapGet("/{organizationId:int}", GetOrganizationById);
+        group.MapGet("/{organizationId:int}/classes/{classId:int}", GetClassInOrganization);
+        group.MapGet("/{organizationId:int}/classes", GetAllClassesInOrganization);
+        group.MapPost("/{organizationId:int}/classes", CreateClassInOrganization);
         group.MapPost("/", CreateOrganization);
-
-        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole);
-
-        group.MapPatch("/{orgId:int}", UpdateOrganization);
-
-        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole);
-
-        group.MapDelete("/{orgId:int}", DeleteOrganization);
-
-        group.MapDelete("/{orgId:int}/classes/{classId:int}", DeleteClassInOrganization);
-
+        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", AddRoleToUser);
+        group.MapPatch("/{organizationId:int}", UpdateOrganization);
+        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteRoleFromUser);
+        group.MapDelete("/{organizationId:int}", DeleteOrganization);
+        group.MapDelete("/{organizationId:int}/classes/{classId:int}", DeleteClassInOrganization);
     }
 
     private static async Task<Ok<List<OrganizationResponseDTO>>> GetAllOrganizations(OrganizationService organizationService)
