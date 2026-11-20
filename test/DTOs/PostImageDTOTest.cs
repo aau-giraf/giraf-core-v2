@@ -1,12 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-using Microsoft.AspNetCore.Http;
-
-using Xunit.Abstractions;
-
-public class PostImageDTOTest : TestBase
+public class PostImageDTOTest(ITestOutputHelper output) : TestBase(output)
 {
-    public PostImageDTOTest(ITestOutputHelper output) : base(output) { }
+    private readonly ImageSeeder _imageSeeder = new();
 
     [Theory]
     [InlineData(true, false, false)]
@@ -54,21 +50,21 @@ public class PostImageDTOTest : TestBase
     [InlineData("webp")]
     public void Validate_PassesWithCorrectFileExt(string ext)
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed, citizenId: null, classId: null, ext: ext);
+        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null, Ext: ext));
         Assert.Empty(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
     public void Validate_FailsWithIncorrectFileExt()
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed, citizenId: null, classId: null);
+        var dto = _imageSeeder.CreateRequestBody(Seed, new(CitizenId: null, ClassId: null));
         Assert.Single(dto.Validate(new ValidationContext(dto)));
     }
 
     [Fact]
     public void Validate_FailsMultipleErrorsInDTO()
     {
-        var dto = ImageSeeder.CreateRequestBody(Seed);
+        var dto = _imageSeeder.CreateRequestBody(Seed, new());
         var results = dto.Validate(new ValidationContext(dto)).ToList();
         Assert.Multiple(() =>
         {

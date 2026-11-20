@@ -1,11 +1,13 @@
+// Options for creating org, if not supplied a random name is generated.
+internal record OrgOptions(string OrgName = "");
 
-public static class OrganizationSeeder
+internal class OrganizationSeeder : Seeder<Organization, OrgOptions>
 {
 
     // Create a random organization and add it to mock database.
-    public static async Task<Organization> SeedAsync(AppDbContext db, int seed)
+    public override async Task<Organization> SeedAsync(AppDbContext db, int seed, OrgOptions? opt = null)
     {
-        var organization = Create(seed);
+        var organization = Create(seed, opt);
 
         db.Organizations.Add(organization);
         await db.SaveChangesAsync();
@@ -14,9 +16,9 @@ public static class OrganizationSeeder
     }
 
     // Create x random organizations and add them to mock database.
-    public static async Task<List<Organization>> SeedManyAsync(AppDbContext db, int seed, int count)
+    public override async Task<List<Organization>> SeedManyAsync(AppDbContext db, int seed, int count, List<OrgOptions>? opt = null)
     {
-        var organizations = CreateManyFakers(seed, count);
+        var organizations = CreateMany(seed, count, opt);
 
         db.Organizations.AddRange(organizations);
         await db.SaveChangesAsync();
@@ -24,23 +26,11 @@ public static class OrganizationSeeder
         return organizations;
     }
 
-    // Generate a random organization.
-    private static Organization Create(int seed)
-    {
-        return CreateFaker(seed).Generate();
-    }
-
-    // Create x random organizations.
-    private static List<Organization> CreateManyFakers(int seed, int count)
-    {
-        return CreateFaker(seed).Generate(count);
-    }
-
     // Create a random test organization using bogus.
-    private static Faker<Organization> CreateFaker(int seed)
+    public override Faker<Organization> CreateFaker(int seed, OrgOptions? opt = null)
     {
         return new Faker<Organization>()
             .UseSeed(seed)
-            .RuleFor(o => o.Name, f => f.Name.FirstName());
+            .RuleFor(o => o.Name, f => opt is not null && !String.IsNullOrEmpty(opt.OrgName) ? opt.OrgName : f.Company.CompanyName());
     }
 }

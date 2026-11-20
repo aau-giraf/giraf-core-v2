@@ -1,92 +1,70 @@
-using Microsoft.AspNetCore.Http;
+// Optional Image seeding parameters.
+// ClassId & CitizenId: IDs == 0 -> random id, IDs == null -> null, IDs != 0 -> supplied int.
+// OrgId:
+//      CreateFaker(...): ID == 0 || null -> random id, else it will be the supplied int.
+//      CreateFakerRequest(...): IDs == 0 -> random id, IDs == null -> null, IDs != 0 -> supplied int.
+// Ext == null -> random not in BlockedFileExtensions, else Ext -> supplied extension
+internal record ImageOptions(int? ClassId = 0, int? OrgId = 0, int? CitizenId = 0, string? Ext = null);
 
-public static class ImageSeeder
+internal class ImageSeeder : Seeder<Image, ImageOptions>
 {
-    public record SeededImage(Image Image);
 
-    public static async Task<SeededImage> SeedAsync(AppDbContext db, int seed)
+    public override async Task<Image> SeedAsync(AppDbContext db, int seed, ImageOptions? opt = null)
     {
-        var image = Create(seed);
+        var image = Create(seed, opt);
 
-        db.Images.Add(image.Image);
+        db.Images.Add(image);
         await db.SaveChangesAsync();
 
         return image;
     }
 
-    public static async Task<SeededImage> SeededForCitizenImageAsync(AppDbContext db, int seed, int? citizenId)
+    public override async Task<List<Image>> SeedManyAsync(AppDbContext db, int seed, int count, List<ImageOptions>? opt = null)
     {
-        var image = CreateFaker(seed)
-            .RuleFor(i => i.CitizenId, _ => citizenId)
-            .Generate();
+        var images = CreateMany(seed, count, opt);
 
-        db.Images.Add(image);
-        await db.SaveChangesAsync();
-
-        return new SeededImage(image);
-    }
-
-    public static async Task<List<SeededImage>> SeededManyForCitizenImagesAsync(AppDbContext db, int seed, int count, int? citizenId)
-    {
-        var faker = CreateFaker(seed)
-            .RuleFor(i => i.CitizenId, _ => citizenId); // Overwrites the
-
-        var images = faker.Generate(count)
-            .Select(i => new SeededImage(i))
-            .ToList();
-
-        db.Images.AddRange(images.Select(x => x.Image));
+        db.Images.AddRange(images);
         await db.SaveChangesAsync();
 
         return images;
     }
 
-    private static SeededImage Create(int seed)
+    public override Faker<Image> CreateFaker(int seed, ImageOptions? opt = null)
     {
-        var image = CreateFaker(seed);
+        var options = opt ?? new(ClassId: null, OrgId: 0, CitizenId: null);
 
-        return new SeededImage(image);
-    }
-
-    public static PostImageDTO CreateRequestBody(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0, string ext = "")
-    {
-        return CreateFakerRequest(seed, organizationId, citizenId, classId, ext).Generate();
-    }
-    public static async Task<List<SeededImage>> SeedManyAsync(AppDbContext db, int seed, int count)
-    {
-        var images = CreateManyFakers(seed, count);
-
-        db.Images.AddRange(images.Select(x => x.Image));
-        await db.SaveChangesAsync();
-
-        return images;
-    }
-
-    private static Faker<Image> CreateFaker(int seed)
-    {
         return new Faker<Image>()
             .UseSeed(seed)
             .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
-            .RuleFor(i => i.CitizenId, f => f.Random.Int(1, 100))
+            .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.OrganizationId, f => options.OrgId != null && options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.Path, f => f.System.FileName())
-            .RuleFor(i => i.OrganizationId, f => f.Random.Int(1, 100))
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5))
-            .RuleFor(i => i.TicketId, f => f.Lorem.Word());
+            .RuleFor(i => i.TicketId, f => f.Lorem.Word())
+            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
-    private static Faker<PostImageDTO> CreateFakerRequest(int seed, int? organizationId = 0, int? citizenId = 0, int? classId = 0, string ext = "")
+    public PostImageDTO CreateRequestBody(int seed, ImageOptions? opt = null)
     {
+        return CreateFakerRequest(seed, opt).Generate();
+    }
+
+    private Faker<PostImageDTO> CreateFakerRequest(int seed, ImageOptions? opt = null)
+    {
+        var options = opt ?? new(ClassId: null, OrgId: 0, CitizenId: null);
+
         return new Faker<PostImageDTO>()
             .UseSeed(seed)
             .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
-            .RuleFor(i => i.OrganizationId, f => organizationId != 0 ? organizationId : f.Random.Int(1, 100))
-            .RuleFor(i => i.CitizenId, f => citizenId != 0 ? citizenId : f.Random.Int(1, 100))
-            .RuleFor(i => i.ClassId, f => classId != 0 ? classId : f.Random.Int(1, 100))
+            .RuleFor(i => i.OrganizationId, f => options.OrgId != 0 ? options.OrgId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.File, f =>
             {
                 var bytes = f.Random.Bytes(32);
                 var stream = new MemoryStream(bytes);
-                var chosen = ext != "" ? ext : RandomCommonFileExt(f);
+                var chosen = options.Ext ?? RandomCommonFileExt(f);
                 return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.{chosen}");
             })
             .RuleFor(i => i.TicketId, f => f.Lorem.Word());
@@ -107,21 +85,5 @@ public static class ImageSeeder
         while (BlockedFileExtensions.Contains(extension));
 
         return extension;
-    }
-
-    private static List<SeededImage> CreateManyFakers(int seed, int count)
-    {
-        var ImageFaker = CreateFaker(seed);
-
-        var images = new List<SeededImage>();
-
-        for (int i = 0; i < count; i++)
-        {
-            var image = ImageFaker.Generate();
-
-            images.Add(new SeededImage(image));
-        }
-
-        return images;
     }
 }

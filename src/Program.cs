@@ -102,6 +102,7 @@ app.MapOrganizationEndpoints();
 app.MapUserEndpoints();
 app.MapCitizenEndpoints();
 app.MapNonCitizenEndpoints();
+app.MapLegacyClassEndpoints();
 app.MapImageEndpoints();
 app.MapImageGenerateEndpoints();
 
