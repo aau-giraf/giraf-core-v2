@@ -18,6 +18,14 @@ public class OrganizationService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
+    private static bool IsUniqueConstraintViolation(Exception exception)
+    {
+        return exception.GetBaseException() is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation
+        };
+    }
+
     public async Task<List<OrganizationResponseDTO>> GetAllOrganizationsAsync()
     {
         return await _db.Organizations
@@ -27,14 +35,6 @@ public class OrganizationService(AppDbContext db)
                 Name = o.Name,
             })
             .ToListAsync();
-    }
-
-    private static bool IsUniqueConstraintViolation(Exception exception)
-    {
-        return exception.GetBaseException() is PostgresException
-        {
-            SqlState: PostgresErrorCodes.UniqueViolation
-        };
     }
 
     public async Task<(OrganizationServiceResult, OrganizationResponseDTO?)> GetOrganizationByIdAsync(int organizationId)
