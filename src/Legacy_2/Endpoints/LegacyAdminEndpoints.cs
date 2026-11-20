@@ -28,7 +28,13 @@ public static class LegacyAdminEndpoints
     private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
     {
         var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(nonCitizenId);
-        var foodUser = new LegacyUserDTO { Id = nonCitizen.Id, FirstName = nonCitizen.FirstName, LastName = nonCitizen.LastName, Email = nonCitizen.Email, Role = LegacyUserRole.Admin, RoleApproved = true };
+        /*var roles = await nonCitizenService.GetUserRolesAsync(nonCitizenId);
+        var rolesFP = 0;
+        foreach(string role in roles.RoleOrganizationTuples)
+        {
+            if(role = )
+        }*/
+        var foodUser = new LegacyUserDTO { Id = nonCitizen.Id, FirstName = nonCitizen.FirstName, LastName = nonCitizen.LastName, Email = nonCitizen.Email, Role = role.RoleOrganizationTuples, RoleApproved = true };
         return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
     }
 
