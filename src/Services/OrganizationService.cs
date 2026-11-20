@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
+using Npgsql;
+
 namespace giraf_core_v2.Services;
 
 public enum OrganizationServiceResult
@@ -26,6 +28,14 @@ public class OrganizationService(AppDbContext db)
                 Name = o.Name,
             })
             .ToListAsync();
+    }
+
+    private static bool IsUniqueConstraintViolation(Exception exception)
+    {
+        return exception.GetBaseException() is PostgresException
+        {
+            SqlState: PostgresErrorCodes.UniqueViolation
+        };
     }
 
     public async Task<(OrganizationServiceResult, OrganizationResponseDTO?)> GetOrganizationByIdAsync(int organizationId)
