@@ -80,6 +80,7 @@ public class ImageService(AppDbContext db)
         var image = new Image
         {
             TitleEn = imageRequest.TitleEn,
+            TitleDa = imageRequest.TitleDa,
             Path = stringPath,
             CitizenId = imageRequest.CitizenId,
             ClassId = imageRequest.ClassId,
