@@ -256,20 +256,18 @@ public class OrganizationService(AppDbContext db)
         return OrganizationServiceResult.Success;
     }
 
-        // Whether 1.A(created) | 1.B(updated) - Future properties can be set here, before try-cactch block 
+    public async Task<OrganizationServiceResult> DeleteClassInOrganizationAsync(int organizationId, int classId)
+    {
+        Class? organizationClass = await _db.Classes.FirstOrDefaultAsync(c => c.OrganizationId == organizationId && c.Id == classId);
 
-        try
+        if (organizationClass is null)
         {
-            await _db.SaveChangesAsync();
-        }
-        catch (DbUpdateException) when (createdUserRole)
-        {
-            /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
-             * Potentially check wether organization or user failed to provide more detailed response */
-            return (-1, null);
+            return OrganizationServiceResult.ClassNotFound;
         }
 
-        //For successfull cases, distuinguish between creation & update
-        return createdUserRole ? (1, userRole) : (0, null);
+        _db.Classes.Remove(organizationClass);
+        await _db.SaveChangesAsync();
+
+        return OrganizationServiceResult.Success;
     }
 }
