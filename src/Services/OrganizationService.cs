@@ -148,42 +148,45 @@ public class OrganizationService(AppDbContext db)
         });
     }
 
+    public async Task<(OrganizationServiceResult, UserRoleResponseDTO?)> AddRoleToUserAsync(int organizationId, int nonCitizenId, RoleType role)
     {
-        // Check if the name specified in the requestbody is already taken
-        bool checkNameAlreadyExist = await _db.Organizations.AnyAsync(o => o.Name == createOrganization.Name);
+        // TODO: Ensure role exists if/when roles are moved to their own table instead of relying on enums.
 
-        // Create new instance of Organization
-        Organization createdOrganization = new Organization
+        // Ensure target user exists.
+        if (!await _db.Users.AnyAsync(u => u.Id == nonCitizenId))
         {
-            Name = createOrganization.Name,
+            return (OrganizationServiceResult.UserNotFound, null);
+        }
+
+        // Ensure that the specified organization exists.
+        if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId))
+        {
+            return (OrganizationServiceResult.OrganizationNotFound, null);
+        }
+
+        UserRole newUserRole = new()
+        {
+            NonCitizenId = nonCitizenId,
+            Role = role,
+            OrganizationId = organizationId
         };
 
-        // Insert the new instance tuple into the db.
-        if (createdOrganization.Name is not null && checkNameAlreadyExist is false)
+        try
         {
-            _db.Organizations.Add(createdOrganization);
+            _db.UserRoles.Add(newUserRole);
             await _db.SaveChangesAsync();
         }
-
-        // Fetch the new organization in the db. 
-        // The db makes the organization Id on insert, which is required in the response body
-        // It is therefore we insert it in the db, and then fetches that same entry now containing id. 
-        Organization newOrganization = _db.Organizations.FirstOrDefault(o => o.Name == createdOrganization.Name)!;
-
-        if (newOrganization is null)
+        catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
-            return null;
+            return (OrganizationServiceResult.UserRoleAlreadyExists, null);
         }
 
-        // Return correctly formatted response
-        ResponseGetOrganizationDTO responseOrganization = new ResponseGetOrganizationDTO
+        return (OrganizationServiceResult.Success, new UserRoleResponseDTO
         {
-            Id = newOrganization.Id,
-            Name = newOrganization.Name,
-        };
-
-        return responseOrganization;
-
+            NonCitizenId = newUserRole.NonCitizenId,
+            Role = newUserRole.Role,
+            OrganizationId = newUserRole.OrganizationId
+        });
     }
 
     public async Task<ResponseGetOrganizationDTO?> UpdateOrganizationAsync(RequestCreateOrganizationDTO updateOrganization, int orgId)
