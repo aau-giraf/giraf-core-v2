@@ -113,29 +113,41 @@ public static class OrganizationEndpoints
         };
     }
 
-    private static async Task<Results<Ok<ResponseGetOrganizationDTO>, NotFound>> UpdateOrganization([FromForm] RequestCreateOrganizationDTO requestCreateOrganizationDTO, int orgId, OrganizationService organizationService)
+    private static async Task<Results<NoContent, NotFound<string>, InternalServerError>> DeleteRoleFromUser(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        var updatedOrganization = await organizationService.UpdateOrganizationAsync(requestCreateOrganizationDTO, orgId);
-        return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
-    }
+        OrganizationServiceResult response = await organizationService.DeleteUserRoleAsync(organizationId, nonCitizenId, role);
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
-    {
-        var deletionOccurred = await organizationService.DeleteUserRoleAsync(organizationId, nonCitizenId, role);
-        return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
-    }
-
-    private static async Task<Results<NotFound, NoContent, Created<UserRoleResponse>>> PutUserRole(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
-    {
-        (int, UserRole?) status = await organizationService.CreateOrUpdateUserRole(organizationId, nonCitizenId, role);
-        return status switch
+        return response switch
         {
-            (-1, null) => TypedResults.NotFound(),
-            (0, null) => TypedResults.NoContent(),
-            (1, UserRole ur) => TypedResults.Created(
-                $"/organizations/{organizationId}/members/{nonCitizenId}/{role}",
-                new UserRoleResponse(ur.NonCitizenId, ur.OrganizationId, ur.Role)),
-            _ => throw new UnreachableException()
+            OrganizationServiceResult.UserNotFound => TypedResults.NotFound($"User with ID {nonCitizenId} not found."),
+            OrganizationServiceResult.OrganizationNotFound => TypedResults.NotFound($"Organization with ID {organizationId} not found."),
+            OrganizationServiceResult.UserRoleNotFound => TypedResults.NoContent(),
+            OrganizationServiceResult.Success => TypedResults.NoContent(),
+            _ => TypedResults.InternalServerError(),
+        };
+    }
+
+    private static async Task<Results<NoContent, InternalServerError>> DeleteOrganization(int organizationId, OrganizationService organizationService)
+    {
+        OrganizationServiceResult response = await organizationService.DeleteOrganizationAsync(organizationId);
+
+        return response switch
+        {
+            OrganizationServiceResult.OrganizationNotFound => TypedResults.NoContent(),
+            OrganizationServiceResult.Success => TypedResults.NoContent(),
+            _ => TypedResults.InternalServerError(),
+        };
+    }
+
+    private static async Task<Results<NoContent, InternalServerError>> DeleteClassInOrganization(int organizationId, int classId, OrganizationService organizationService)
+    {
+        OrganizationServiceResult response = await organizationService.DeleteClassInOrganizationAsync(organizationId, classId);
+
+        return response switch
+        {
+            OrganizationServiceResult.ClassNotFound => TypedResults.NoContent(),
+            OrganizationServiceResult.Success => TypedResults.NoContent(),
+            _ => TypedResults.InternalServerError(),
         };
     }
 }
