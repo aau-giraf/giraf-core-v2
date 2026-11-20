@@ -319,6 +319,41 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
+    public async Task FindOrganizationAsync_PicksOrganizationOfRequestedCitizen_WhenSeveralCitizensExist()
+    {
+        await using var db = CreateDbContext();
+
+        // Two citizens, each in their own class and organization
+        var organization1 = await _orgSeeder.SeedAsync(db, Seed);
+        var class1 = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization1.Id));
+        await _userSeeder.SeedAsync(db, Seed, new(ClassId: class1.Id));
+
+        var organization2 = await _orgSeeder.SeedAsync(db, Seed + 1);
+        var class2 = await _classSeeder.SeedAsync(db, Seed + 1, new(OrgId: organization2.Id));
+        var citizen2 = await _userSeeder.SeedAsync(db, Seed + 1, new(ClassId: class2.Id));
+
+        // The image belongs to the second citizen, so "the first citizen in the table" would be wrong
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizen2.User.Id));
+
+        var service = new ImageService(db);
+        var created = await service.CreateImagesAsync(request);
+        try
+        {
+            Assert.NotNull(created);
+            Assert.Equal(citizen2.User.Id, created!.CitizenId);
+            Assert.Equal(organization2.Id, created.OrganizationId);
+            Assert.NotEqual(organization1.Id, created.OrganizationId);
+        }
+        finally
+        {
+            if (created?.Path is not null && File.Exists(created.Path))
+            {
+                File.Delete(created.Path);
+            }
+        }
+    }
+
+    [Fact]
     public async Task PostImageAsync_requestKnowingClassId()
     {
         await using var db = CreateDbContext();
