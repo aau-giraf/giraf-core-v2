@@ -84,11 +84,8 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<(OrganizationServiceResult, List<ClassResponseDTO>?)> GetAllClassesInOrganizationAsync(int organizationId)
     {
-        // Check that the specified organization exists.
-        bool organizationExists = await _db.Organizations
-            .AnyAsync(o => o.Id == organizationId);
-
-        if (!organizationExists)
+        // Ensure that the specified organization exists.
+        if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId))
         {
             return (OrganizationServiceResult.OrganizationNotFound, null);
         }
@@ -107,11 +104,8 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<(OrganizationServiceResult, ClassResponseDTO?)> CreateClassInOrganizationAsync(CreateClassDTO createClassDto, int organizationId)
     {
-        // Check that the specified organization exists.
-        bool organizationExists = await _db.Organizations
-            .AnyAsync(o => o.Id == organizationId);
-
-        if (!organizationExists)
+        // Ensure that the specified organization exists.
+        if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId))
         {
             return (OrganizationServiceResult.OrganizationNotFound, null);
         }
