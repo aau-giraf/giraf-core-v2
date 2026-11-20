@@ -59,16 +59,6 @@ public class OrganizationService(AppDbContext db)
 
     public async Task<(OrganizationServiceResult, ClassResponseDTO?)> GetClassInOrganizationAsync(int organizationId, int classId)
     {
-        // Check that the specified organization exists.
-        bool organizationExists = await _db.Organizations
-            .AnyAsync(o => o.Id == organizationId);
-
-        if (!organizationExists)
-        {
-            return (OrganizationServiceResult.OrganizationNotFound, null);
-        }
-
-        // Attempt to fetch the class.
         var organizationClass = await _db.Classes
             .Where(c => c.OrganizationId == organizationId && c.Id == classId)
             .Select(c => new ClassResponseDTO
@@ -79,13 +69,17 @@ public class OrganizationService(AppDbContext db)
             })
             .FirstOrDefaultAsync();
 
-        // Check that the class was found.
-        if (organizationClass is null)
+        if (organizationClass is not null)
         {
-            return (OrganizationServiceResult.ClassNotFound, null);
+            return (OrganizationServiceResult.Success, organizationClass);
         }
 
-        return (OrganizationServiceResult.Success, organizationClass);
+        if (!await _db.Organizations.AnyAsync(o => o.Id == organizationId))
+        {
+            return (OrganizationServiceResult.OrganizationNotFound, null);
+        }
+
+        return (OrganizationServiceResult.ClassNotFound, null);
     }
 
     public async Task<(OrganizationServiceResult, List<ClassResponseDTO>?)> GetAllClassesInOrganizationAsync(int organizationId)
