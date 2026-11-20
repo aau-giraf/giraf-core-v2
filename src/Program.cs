@@ -49,12 +49,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<UserService>();
-builder.Services.AddHttpClient<ImageService>(client =>
-{
-    client.BaseAddress = new Uri(Env.Get("AI_BACKEND_URL"));
-    client.Timeout = TimeSpan.FromSeconds(10);
-});
-builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ImageService>();
 builder.Services.AddScoped<TokenProvider>();
 builder.Services.AddScoped<CitizenService>();
 builder.Services.AddScoped<NonCitizenService>();
@@ -104,7 +99,6 @@ app.MapCitizenEndpoints();
 app.MapNonCitizenEndpoints();
 app.MapLegacyClassEndpoints();
 app.MapImageEndpoints();
-app.MapImageGenerateEndpoints();
 
 app.UseRateLimiter();
 

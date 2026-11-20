@@ -1,10 +1,4 @@
-using System.Net;
-
 using giraf_core_v2.DTOs.Images;
-
-using Microsoft.Extensions.Caching.Memory;
-
-using Xunit.Abstractions;
 
 public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 {
@@ -13,29 +7,6 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     private readonly OrganizationSeeder _orgSeeder = new();
     private readonly ClassSeeder _classSeeder = new();
 
-    public class FakeHttpHandler(HttpStatusCode status = HttpStatusCode.OK) : HttpMessageHandler
-    {
-        public HttpRequestMessage? LastRequest { get; private set; }
-        public string? LastBody { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
-        {
-            LastRequest = request;
-            LastBody = request.Content is null ? null : await request.Content.ReadAsStringAsync(ct);
-            return new HttpResponseMessage(status);
-        }
-    }
-
-    private static ImageService CreateService(AppDbContext db, HttpMessageHandler? handler = null)
-    {
-        var cache = new MemoryCache(new MemoryCacheOptions());
-        var http = new HttpClient(handler ?? new FakeHttpHandler())
-        {
-            BaseAddress = new Uri("http://ai.test/")
-        };
-        return new ImageService(db, cache, http);
-    }
-
     [Fact]
     public async Task GetAllImagesAsync_ReturnsAllImages()
     {
@@ -43,7 +14,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var images = await _imageSeeder.SeedManyAsync(db, Seed, 3);
         var expectedIds = images.Select(s => s.Id).OrderBy(id => id).ToList();
 
-        var service = CreateService(db);
+        var service = new ImageService(db);
 
         var result = await service.GetAllImagesAsync();
 
@@ -55,7 +26,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     public async Task GetAllImagesAsync_ReturnsEmptyList_WhenNoImages()
     {
         await using var db = CreateDbContext();
-        var service = CreateService(db);
+        var service = new ImageService(db);
 
         var result = await service.GetAllImagesAsync();
 
@@ -70,7 +41,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var image = await _imageSeeder.SeedAsync(db, Seed);
 
-        var service = CreateService(db);
+        var service = new ImageService(db);
 
         var imageById = await service.GetImageByIdAsync(image.Id);
 
@@ -82,7 +53,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         await using var db = CreateDbContext();
 
-        var imageService = CreateService(db);
+        var imageService = new ImageService(db);
         var nonExistingImageId = 9999;
 
 
@@ -103,7 +74,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             new(ClassId: null, CitizenId: citizen.User.Id)
         ];
         var images = await _imageSeeder.SeedManyAsync(db, seed: Seed, count: 3, opt);
-        var service = CreateService(db);
+        var service = new ImageService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen.User.Id);
 
@@ -119,7 +90,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     public async Task GetImagesByCitizenIdAsync_UserNotFound_ReturnsNull()
     {
         await using var db = CreateDbContext();
-        var service = CreateService(db);
+        var service = new ImageService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(42);
 
@@ -165,7 +136,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         await using var db = CreateDbContext();
         var citizen = await _userSeeder.SeedAsync(db, seed: Seed);
-        var service = CreateService(db);
+        var service = new ImageService(db);
 
         var result = await service.GetImagesByCitizenIdAsync(citizen.User.Id);
 
@@ -186,7 +157,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             image.Path = Path.Combine(dir, Path.GetFileName(image.Path));
             await db.SaveChangesAsync();
             File.WriteAllBytes(image.Path, []);
-            var service = CreateService(db);
+            var service = new ImageService(db);
 
             Assert.True(await service.DeleteImageAsync(image.Id));
             Assert.Null(await db.Images.SingleOrDefaultAsync(i => i.Id == image.Id));
@@ -219,7 +190,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
             File.WriteAllBytes(image1.Path, []); // // opens and close the file
             File.WriteAllBytes(image2.Path, []);
 
-            var service = CreateService(db);
+            var service = new ImageService(db);
 
             Assert.True(await service.DeleteImageAsync(image1.Id));
 
@@ -239,7 +210,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     public async Task DeleteImageAsync_ReturnsFalseIfIdDontExists()
     {
         await using var db = CreateDbContext();
-        var service = CreateService(db);
+        var service = new ImageService(db);
         var nonExistingImageId = 9999;
 
         var result = await service.DeleteImageAsync(nonExistingImageId);
@@ -254,7 +225,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         await using var db = CreateDbContext();
         var organization = await _orgSeeder.SeedAsync(db, Seed);
         var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
-        var service = CreateService(db);
+        var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -284,7 +255,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         await using var db = CreateDbContext();
         var organization = await _orgSeeder.SeedAsync(db, Seed);
         var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
-        var service = CreateService(db);
+        var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -319,7 +290,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var citizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
         var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizen.User.Id));
 
-        var service = CreateService(db);
+        var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -355,7 +326,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
         var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, CitizenId: null, ClassId: class_.Id));
 
-        var service = CreateService(db);
+        var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
@@ -389,7 +360,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         await using var db = CreateDbContext();
         var organization = _orgSeeder.SeedAsync(db, Seed);
         var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: organization.Id, ClassId: null, CitizenId: null));
-        var service = CreateService(db);
+        var service = new ImageService(db);
         string? path = null;
 
         try
@@ -436,9 +407,8 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         // Arrange data
         await using var db = CreateDbContext();
-        var seeded = await ImageSeeder.SeedAsync(db, Seed);
-        var image = seeded.Image;
-        var service = CreateService(db);
+        var image = await _imageSeeder.SeedAsync(db, Seed);
+        var service = new ImageService(db);
 
         // Act - lookup the seeded image.ticketId to retrieve it from the database
         var result = await service.IsImageDone(image.TicketId!);
@@ -454,8 +424,8 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
     {
         // Arrange
         await using var db = CreateDbContext();
-        await ImageSeeder.SeedAsync(db, Seed);
-        var service = CreateService(db);
+        await _imageSeeder.SeedAsync(db, Seed);
+        var service = new ImageService(db);
 
         // Act
         var result = await service.IsImageDone(Guid.NewGuid().ToString());

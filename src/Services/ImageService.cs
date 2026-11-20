@@ -1,16 +1,12 @@
 using giraf_core_v2.DTOs.Images;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace giraf_core_v2.Services;
 
-public class ImageService(AppDbContext db, IMemoryCache cache, HttpClient http)
+public class ImageService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
-
-    // How long a rejected ticketId is saved
-    private static readonly TimeSpan RejectedTicketLifetime = TimeSpan.FromMinutes(10);
 
     public async Task<Image?> GetImageByIdAsync(int image_id)
     {
