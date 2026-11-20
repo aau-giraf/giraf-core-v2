@@ -241,29 +241,20 @@ public class OrganizationService(AppDbContext db)
         return OrganizationServiceResult.Success;
     }
 
-    public async Task<(int, UserRole?)> CreateOrUpdateUserRole(int organizationId, int nonCitizenId, RoleType role)
+    public async Task<OrganizationServiceResult> DeleteOrganizationAsync(int organizationId)
     {
-        //CASE 1: organization, non-citizen, role each exist seperately. (Assumed to minimize reads, most frequent case)
-        bool createdUserRole = false;
-        var userRole = await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId);
+        Organization? organization = await _db.Organizations.FirstOrDefaultAsync(o => o.Id == organizationId);
 
-        // 1.A: the UserRole tuple does not exist. Create it
-        if (userRole is null)
+        if (organization is null)
         {
-            //Create new object
-            userRole = new UserRole
-            {
-                NonCitizenId = nonCitizenId,
-                Role = role,
-                OrganizationId = organizationId
-            };
-
-            //Add it to change tracking
-            _db.UserRoles.Add(userRole);
-
-            //Indicate Successfull(Created) case 1.A occurred
-            createdUserRole = true;
+            return OrganizationServiceResult.OrganizationNotFound;
         }
+
+        _db.Organizations.Remove(organization);
+        await _db.SaveChangesAsync();
+
+        return OrganizationServiceResult.Success;
+    }
 
         // Whether 1.A(created) | 1.B(updated) - Future properties can be set here, before try-cactch block 
 
