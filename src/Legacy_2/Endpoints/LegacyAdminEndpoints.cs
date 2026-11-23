@@ -15,7 +15,7 @@ public static class LegacyAdminEndpoints
         //Alt kræver admin authorization
 
         //group.MapGet("/GetAllUsers", ); //mangler fra core
-        group.MapGet("/Get/{id}", GetNonCitizen); //MANGLER AUTHORIZATION OG USER ROLE
+        //group.MapGet("/Get/{id}", GetNonCitizen); //MANGLER AUTHORIZATION OG USER ROLE
         //group.MapGet("/GetAllChildren", ); //mangler fra core
 
         //group.MapPut("/UpdateUser/{id}",);
@@ -25,17 +25,17 @@ public static class LegacyAdminEndpoints
     }
 
 
-    private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
+    /*private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
     {
-        var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(nonCitizenId);
+        //var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(nonCitizenId);
         /*var roles = await nonCitizenService.GetUserRolesAsync(nonCitizenId);
         var rolesFP = 0;
         foreach(string role in roles.RoleOrganizationTuples)
         {
             if(role = )
         }*/
-        var foodUser = new LegacyUserDTO { Id = nonCitizen.Id, FirstName = nonCitizen.FirstName, LastName = nonCitizen.LastName, Email = nonCitizen.Email, Role = role.RoleOrganizationTuples, RoleApproved = true };
-        return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
-    }
+    //var foodUser = new LegacyUserDTO { Id = nonCitizen.Id, FirstName = nonCitizen.FirstName, LastName = nonCitizen.LastName, Email = nonCitizen.Email, Role = role.RoleOrganizationTuples, RoleApproved = true };
+    //return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
+    //}*/
 
 }
