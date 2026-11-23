@@ -9,7 +9,7 @@ JWT_AUDIENCES=giraf-foodplanner,giraf-weekplanner,giraf-vta
 JWT_ISSUER=giraf-core
 ```
 
-At some point the AI_BACKEND_URL will get an actual URL when its up and running, but for now it will be running on the localhost meaning there are not connection.
+At some point the AI_BACKEND_URL will get an actual URL when its up and running, but for now it will be running on the localhost meaning there is no actual connection.
 
 For development purposes, any random 256bit string will work as the `JWT_SECRET`.
 
