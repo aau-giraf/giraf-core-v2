@@ -324,25 +324,29 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         await using var db = CreateDbContext();
 
         // Two citizens, each in their own class and organization
-        var organization1 = await _orgSeeder.SeedAsync(db, Seed);
-        var class1 = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization1.Id));
-        await _userSeeder.SeedAsync(db, Seed, new(ClassId: class1.Id));
-
-        var organization2 = await _orgSeeder.SeedAsync(db, Seed + 1);
-        var class2 = await _classSeeder.SeedAsync(db, Seed + 1, new(OrgId: organization2.Id));
-        var citizen2 = await _userSeeder.SeedAsync(db, Seed + 1, new(ClassId: class2.Id));
+        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var classes = await _classSeeder.SeedManyAsync(db, Seed, 2,
+        [
+            new(OrgId: organizations[0].Id),
+            new(OrgId: organizations[1].Id),
+        ]);
+        var citizens = await _userSeeder.SeedManyAsync(db, Seed, 2,
+        [
+            new(ClassId: classes[0].Id),
+            new(ClassId: classes[1].Id),
+        ]);
 
         // The image belongs to the second citizen, so "the first citizen in the table" would be wrong
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizen2.User.Id));
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizens[1].User.Id));
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
         try
         {
             Assert.NotNull(created);
-            Assert.Equal(citizen2.User.Id, created!.CitizenId);
-            Assert.Equal(organization2.Id, created.OrganizationId);
-            Assert.NotEqual(organization1.Id, created.OrganizationId);
+            Assert.Equal(citizens[1].User.Id, created!.CitizenId);
+            Assert.Equal(organizations[1].Id, created.OrganizationId);
+            Assert.NotEqual(organizations[0].Id, created.OrganizationId);
         }
         finally
         {
