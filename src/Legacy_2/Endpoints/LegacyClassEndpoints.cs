@@ -35,12 +35,13 @@ public static class LegacyClassEndpoints
         }).ToList();
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(OrganizationService organizationService, int ClassId)
+    private static async Task<Results<Ok<int>, BadRequest>> DeleteClassInOrganization(OrganizationService organizationService, int ClassId)
     {
         int OrgId = 1; // Currently only Egebakken
 
         bool result = await organizationService.DeleteClassInOrganizationAsync(OrgId, ClassId);
-        return result ? TypedResults.NoContent() : TypedResults.NotFound();
+        int response = (result == true ? 1 : 0); // 
+        return result ? TypedResults.Ok(response) : TypedResults.BadRequest();
     }
 
 }
