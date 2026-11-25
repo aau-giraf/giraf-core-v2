@@ -39,7 +39,7 @@ public static class LegacyClassEndpoints
     {
         int orgId = 1; // Currently only Egebakken
 
-        bool result = await organizationService.DeleteClassInOrganizationAsync(OrgId, ClassId);
+        bool result = await organizationService.DeleteClassInOrganizationAsync(orgId, ClassId);
         int response = (result == true ? 1 : 0); // 
         return result ? TypedResults.Ok(response) : TypedResults.BadRequest();
     }
