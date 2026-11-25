@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 namespace giraf_core_v2.Legacy_2.DTOs.LegacyUserDTO;
-
+using System.Text.Json.Serialization;
 public enum LegacyUserRole
 {
     Admin = 1 << 0,    // 1
@@ -27,7 +27,10 @@ public class LegacyUserDTO
     [StringLength(100, ErrorMessage = "Email er for langt")]
     public required string Email { get; set; }
 
+
     [Required(ErrorMessage = "Role er påkrævet")]
+    // Override global JSON 'enum to string' serialization, as foodplanner expects UserRole enum to be an integer
+    [JsonConverter(typeof(JsonNumberEnumConverter<LegacyUserRole>))]
     public required LegacyUserRole Role { get; set; }
 
     public required bool RoleApproved { get; set; }
