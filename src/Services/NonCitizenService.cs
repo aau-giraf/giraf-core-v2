@@ -336,7 +336,7 @@ public class NonCitizenService(AppDbContext db)
     {
 
         // Check nonCitizen exists
-        var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
+        var nonCitizen = await _db.NonCitizens.Include(nc => nc.Guardianships).AsNoTracking().SingleAsync(nc => nc.Id == nonCitizenId);
 
         if (nonCitizen is null)
         {
@@ -344,7 +344,7 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check citizen exists
-        var citizen = await _db.Citizens.FindAsync(requestGuardianshipDTO.CitizenId);
+        var citizen = await _db.Citizens.AsNoTracking().SingleAsync(c => c.Id == requestGuardianshipDTO.CitizenId);
 
         if (citizen is null)
         {
@@ -353,13 +353,14 @@ public class NonCitizenService(AppDbContext db)
 
         var createdGuardianship = new Guardianship()
         {
-            CitizenId = requestGuardianshipDTO.CitizenId,
+            CitizenId = citizen.Id,
             Citizen = citizen,
-            GuardianId = nonCitizenId,
+            GuardianId = nonCitizen.Id,
             Guardian = nonCitizen
         };
 
-        _db.Guardianships.Add(createdGuardianship);
+        nonCitizen.Guardianships.Add(createdGuardianship);  // No ChangeTracker errors - but doesnt insert to db
+        //_db.Guardianships.Add(createdGuardianship); ChangeTracker errors - but inserts to db. 
 
         try
         {
@@ -368,19 +369,17 @@ public class NonCitizenService(AppDbContext db)
         catch (DbUpdateException exception)
         {
 
+            foreach (var entry in exception.Entries)
             {
-                foreach (var entry in exception.Entries)
-                {
-                    entry.State = EntityState.Detached;
-                }
-
-                return (HttpReponseType.Conflict, null);
+                entry.State = EntityState.Detached;
             }
+
+            return (HttpReponseType.Conflict, null);
 
         }
 
-        // Find the updated list of citizens from changetracker in-memory via identity resolution
-        var guardianships = await _db.Guardianships.Where(gs => gs.GuardianId == nonCitizenId).ToListAsync();
+        // Find the updated list of Guardianships related to the nonCitizen
+        var guardianships = nonCitizen.Guardianships.ToList();
 
         // Select only the needed from guardianships
         List<int> citizens = [];
