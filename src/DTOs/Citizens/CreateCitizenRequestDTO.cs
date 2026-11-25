@@ -1,28 +1,25 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 using Microsoft.Extensions.Validation;
 
+namespace giraf_core_v2.DTOs.Citizens;
+
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 [ValidatableType]
-public class RequestPostNonCitizenDTO
+public class CreateCitizenRequestDTO
 {
     [Required]
+    public int ClassId { get; set; }
+
     [Length(3, 255)]
     public required string FirstName { get; set; }
-    [Required]
+
     [Length(3, 255)]
     public required string LastName { get; set; }
 
-    [Required]
-    [EmailAddress]
-    public required string Email { get; set; }
-
-    [Required]
     [Length(3, 255)]
     public required string Username { get; set; }
 
-    [Required]
-    [Length(8, 255)]
+    [Length(3, 255)]
     public required string Password { get; set; }
-
 }

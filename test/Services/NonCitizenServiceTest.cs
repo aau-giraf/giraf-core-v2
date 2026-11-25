@@ -1,20 +1,22 @@
+namespace giraf_core_v2.Tests.Services;
+
 public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly UserSeeder _userSeeder = new();
-    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly OrganizationSeeder _organizationSeeder = new();
     private readonly UserRoleSeeder _userRoleSeeder = new();
     private readonly GuardianshipSeeder _guardianshipSeeder = new();
 
     // ---------- /nonCitizens ---------- \\
 
     [Fact]
-    public async Task GetNonCitizenById_GetsCorrectNonCitizenId()
+    public async Task GetNonCitizenById_NonCitizenExists_ReturnsNonCitizen()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        UserOptions opt = new(Type: UserType.NonCitizen);
-        var nonCitizenSeeder = await _userSeeder.SeedAsync(db, Seed, opt);
+        UserOptions options = new(Type: UserType.NonCitizen);
+        var nonCitizenSeeder = await _userSeeder.SeedAsync(db, Seed, options);
         var nonCitizen = Assert.IsType<NonCitizen>(nonCitizenSeeder.User); ;
 
         var service = new NonCitizenService(db);
@@ -24,7 +26,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
 
-        Assert.Equal(nonCitizen.Id, fetchedNonCitizen!.Id);
+        Assert.Equal(nonCitizen.Id, fetchedNonCitizen!.NonCitizenId);
         Assert.Equal(nonCitizen.FirstName, fetchedNonCitizen!.FirstName);
         Assert.Equal(nonCitizen.LastName, fetchedNonCitizen!.LastName);
         Assert.Equal(nonCitizen.Username, fetchedNonCitizen!.Username);
@@ -33,13 +35,13 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    public async Task PatchNonCitizen_PatchesCorrectNonCitizen()
+    public async Task PatchNonCitizen_NonCitizenExists_UpdatesNonCitizen()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        List<UserOptions> opt = [new(Type: UserType.NonCitizen), new(Type: UserType.NonCitizen)];
-        var seededNonCitizens = await _userSeeder.SeedManyAsync(db, Seed, 2, opt);
+        List<UserOptions> options = [new(Type: UserType.NonCitizen), new(Type: UserType.NonCitizen)];
+        var seededNonCitizens = await _userSeeder.SeedManyAsync(db, Seed, 2, options);
 
         var nonCitizen = Assert.IsType<NonCitizen>(seededNonCitizens[0].User);
         var ogPassword = seededNonCitizens[0].PlainPassword;
@@ -54,7 +56,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var fetchedNonCitizen = await service.PatchNonCitizenAsync(
             nonCitizen.Id,
-            new RequestPatchNonCitizenDTO
+            new PatchNonCitizenRequestDTO
             {
                 FirstName = differentNonCitizen.FirstName,
                 LastName = differentNonCitizen.LastName,
@@ -66,7 +68,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
         Assert.NotNull(fetchedNonCitizen.Item2);
-        Assert.Equal(nonCitizen.Id, fetchedNonCitizen.Item2!.Id);
+        Assert.Equal(nonCitizen.Id, fetchedNonCitizen.Item2!.NonCitizenId);
         Assert.Equal(differentNonCitizen.FirstName, fetchedNonCitizen.Item2.FirstName);
         Assert.Equal(differentNonCitizen.LastName, fetchedNonCitizen.Item2.LastName);
         Assert.Equal(differentNonCitizen.Username, fetchedNonCitizen.Item2.Username);
@@ -79,12 +81,12 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    public async Task DeleteNonCitizen_DeletesCorrectNonCitizen()
+    public async Task DeleteNonCitizen_NonCitizenExists_DeletesNonCitizen()
     {
         await using var db = CreateDbContext();
 
-        List<UserOptions> opt = [new(Type: UserType.NonCitizen), new(Type: UserType.NonCitizen)];
-        var nonCitizensSeeder = await _userSeeder.SeedManyAsync(db, Seed, 2, opt);
+        List<UserOptions> options = [new(Type: UserType.NonCitizen), new(Type: UserType.NonCitizen)];
+        var nonCitizensSeeder = await _userSeeder.SeedManyAsync(db, Seed, 2, options);
         var nonCitizen1 = Assert.IsType<NonCitizen>(nonCitizensSeeder[0].User);
         var nonCitizen2 = Assert.IsType<NonCitizen>(nonCitizensSeeder[1].User);
 
@@ -108,7 +110,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task PostNonCitizen_PostsCorrectNonCitizen()
+    public async Task PostNonCitizen_EmailIsUnique_CreatesNonCitizen()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -125,7 +127,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ACT -----\\
         var fetchedNonCitizen = await service.PostNonCitizenAsync(
-            new RequestPostNonCitizenDTO
+            new PostNonCitizenRequestDTO
             {
                 FirstName = nonCitizenFaker.FirstName,
                 LastName = nonCitizenFaker.LastName,
@@ -145,16 +147,16 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     // ---------- /userRoles ---------- \\
 
     [Fact]
-    public async Task GetUserRoles_GetsCorrectUserRoles()
+    public async Task GetUserRoles_NonCitizenExists_ReturnsUserRoles()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
 
-        UserOptions userOpt = new(Type: UserType.NonCitizen);
-        var nonCitizenSeeder = await _userSeeder.SeedAsync(db, Seed, userOpt);
+        UserOptions userOptions = new(Type: UserType.NonCitizen);
+        var nonCitizenSeeder = await _userSeeder.SeedAsync(db, Seed, userOptions);
         var nonCitizen = Assert.IsType<NonCitizen>(nonCitizenSeeder.User);
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 2);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
@@ -178,7 +180,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteUserRole_DeletesCorrectUserRole()
+    public async Task DeleteUserRole_UserRoleExists_DeletesUserRole()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -187,7 +189,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var nonCitizenSeeder = await _userSeeder.SeedAsync(db, Seed, userOptions);
         var nonCitizen = Assert.IsType<NonCitizen>(nonCitizenSeeder.User);
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 3);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 3);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
         var organization3 = organizations[2];
@@ -207,7 +209,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new NonCitizenService(db);
 
-        Assert.True(await service.DeleteUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
+        Assert.True(await service.DeleteUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
         {
             Role = userRole1.Role,
             OrganizationId = userRole1.OrganizationId
@@ -230,7 +232,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    public async Task PostUserRole_PostsCorrectUserRole()
+    public async Task PostUserRole_UserRoleDoesNotExist_CreatesUserRole()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -239,7 +241,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var nonCitizenSeeder = await _userSeeder.SeedAsync(db, Seed, uOpt);
         var nonCitizen = Assert.IsType<NonCitizen>(nonCitizenSeeder.User);
 
-        var organizations = await _orgSeeder.SeedManyAsync(db, Seed, 3);
+        var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 3);
         var organization1 = organizations[0];
         var organization2 = organizations[1];
         var organization3 = organizations[2];
@@ -256,7 +258,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var service = new NonCitizenService(db);
 
-        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
+        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
         {
             Role = userRoleFaker.Role,
             OrganizationId = userRoleFaker.OrganizationId
@@ -283,7 +285,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     // ---------- /guardianships ---------- \\
 
     [Fact]
-    public async Task GetGuardianships_GetsCorrectguardianships()
+    public async Task GetGuardianships_NonCitizenExists_ReturnsGuardianships()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -314,7 +316,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteGuardianship_DeletesCorrectGuardianship()
+    public async Task DeleteGuardianship_GuardianshipExists_DeletesGuardianship()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -327,8 +329,8 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var citizen3 = await _userSeeder.SeedAsync(db, Seed);
 
 
-        List<GuardianshipOptions> opt = [new(citizen1.User.Id, nonCitizen.Id), new(citizen2.User.Id, nonCitizen.Id), new(citizen3.User.Id, nonCitizen.Id)];
-        var guardianships = await _guardianshipSeeder.SeedManyAsync(db, Seed, 3, opt);
+        List<GuardianshipOptions> options = [new(citizen1.User.Id, nonCitizen.Id), new(citizen2.User.Id, nonCitizen.Id), new(citizen3.User.Id, nonCitizen.Id)];
+        var guardianships = await _guardianshipSeeder.SeedManyAsync(db, Seed, 3, options);
         var guardianship1 = guardianships[0];
         var guardianship2 = guardianships[1];
         var guardianship3 = guardianships[2];
@@ -345,7 +347,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new NonCitizenService(db);
 
-        Assert.True(await service.DeleteGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
+        Assert.True(await service.DeleteGuardianshipAsync(nonCitizen.Id, new GuardianshipRequestDTO
         {
             CitizenId = citizenNonCitizenTuple.Item1
         }));
@@ -366,7 +368,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task PostGuardianship_PostsGuardianship()
+    public async Task PostGuardianship_GuardianshipDoesNotExist_CreatesGuardianship()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -378,8 +380,8 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var citizen2 = await _userSeeder.SeedAsync(db, Seed);
         var citizen3 = await _userSeeder.SeedAsync(db, Seed);
 
-        List<GuardianshipOptions> opt = [new(citizen1.User.Id, nonCitizen.Id), new(citizen2.User.Id, nonCitizen.Id)];
-        var guardianships = await _guardianshipSeeder.SeedManyAsync(db, Seed, 2, opt);
+        List<GuardianshipOptions> options = [new(citizen1.User.Id, nonCitizen.Id), new(citizen2.User.Id, nonCitizen.Id)];
+        var guardianships = await _guardianshipSeeder.SeedManyAsync(db, Seed, 2, options);
 
         // Faker guardianship
         Guardianship guardianshipFaker = new Faker<Guardianship>().UseSeed(Seed)
@@ -389,7 +391,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var service = new NonCitizenService(db);
 
-        var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
+        var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new GuardianshipRequestDTO
         {
             CitizenId = citizen3.User.Id
         });
@@ -406,7 +408,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
     // ---------- /nonCitizens on invalid inputs ---------- \\
     [Fact]
-    public async Task PatchNonCitizen_ReturnsUnauthorizedResponseOnNonUnauthorizedOldPassword()
+    public async Task PatchNonCitizen_OldPasswordIsWrong_ReturnsUnauthorized()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -427,7 +429,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var fetchedNonCitizen = await service.PatchNonCitizenAsync(
             nonCitizen.Id,
-            new RequestPatchNonCitizenDTO
+            new PatchNonCitizenRequestDTO
             {
                 OldPassword = ogPassword + "udsw",
                 NewPassword = nonCitizenFaker.Password,
@@ -436,11 +438,11 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ASSERT -----\\
         Assert.Null(fetchedNonCitizen.Item2);
         Assert.True(BCrypt.Net.BCrypt.Verify(newPassword, nonCitizenFaker.Password));
-        Assert.Equal(HttpReponseType.Unauthorized.ToString(), fetchedNonCitizen.Item1.ToString());
+        Assert.Equal(HttpResponseType.Unauthorized.ToString(), fetchedNonCitizen.Item1.ToString());
     }
 
     [Fact]
-    public async Task PostNonCitizen_ReturnsConflictResponseOnNonUniqueEmail()
+    public async Task PostNonCitizen_EmailIsNotUnique_ReturnsConflict()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -461,7 +463,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ACT -----\\
         var fetchedNonCitizen = await service.PostNonCitizenAsync(
-            new RequestPostNonCitizenDTO
+            new PostNonCitizenRequestDTO
             {
                 FirstName = nonCitizenFaker.FirstName,
                 LastName = nonCitizenFaker.LastName,
@@ -472,13 +474,13 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
         Assert.Null(fetchedNonCitizen.Item2);
-        Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedNonCitizen.Item1.ToString());
+        Assert.Equal(HttpResponseType.Conflict.ToString(), fetchedNonCitizen.Item1.ToString());
     }
 
     // ---------- /nonCitizens/userRoles on invalid inputs ---------- \\
 
     [Fact]
-    public async Task PostUserRole_RetunsNotFoundOnNonExistingOrganisation()
+    public async Task PostUserRole_OrganizationDoesNotExist_ReturnsNotFound()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -497,7 +499,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var service = new NonCitizenService(db);
 
-        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new RequestNonCitizenUserRoleDTO
+        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
         {
             Role = userRoleFaker.Role,
             OrganizationId = userRoleFaker.OrganizationId
@@ -505,13 +507,13 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         //----- ASSERT -----\\
         Assert.Null(fetchedUserRoles.Item2);
-        Assert.Equal(HttpReponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
+        Assert.Equal(HttpResponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
     }
 
     // ---------- /nonCitizens/guardianships on invalid inputs ---------- \\
 
     [Fact]
-    public async Task PostGuardianship_ReturnsConflictResonseOnExistingGuardianship()
+    public async Task PostGuardianship_GuardianshipExists_ReturnsConflict()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -523,8 +525,8 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var citizen2 = await _userSeeder.SeedAsync(db, Seed);
         var citizen3 = await _userSeeder.SeedAsync(db, Seed);
 
-        List<GuardianshipOptions> opt = [new(citizen1.User.Id, nonCitizen.Id), new(citizen2.User.Id, nonCitizen.Id)];
-        var guardianships = await _guardianshipSeeder.SeedManyAsync(db, Seed, 2, opt);
+        List<GuardianshipOptions> options = [new(citizen1.User.Id, nonCitizen.Id), new(citizen2.User.Id, nonCitizen.Id)];
+        var guardianships = await _guardianshipSeeder.SeedManyAsync(db, Seed, 2, options);
 
         // Faker guardianship
         Guardianship guardianshipFaker = new Faker<Guardianship>().UseSeed(Seed)
@@ -534,14 +536,14 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var service = new NonCitizenService(db);
 
-        var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new RequestGuardianshipDTO
+        var fetchedGuardianships = await service.PostGuardianshipAsync(nonCitizen.Id, new GuardianshipRequestDTO
         {
             CitizenId = citizen2.User.Id
         });
 
         //----- ASSERT -----\\
         Assert.Null(fetchedGuardianships.Item2);
-        Assert.Equal(HttpReponseType.Conflict.ToString(), fetchedGuardianships.Item1.ToString());
+        Assert.Equal(HttpResponseType.Conflict.ToString(), fetchedGuardianships.Item1.ToString());
     }
 
 }

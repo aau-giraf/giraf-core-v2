@@ -1,12 +1,14 @@
 using Microsoft.IdentityModel.JsonWebTokens;
 
+namespace giraf_core_v2.Tests.Services;
+
 public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly UserSeeder _userSeeder = new();
 
     // TODO: add sanitization tests, once sanitization has been made.
     [Fact]
-    public async Task UpdateCurrentUserAsync_UpdatesTheUser()
+    public async Task UpdateCurrentUser_UserExists_UpdatesUser()
     {
         await using var db = CreateDbContext();
 
@@ -15,7 +17,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         var user = seededUser.User;
 
         // save origianl data, because user cannot be a constant entity.
-        int ogId = user.Id;
+        int originalUserId = user.Id;
         string ogFirstname = user.FirstName;
         string ogLastname = user.LastName;
         string ogUsername = user.Username;
@@ -28,12 +30,12 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         user = await service.UpdateCurrentUserAsync(
             user.Id,
-            new UpdateUserDTO
+            new UpdateUserRequestDTO
             {
                 FirstName = otherUser.User.FirstName
             });
 
-        Assert.Equal(ogId, user!.Id);
+        Assert.Equal(originalUserId, user!.Id);
         Assert.Equal(otherUser.User.FirstName, user!.FirstName);
         Assert.Equal(ogLastname, user!.LastName);
         Assert.Equal(ogUsername, user!.Username);
@@ -41,7 +43,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateCurrentUserAsync_DoesNotUpdateNonExistingUser()
+    public async Task UpdateCurrentUser_UserDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
 
@@ -52,7 +54,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var user = await service.UpdateCurrentUserAsync(
             id,
-            new UpdateUserDTO
+            new UpdateUserRequestDTO
             {
                 FirstName = ":)"
             });
@@ -62,7 +64,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateCurrentUserAsync_UpdatesEntireUser()
+    public async Task UpdateCurrentUser_AllFieldsProvided_UpdatesAllFields()
     {
         await using var db = CreateDbContext();
 
@@ -71,7 +73,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         var user = seededUser.User;
 
         // save origianl data, because user cannot be a constant entity.
-        int ogId = user.Id;
+        int originalUserId = user.Id;
         string ogFirstname = user.FirstName;
         string ogLastname = user.LastName;
         string ogUsername = user.Username;
@@ -87,14 +89,14 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         user = await service.UpdateCurrentUserAsync(
             user.Id,
-            new UpdateUserDTO
+            new UpdateUserRequestDTO
             {
                 FirstName = faker.FirstName,
                 LastName = faker.LastName,
                 Username = faker.Username,
             });
 
-        Assert.Equal(ogId, user!.Id);
+        Assert.Equal(originalUserId, user!.Id);
         Assert.Equal(faker.FirstName, user!.FirstName);
         Assert.Equal(faker.LastName, user!.LastName);
         Assert.Equal(faker.Username, user!.Username);
@@ -102,7 +104,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateCurrentUserAsync_UpdatesCorrectUser()
+    public async Task UpdateCurrentUser_MultipleUsersExist_UpdatesRequestedUser()
     {
         await using var db = CreateDbContext();
 
@@ -119,7 +121,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         user1 = await service.UpdateCurrentUserAsync(
             user1.Id,
-            new UpdateUserDTO
+            new UpdateUserRequestDTO
             {
                 Username = newUsername
             });
@@ -130,7 +132,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteCurrentUserAsync_DeletesCurrentUser()
+    public async Task DeleteCurrentUser_UserExists_DeletesUser()
     {
         await using var db = CreateDbContext();
 
@@ -148,7 +150,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteCurrentUserAsync_DeletesCorrectUser()
+    public async Task DeleteCurrentUser_MultipleUsersExist_DeletesRequestedUser()
     {
         await using var db = CreateDbContext();
 
@@ -176,7 +178,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteCurrentUserAsync_CannotDeleteNonExistingUser()
+    public async Task DeleteCurrentUser_UserDoesNotExist_ReturnsFalse()
     {
         await using var db = CreateDbContext();
 
@@ -188,7 +190,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetCurrentUserAsync_CannotGetNonExistingUser()
+    public async Task GetCurrentUser_UserDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
 
@@ -202,7 +204,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetCurrentUserAsync_GetsCurrentUser()
+    public async Task GetCurrentUser_UserExists_ReturnsUser()
     {
         await using var db = CreateDbContext();
 
@@ -221,7 +223,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetCurrentUserAsync_GetsCorrectUser()
+    public async Task GetCurrentUser_MultipleUsersExist_ReturnsRequestedUser()
     {
         await using var db = CreateDbContext();
 
@@ -242,7 +244,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateUserPasswordAsync_DoesNothingOnNonExistingId()
+    public async Task UpdateUserPassword_UserDoesNotExist_ReturnsNotFound()
     {
         await using var db = CreateDbContext();
 
@@ -253,14 +255,14 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.NotNull(user);
 
         // create a non-exsting id
-        int nonId = user.Id + 2;
+        int missingUserId = user.Id + 2;
         string newPassword = "HestePeter2*2=4";
 
         var service = new UserService(db);
 
         int result = await service.UpdateUserPasswordAsync(
-            nonId,
-            new UpdatePasswordDTO
+            missingUserId,
+            new UpdatePasswordRequestDTO
             {
                 OldPassword = password,
                 NewPassword = newPassword
@@ -274,7 +276,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateUserPasswordAsync_DoesNothingOnWrongPassword()
+    public async Task UpdateUserPassword_PasswordIsWrong_ReturnsUnauthorized()
     {
         await using var db = CreateDbContext();
 
@@ -288,7 +290,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         int result = await service.UpdateUserPasswordAsync(
             user.Id,
-            new UpdatePasswordDTO
+            new UpdatePasswordRequestDTO
             {
                 OldPassword = "CorrectPasswordByHestePeter",
                 NewPassword = newPassword
@@ -302,7 +304,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateUserPasswordAsync_UpdatesPassword()
+    public async Task UpdateUserPassword_PasswordIsCorrect_UpdatesPassword()
     {
         await using var db = CreateDbContext();
 
@@ -317,7 +319,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         int result = await service.UpdateUserPasswordAsync(
             user.Id,
-            new UpdatePasswordDTO
+            new UpdatePasswordRequestDTO
             {
                 OldPassword = password,
                 NewPassword = newPassword
@@ -332,7 +334,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateUserPasswordAsync_UpdatesCorrectUser()
+    public async Task UpdateUserPassword_MultipleUsersExist_UpdatesRequestedUser()
     {
         await using var db = CreateDbContext();
 
@@ -349,7 +351,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         int result = await service.UpdateUserPasswordAsync(
             user1.Id,
-            new UpdatePasswordDTO
+            new UpdatePasswordRequestDTO
             {
                 OldPassword = password,
                 NewPassword = newPassword
@@ -362,7 +364,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task Login_ReturnsExpectedDTOWithCorrectCredentials()
+    public async Task Login_CredentialsAreCorrect_ReturnsLoginResponse()
     {
         await using var db = CreateDbContext();
 
@@ -373,7 +375,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username,
@@ -388,7 +390,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task Login_ReturnsNullWithIncorrectPassword()
+    public async Task Login_PasswordIsIncorrect_ReturnsNull()
     {
         await using var db = CreateDbContext();
 
@@ -396,7 +398,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username,
@@ -407,7 +409,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task Login_ReturnsNullWithIncorrectUsername()
+    public async Task Login_UsernameIsIncorrect_ReturnsNull()
     {
         await using var db = CreateDbContext();
 
@@ -415,7 +417,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username + "wrong-name",
@@ -426,7 +428,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task Login_CorrectCredentialsReturnsValidJwt()
+    public async Task Login_CredentialsAreCorrect_ReturnsValidJwt()
     {
         await using var db = CreateDbContext();
 
@@ -434,7 +436,7 @@ public class UserServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var service = new UserService(db);
 
-        LoginResponseDTO? result = await service.Login(
+        LoginResponseDTO? result = await service.LoginAsync(
             new LoginRequestDTO
             {
                 Username = userInformation.User.Username,

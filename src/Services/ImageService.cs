@@ -8,21 +8,21 @@ public class ImageService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<Image?> GetImageByIdAsync(int image_id)
+    public async Task<Image?> GetImageByIdAsync(int imageId)
     {
         var image = await _db.Images
             .AsNoTracking()
-            .FirstOrDefaultAsync(i => i.Id == image_id);
+            .FirstOrDefaultAsync(i => i.Id == imageId);
         return image;
     }
 
-    public async Task<List<Image>?> GetImagesByCitizenIdAsync(int cit_id)
+    public async Task<List<Image>?> GetImagesByCitizenIdAsync(int citizenId)
     {
-        var citizen = await _db.Citizens.FindAsync(cit_id);
+        var citizen = await _db.Citizens.FindAsync(citizenId);
 
         return citizen == null ? null : await _db.Images
             .AsNoTracking()
-            .Where(i => i.CitizenId == cit_id)
+            .Where(i => i.CitizenId == citizenId)
             .ToListAsync();
     }
 
@@ -33,9 +33,9 @@ public class ImageService(AppDbContext db)
             .ToListAsync();
     }
 
-    public async Task<bool> DeleteImageAsync(int image_id)
+    public async Task<bool> DeleteImageAsync(int imageId)
     {
-        var removedImage = await _db.Images.FindAsync(image_id);
+        var removedImage = await _db.Images.FindAsync(imageId);
         if (removedImage is null) return false;
 
         _db.Images.Remove(removedImage);
@@ -44,16 +44,16 @@ public class ImageService(AppDbContext db)
         return true;
     }
 
-    private async Task<Organization?> FindOrganizationAsync(PostImageDTO imageRequest)
+    private async Task<Organization?> FindOrganizationAsync(PostImageRequestDTO imageRequest)
     {
         if (imageRequest.CitizenId == null)
         {
-            var class_ = await _db.Classes
+            var schoolClass = await _db.Classes
             .AsNoTracking()
             .Include(c => c.Organization)
             .FirstOrDefaultAsync(c => c.Id == imageRequest.ClassId);
 
-            return class_?.Organization;
+            return schoolClass?.Organization;
         }
         else
         {
@@ -67,7 +67,7 @@ public class ImageService(AppDbContext db)
         }
     }
 
-    public async Task<Image?> CreateImagesAsync(PostImageDTO imageRequest)
+    public async Task<Image?> CreateImagesAsync(PostImageRequestDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
 

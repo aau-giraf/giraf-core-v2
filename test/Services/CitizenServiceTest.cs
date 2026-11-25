@@ -1,19 +1,19 @@
-﻿namespace giraf_core_v2.Tests.Services;
+namespace giraf_core_v2.Tests.Services;
 
 public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly UserSeeder _userSeeder = new();
-    private readonly OrganizationSeeder _orgSeeder = new();
+    private readonly OrganizationSeeder _organizationSeeder = new();
     private readonly ClassSeeder _classSeeder = new();
 
     [Fact]
-    public async Task GetCurrentCitizen_GetsCurrentCitizen()
+    public async Task GetCitizen_CitizenExists_ReturnsCitizen()
     {
         await using var db = CreateDbContext();
 
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         var service = new CitizenService(db);
@@ -29,7 +29,7 @@ public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task GetCurrentCitizen_GetsANonExistingCitizen()
+    public async Task GetCitizen_CitizenDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
         var service = new CitizenService(db);
@@ -41,53 +41,53 @@ public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
 
     [Fact]
-    public async Task UpdateCurrentCitizen_UpdatesCurrentCitizen()
+    public async Task PatchCitizen_CitizenExists_UpdatesCitizen()
     {
         await using var db = CreateDbContext();
 
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         // save the original user data before altering the first name
-        int ogId = citizen.Id;
+        int originalUserId = citizen.Id;
         string ogName = citizen.FirstName;
         string ogLastName = citizen.LastName;
         string ogUserName = citizen.Username;
 
         // Generate a new first name
-        GetCitizenDTO faker = new Faker<GetCitizenDTO>().UseSeed(Seed)
+        GetCitizenResponseDTO faker = new Faker<GetCitizenResponseDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName);
         Assert.NotEqual(ogName, faker.FirstName);
 
         var service = new CitizenService(db);
 
         var updated = await service.PatchCitizenAsync(
-            ogId,
-            new UpdateCitizenDTO { FirstName = faker.FirstName });
+            originalUserId,
+            new UpdateCitizenRequestDTO { FirstName = faker.FirstName });
 
         Assert.NotNull(updated);
         Assert.Equal(faker.FirstName, updated.FirstName);
         // Assert unchanged fields are still the same
-        Assert.Equal(ogId, updated.UserId);
+        Assert.Equal(originalUserId, updated.UserId);
         Assert.Equal(ogLastName, updated.LastName);
         Assert.Equal(ogUserName, updated.Username);
     }
 
     [Fact]
-    public async Task UpdateCurrentCitizen_UpdatesAllFields()
+    public async Task PatchCitizen_AllFieldsProvided_UpdatesAllFields()
     {
         await using var db = CreateDbContext();
         // Create a random organization the class has to exist in
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
-        var newClass = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
+        var newClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         // Generate new values for every field
-        UpdateCitizenDTO request = new Faker<UpdateCitizenDTO>().UseSeed(Seed)
+        UpdateCitizenRequestDTO request = new Faker<UpdateCitizenRequestDTO>().UseSeed(Seed)
             .RuleFor(u => u.ClassId, newClass.Id)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
@@ -114,57 +114,57 @@ public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task UpdateCurrentCitizen_UpdatesANonExistingCitizen()
+    public async Task PatchCitizen_CitizenDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
         // Create a random organization the class has to exist in
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
 
         // The class must exist so the lookup fails on the citizen, not the class
-        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
 
         var service = new CitizenService(db);
 
         var updated = await service.PatchCitizenAsync(
             1,
-            new UpdateCitizenDTO { ClassId = schoolClass.Id });
+            new UpdateCitizenRequestDTO { ClassId = schoolClass.Id });
 
         // Assert that the service returns null since the citizen does not exist
         Assert.Null(updated);
     }
 
     [Fact]
-    public async Task UpdateCurrentCitizen_UpdatesToANonExistingClass()
+    public async Task PatchCitizen_ClassDoesNotExist_ReturnsNull()
     {
         await using var db = CreateDbContext();
 
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
-        int ogClassId = citizen.ClassId;
+        int originalClassId = citizen.ClassId;
 
         var service = new CitizenService(db);
 
         // No classes are seeded, so this class does not exist
         var updated = await service.PatchCitizenAsync(
             citizen.Id,
-            new UpdateCitizenDTO { ClassId = ogClassId + 1 });
+            new UpdateCitizenRequestDTO { ClassId = originalClassId + 1 });
 
         // Assert that the service returns null and the citizen keeps its class
         Assert.Null(updated);
-        Assert.Equal(ogClassId, citizen.ClassId);
+        Assert.Equal(originalClassId, citizen.ClassId);
     }
 
     [Fact]
-    public async Task DeleteCurrentCitizen_DeletesCurrentCitizen()
+    public async Task DeleteCitizen_CitizenExists_DeletesCitizen()
     {
         await using var db = CreateDbContext();
 
         // Create a bogus org and class the citizen is being created in
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var class_ = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
-        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: class_.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
+        var seededCitizen = await _userSeeder.SeedAsync(db, Seed, new(ClassId: schoolClass.Id));
         var citizen = Assert.IsType<Citizen>(seededCitizen.User);
 
         var service = new CitizenService(db);
@@ -174,7 +174,7 @@ public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task DeleteCurrentCitizen_DeletesANonExistingCitizen()
+    public async Task DeleteCitizen_CitizenDoesNotExist_ReturnsFalse()
     {
         await using var db = CreateDbContext();
         var service = new CitizenService(db);
@@ -183,15 +183,15 @@ public class CitizenServiceTest(ITestOutputHelper output) : TestBase(output)
     }
 
     [Fact]
-    public async Task CreateNewCitizen_CreatesNewCitizen()
+    public async Task CreateCitizen_ClassExists_CreatesCitizen()
     {
         await using var db = CreateDbContext();
 
         // Create a random organization the class has to exist in
-        var organization = await _orgSeeder.SeedAsync(db, Seed);
-        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrgId: organization.Id));
+        var organization = await _organizationSeeder.SeedAsync(db, Seed);
+        var schoolClass = await _classSeeder.SeedAsync(db, Seed, new(OrganizationId: organization.Id));
 
-        CreateCitizenDTO request = new Faker<CreateCitizenDTO>().UseSeed(Seed)
+        CreateCitizenRequestDTO request = new Faker<CreateCitizenRequestDTO>().UseSeed(Seed)
             .RuleFor(u => u.FirstName, f => f.Person.FirstName)
             .RuleFor(u => u.LastName, f => f.Person.LastName)
             .RuleFor(u => u.ClassId, schoolClass.Id)
