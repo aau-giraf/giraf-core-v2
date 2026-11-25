@@ -48,7 +48,7 @@ public static class LegacyAdminEndpoints
         return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
     }
 
-    private static async Task<Results<BadRequest, NotFound, Ok>> UpdateCurrentUser(
+    private static async Task<Results<BadRequest, NotFound, NoContent>> UpdateCurrentUser(
     NonCitizenService nonCitizenService, [FromBody] LegacyUpdateUserDTO? inputUser, int userId)
     {
         // TODO: get ID from authentication
@@ -65,7 +65,7 @@ public static class LegacyAdminEndpoints
         return coreUser.Item1 switch
         {
             HttpReponseType.NotFound => TypedResults.NotFound(),
-            HttpReponseType.Ok => TypedResults.Ok(),
+            HttpReponseType.Ok => TypedResults.NoContent(),
             _ => TypedResults.BadRequest()
         };
     }
