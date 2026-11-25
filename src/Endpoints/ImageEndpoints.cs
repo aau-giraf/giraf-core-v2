@@ -1,5 +1,3 @@
-using giraf_core_v2.DTOs.Images;
-
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,7 +60,7 @@ public static class ImageEndpoints
     }
 
     // This endpoint is similar to the "PostImage" yet there are some differences like this has to get a TicketId in the body
-    private static async Task<Results<Created<Image>, BadRequest<string>>> PostGeneratedImage([FromForm] PostImageDTO imageRequest, ImageService imageService)
+    private static async Task<Results<Created<Image>, BadRequest<string>>> PostGeneratedImage([FromForm] PostImageRequestDTO imageRequest, ImageService imageService)
     {
         // An AI-generated image must belong to a ticket, otherwise the client can never find it
         if (string.IsNullOrWhiteSpace(imageRequest.TicketId))

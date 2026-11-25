@@ -1,5 +1,3 @@
-using giraf_core_v2.DTOs.Images;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace giraf_core_v2.Services;

@@ -327,8 +327,8 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var organizations = await _organizationSeeder.SeedManyAsync(db, Seed, 2);
         var classes = await _classSeeder.SeedManyAsync(db, Seed, 2,
         [
-            new(OrgId: organizations[0].Id),
-            new(OrgId: organizations[1].Id),
+            new(OrganizationId: organizations[0].Id),
+            new(OrganizationId: organizations[1].Id),
         ]);
         var citizens = await _userSeeder.SeedManyAsync(db, Seed, 2,
         [
@@ -337,7 +337,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         ]);
 
         // The image belongs to the second citizen, so "the first citizen in the table" would be wrong
-        var request = _imageSeeder.CreateRequestBody(Seed, new(OrgId: null, ClassId: null, CitizenId: citizens[1].User.Id));
+        var request = _imageSeeder.CreateRequestBody(Seed, new(OrganizationId: null, ClassId: null, CitizenId: citizens[1].User.Id));
 
         var service = new ImageService(db);
         var created = await service.CreateImagesAsync(request);
