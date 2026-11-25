@@ -1,8 +1,8 @@
 using System.Text;
 
-using giraf_core_v2.Utils;
-
 using Microsoft.IdentityModel.Tokens;
+
+namespace giraf_core_v2.Utils;
 
 public static class TokenParameters
 {

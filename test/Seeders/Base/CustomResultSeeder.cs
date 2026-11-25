@@ -1,3 +1,5 @@
+namespace giraf_core_v2.Tests.Seeders.Base;
+
 // Common seeder for test seeders requiring special return types.
 // TEntity -> database model to seed. (ex: User model used in the database)
 // TResult -> Custom return type of seeded entities. (ex: SeededUser a record containing a user and its unencrypted password)

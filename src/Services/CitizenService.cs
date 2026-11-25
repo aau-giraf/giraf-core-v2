@@ -4,16 +4,16 @@ public class CitizenService(AppDbContext db)
 {
     private readonly AppDbContext _db = db;
 
-    public async Task<GetCitizenDTO?> GetCitizenAsync(int userId)
+    public async Task<GetCitizenResponseDTO?> GetCitizenAsync(int citizenId)
     {
-        var citizen = await _db.Citizens.FindAsync(userId);
+        var citizen = await _db.Citizens.FindAsync(citizenId);
 
         if (citizen is null)
         {
             return null;
         }
 
-        GetCitizenDTO getCitizenDto = new GetCitizenDTO
+        GetCitizenResponseDTO getCitizenDto = new GetCitizenResponseDTO
         {
             UserId = citizen.Id,
             ClassId = citizen.ClassId,
@@ -25,19 +25,19 @@ public class CitizenService(AppDbContext db)
         return getCitizenDto;
     }
 
-    public async Task<GetCitizenDTO?> CreateCitizenAsync(CreateCitizenDTO dto)
+    public async Task<GetCitizenResponseDTO?> CreateCitizenAsync(CreateCitizenRequestDTO createCitizen)
     {
         var citizen = new Citizen
         {
-            ClassId = dto.ClassId,
-            FirstName = dto.FirstName,
-            LastName = dto.LastName,
-            Password = BCrypt.Net.BCrypt.HashPassword(dto.Password, 12),
-            Username = dto.Username,
+            ClassId = createCitizen.ClassId,
+            FirstName = createCitizen.FirstName,
+            LastName = createCitizen.LastName,
+            Password = BCrypt.Net.BCrypt.HashPassword(createCitizen.Password, 12),
+            Username = createCitizen.Username,
         };
 
-        var class_ = await _db.Classes.FindAsync(dto.ClassId);
-        if (class_ is null)
+        var schoolClass = await _db.Classes.FindAsync(createCitizen.ClassId);
+        if (schoolClass is null)
         {
             return null;
         }
@@ -45,7 +45,7 @@ public class CitizenService(AppDbContext db)
         _db.Citizens.Add(citizen);
         await _db.SaveChangesAsync();
 
-        return new GetCitizenDTO
+        return new GetCitizenResponseDTO
         {
             UserId = citizen.Id,
             ClassId = citizen.ClassId,
@@ -55,32 +55,32 @@ public class CitizenService(AppDbContext db)
         };
     }
 
-    public async Task<GetCitizenDTO?> PatchCitizenAsync(int userId, UpdateCitizenDTO dto)
+    public async Task<GetCitizenResponseDTO?> PatchCitizenAsync(int citizenId, UpdateCitizenRequestDTO updateCitizen)
     {
-        var citizen = await _db.Citizens.FindAsync(userId);
+        var citizen = await _db.Citizens.FindAsync(citizenId);
 
         if (citizen is null)
         {
             return null;
         }
 
-        if (dto.ClassId is not null)
+        if (updateCitizen.ClassId is not null)
         {
-            var schoolClass = await _db.Classes.FindAsync(dto.ClassId.Value);
+            var schoolClass = await _db.Classes.FindAsync(updateCitizen.ClassId.Value);
             if (schoolClass is null)
             {
                 return null;
             }
-            citizen.ClassId = dto.ClassId.Value;
+            citizen.ClassId = updateCitizen.ClassId.Value;
         }
 
-        if (dto.FirstName is not null) citizen.FirstName = dto.FirstName;
-        if (dto.LastName is not null) citizen.LastName = dto.LastName;
-        if (dto.Username is not null) citizen.Username = dto.Username;
+        if (updateCitizen.FirstName is not null) citizen.FirstName = updateCitizen.FirstName;
+        if (updateCitizen.LastName is not null) citizen.LastName = updateCitizen.LastName;
+        if (updateCitizen.Username is not null) citizen.Username = updateCitizen.Username;
 
         await _db.SaveChangesAsync();
 
-        return new GetCitizenDTO
+        return new GetCitizenResponseDTO
         {
             UserId = citizen.Id,
             ClassId = citizen.ClassId,

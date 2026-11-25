@@ -17,7 +17,7 @@ public static class LegacyClassEndpoints
         var classrooms = await organizationService.GetClassesInOrganizationAsync(1);
         return classrooms.Select(c => new ClassroomResponseDTO
         {
-            ClassId = c.Id,
+            ClassId = c.ClassId,
             ClassName = c.Name
         }).ToList();
     }

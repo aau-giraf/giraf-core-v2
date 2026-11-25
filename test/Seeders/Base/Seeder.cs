@@ -1,3 +1,5 @@
+namespace giraf_core_v2.Tests.Seeders.Base;
+
 // Common seeder for general test seeders.
 // TEntity -> database model to seed. (ex: UserRole model used in the database)
 // TOption -> record containing all test specific parameters. (ex: UserRole seeding can optionally be supplied with a Citizen or NonCitizen ID)
