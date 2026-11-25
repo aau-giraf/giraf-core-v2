@@ -9,7 +9,7 @@ public static class LegacyUserEndpoints
 {
     public static void MapLegacyUserEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("legacy/users");
+        var group = app.MapGroup("legacy/foodplanner/api/users");
 
         group.MapDelete("/deleteLoggedInUser", DeleteCurrentUser);
 

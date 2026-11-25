@@ -18,14 +18,14 @@ public static class LegacyAdminEndpoints
         group.MapGet("/Get/{nonCitizenId}", GetNonCitizen); //MANGLER AUTHORIZATION OG USER ROLE
         //group.MapGet("/GetAllChildren", ); //mangler fra core
 
-        group.MapPut("/UpdateUser/{id}", UpdateCurrentUser);
+        group.MapPut("/UpdateUser/{userId}", UpdateCurrentUser);
         //group.MapPut("/UpdateChild/{id}",);
 
         //group.MapDelete("/Delete/{id}",);
     }
 
 
-    private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetNonCitizen(int nonCitizenId, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetNonCitizen(NonCitizenService nonCitizenService, int nonCitizenId)
     {
         var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(nonCitizenId);
         var roles = await nonCitizenService.GetUserRolesAsync(nonCitizenId);
@@ -48,7 +48,7 @@ public static class LegacyAdminEndpoints
         return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
     }
 
-    private static async Task<Results<BadRequest, NotFound, Ok<LegacyUserDTO>>> UpdateCurrentUser(
+    private static async Task<Results<BadRequest, NotFound, Ok>> UpdateCurrentUser(
     NonCitizenService nonCitizenService, [FromBody] LegacyUpdateUserDTO? inputUser, int userId)
     {
         // TODO: get ID from authentication
@@ -61,9 +61,11 @@ public static class LegacyAdminEndpoints
         var coreBody = new RequestPatchNonCitizenDTO { FirstName = inputUser.FirstName, LastName = inputUser.LastName, Email = inputUser.Email };
         var coreUser = await nonCitizenService.PatchNonCitizenAsync(userId, coreBody);
 
+
         return coreUser.Item1 switch
         {
             HttpReponseType.NotFound => TypedResults.NotFound(),
+            HttpReponseType.Ok => TypedResults.Ok(),
             _ => TypedResults.BadRequest()
         };
     }
