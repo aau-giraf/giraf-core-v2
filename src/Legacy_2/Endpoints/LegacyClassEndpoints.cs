@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using giraf_core_v2.Legacy_2.DTOs;
+
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace giraf_core_v2.Legacy_2;
 
@@ -10,6 +11,7 @@ public static class LegacyClassEndpoints
         var group = app.MapGroup("/legacy/foodplanner/api/Classrooms");
 
         group.MapGet("/GetAll", GetAllClassrooms);
+        group.MapDelete("/Delete/{classId}", DeleteClassInOrganization);
     }
 
     private static async Task<List<ClassroomResponseDTO>> GetAllClassrooms(OrganizationService organizationService)
