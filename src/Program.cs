@@ -101,6 +101,7 @@ app.MapImageEndpoints();
 
 app.MapLegacyUserEndpoints();
 app.MapLegacyClassEndpoints();
+app.MapLegacyAdminEndpoints();
 
 app.UseRateLimiter();
 

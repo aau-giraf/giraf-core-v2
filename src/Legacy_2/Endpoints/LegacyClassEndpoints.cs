@@ -8,18 +8,18 @@ namespace giraf_core_v2.Legacy_2;
 public static class LegacyClassEndpoints
 {
     public static void MapLegacyClassEndpoints(this WebApplication app)
-    {        
+    {
         var group = app.MapGroup("/legacy/foodplanner/api/Classrooms");
 
-        group.MapPost("/Create", CreateClassInOrganization); //Kræver admin authorization
+        group.MapPost("/Create/{className}", CreateClassInOrganization);
         group.MapGet("/GetAll", GetAllClassrooms);
         group.MapDelete("/Delete/{classId}", DeleteClassInOrganization);
 
     }
 
-    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization([FromBody] LegacyRequestCreateClassDTO requestCreateClassDTO, OrganizationService organizationservice)
+    private static async Task<Results<Ok<ResponseCreateClassDTO>, NotFound>> CreateClassInOrganization(OrganizationService organizationservice, string className)
     {
-        var requestCreateClass = new RequestCreateClassDTO { Name = requestCreateClassDTO.ClassName }; //Service vil geren have specifikke klasser så vil skal ændre dem hvis der skal ske noget andet 
+        var requestCreateClass = new RequestCreateClassDTO { Name = className }; //Service vil geren have specifikke klasser så vil skal ændre dem hvis der skal ske noget andet 
         var createdClass = await organizationservice.CreateClassInOrganizationAsync(requestCreateClass, 1); //org ID is 1, because it will always be Egebakken
         return createdClass == null ? TypedResults.NotFound() : TypedResults.Ok(createdClass);
     }
@@ -35,11 +35,11 @@ public static class LegacyClassEndpoints
         }).ToList();
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(OrganizationService organizationService, int ClassId)
+    private static async Task<Results<NoContent, NotFound>> DeleteClassInOrganization(OrganizationService organizationService, int classId)
     {
-        int OrgId = 1; // Currently only Egebakken
+        int orgId = 1; // Currently only Egebakken
 
-        bool result = await organizationService.DeleteClassInOrganizationAsync(OrgId, ClassId);
+        bool result = await organizationService.DeleteClassInOrganizationAsync(orgId, classId);
         return result ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 

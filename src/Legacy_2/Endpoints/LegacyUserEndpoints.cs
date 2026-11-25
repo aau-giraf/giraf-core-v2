@@ -12,14 +12,14 @@ public static class LegacyUserEndpoints
         var group = app.MapGroup("legacy/users");
 
         group.MapDelete("/deleteLoggedInUser", DeleteCurrentUser);
-        
+
 
         group.MapGet("/getLoggedIn", GetCurrentUser);
         //group.MapGet("/GetBearerTest", );
         //group.MapGet("/EmailExists", );
         //group.MapGet("/HasPinCode", );
 
-        group.MapPut("/UpdateLoggedIn", UpdateCurrentUser);
+        //group.MapPut("/UpdateLoggedIn", UpdateCurrentUser);
         //group.MapPut("/UpdatePinCode", );
         //group.MapPut("/UpdatePassword", );
 
@@ -32,12 +32,28 @@ public static class LegacyUserEndpoints
 
     }
 
-    private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetCurrentUser(UserService userService)
+    private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetCurrentUser(NonCitizenService nonCitizenService)
     {
-        // TODO: Get ID from authentication.
-        //Currently some 'test data' because we cant get neither email or role from core user
-        var user = await userService.GetCurrentUserAsync(1); //get user from core
-        var foodUser = new LegacyUserDTO { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = "test@email.com", Role = LegacyUserRole.Admin, RoleApproved = true };//change into foodplanner user
+        // TODO: Get ID when authentication is enabled.
+        //currently just user 1
+        var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(1);
+        var roles = await nonCitizenService.GetUserRolesAsync(1);
+        if (roles == null || nonCitizen == null)
+        {
+            return TypedResults.NotFound();
+        }
+        LegacyUserRole combinedRole = 0; //no role
+        foreach (string role in roles.RoleOrganizationTuples)
+        {
+            string roleString = role.Split('|', 2)[0];
+            //Tries to check if string can be parsed to enum. Is not case sensitive. Output enum in variable
+            if (Enum.TryParse<LegacyUserRole>(roleString, ignoreCase: true, out LegacyUserRole parsedRole))
+            {
+                combinedRole |= parsedRole; //Combines roles with OR ex. Admin | Parent. 
+            }
+
+        }
+        var foodUser = new LegacyUserDTO { Id = nonCitizen.Id, FirstName = nonCitizen.FirstName, LastName = nonCitizen.LastName, Email = nonCitizen.Email, Role = combinedRole, RoleApproved = true };
         return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
     }
 
@@ -52,25 +68,6 @@ public static class LegacyUserEndpoints
 
         bool result = await userService.DeleteCurrentUserAsync(id);
         return result ? TypedResults.NoContent() : TypedResults.NotFound();
-    }
-
-    private static async Task<Results<BadRequest, NotFound, Ok<LegacyUserDTO>>> UpdateCurrentUser(
-        UserService userService, [FromBody] LegacyUpdateUserDTO? inputUser)
-    {
-        // TODO: get ID from authentication
-
-
-        if (inputUser is null)
-        {
-            return TypedResults.BadRequest();
-        }
-
-        var coreUser = new UpdateUserDTO { FirstName = inputUser.FirstName, LastName = inputUser.LastName, Email = inputUser.Email };
-
-        var user = await userService.UpdateCurrentUserAsync(1, coreUser);
-        //make return user into foodplanner user
-        var foodUser = new LegacyUserDTO { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, Email = inputUser.Email, Role = LegacyUserRole.Admin, RoleApproved = true };//change into foodplanner user
-        return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
     }
 
 }
