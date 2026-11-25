@@ -14,7 +14,7 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     {
         var imageRequest = new PostImageRequestDTO
         {
-            Name = "aName",
+            TitleEn = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
             CitizenId = hasCitizenId ? 1 : null,
             ClassId = hasClassId ? 1 : null,
@@ -33,7 +33,7 @@ public class PostImageRequestDTOTest(ITestOutputHelper output) : TestBase(output
     {
         var imageRequest = new PostImageRequestDTO
         {
-            Name = "aName",
+            TitleEn = "aName",
             File = new FormFile(new MemoryStream([1, 2, 3]), 0, 3, "file", "timmyTurner.png"),
             CitizenId = hasCitizenId ? 1 : null,
             ClassId = hasClassId ? 1 : null,
