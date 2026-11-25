@@ -9,12 +9,12 @@ public static class LegacyUserEndpoints
 {
     public static void MapLegacyUserEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("legacy/foodplanner/api/users");
+        var group = app.MapGroup("legacy/foodplanner/api/Users");
 
         group.MapDelete("/deleteLoggedInUser", DeleteCurrentUser);
 
 
-        group.MapGet("/getLoggedIn", GetCurrentUser);
+        group.MapGet("/GetLoggedIn", GetCurrentUser);
         //group.MapGet("/GetBearerTest", );
         //group.MapGet("/EmailExists", );
         //group.MapGet("/HasPinCode", );
