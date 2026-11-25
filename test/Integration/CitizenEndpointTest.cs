@@ -58,7 +58,7 @@ public class CitizenEndpointTest(GirafApiFactory factory, ITestOutputHelper outp
     }
 
     [Fact]
-    public async Task CreateCitizen_RequestIsValid_ReturnsCreated()
+    public async Task CreateCitizen_RequestIsValid_ReturnsCreatedCitizen()
     {
         var seededClass = await factory.ArrangeAsync(async db =>
         {
