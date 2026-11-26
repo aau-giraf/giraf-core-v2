@@ -17,6 +17,7 @@
 
 - Classes, records, and enums are PascalCase.
 - The file name matches the type name, with one public type per file.
+  - Exception: A model class, its corresponding `IEntityTypeConfiguration<Model>` implementation (EF Configuration), and enums specific to that model may share the model's file. This decision aims to improve cohesion of model-database mapping, whether configured through data annotations or Fluent API.
 - The namespace matches the folder under `giraf_core_v2`.
 - Interfaces use an `I` prefix. Example: `ISeeding`.
 - Enums use a singular PascalCase name, PascalCase members, and no `Enum` suffix. Example: `RoleType`.
