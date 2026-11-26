@@ -21,7 +21,7 @@ public static class LegacyAdminEndpoints
         group.MapPut("/UpdateUser/{userId}", UpdateCurrentUser);
         //group.MapPut("/UpdateChild/{id}",);
 
-        //group.MapDelete("/Delete/{id}",);
+        group.MapDelete("/Delete/{nonCitizenId}", DeleteNonCitizen);
     }
 
 
@@ -68,6 +68,12 @@ public static class LegacyAdminEndpoints
             HttpReponseType.Ok => TypedResults.NoContent(),
             _ => TypedResults.BadRequest()
         };
+    }
+
+    private static async Task<Results<NoContent, NotFound>> DeleteNonCitizen(NonCitizenService nonCitizenService, int nonCitizenId)
+    {
+        bool success = await nonCitizenService.DeleteNonCitizenAsync(nonCitizenId);
+        return success == true ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
 }
