@@ -25,7 +25,7 @@ public static class LegacyAdminEndpoints
     }
 
 
-    private static async Task<Results<Ok<LegacyUserDTO>, NotFound>> GetNonCitizen(NonCitizenService nonCitizenService, int nonCitizenId)
+    private static async Task<Results<Ok<IEnumerable<LegacyUserDTO>>, NotFound>> GetNonCitizen(NonCitizenService nonCitizenService, int nonCitizenId)
     {
         var nonCitizen = await nonCitizenService.GetNonCitizenByIdAsync(nonCitizenId);
         var roles = await nonCitizenService.GetUserRolesAsync(nonCitizenId);
@@ -38,14 +38,15 @@ public static class LegacyAdminEndpoints
         {
             string roleString = role.Split('|', 2)[0];
             //Tries to check if string can be parsed to enum. Is not case sensitive. Output enum in variable
-            if (Enum.TryParse<LegacyUserRole>(roleString, ignoreCase: true, out LegacyUserRole parsedRole))
+            if (Enum.TryParse<LegacyUserRole>(roleString, true, out LegacyUserRole parsedRole))
             {
                 combinedRole |= parsedRole; //Combines roles with OR ex. Admin | Parent. 
             }
 
         }
         var foodUser = new LegacyUserDTO { Id = nonCitizen.Id, FirstName = nonCitizen.FirstName, LastName = nonCitizen.LastName, Email = nonCitizen.Email, Role = combinedRole, RoleApproved = true };
-        return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUser);
+        IEnumerable<LegacyUserDTO> foodUserList = new List<LegacyUserDTO> { foodUser }; // Foodplanner returns a list of users (for some reason)
+        return foodUser == null ? TypedResults.NotFound() : TypedResults.Ok(foodUserList);
     }
 
     private static async Task<Results<BadRequest, NotFound, NoContent>> UpdateCurrentUser(
