@@ -64,7 +64,7 @@ public class ImageService(AppDbContext db)
             return citizen?.Class?.Organization;
         }
     }
-    
+
     public async Task<Image?> CreateGeneratedImagesAsync(PostGeneratedImageRequestDTO imageRequest)
     {
         var stringPath = await StoreImageAsync(imageRequest.File);
