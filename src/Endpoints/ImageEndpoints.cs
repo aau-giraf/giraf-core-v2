@@ -15,6 +15,8 @@ public static class ImageEndpoints
         group.MapGet("/citizens/{citizenId}", GetImagesByCitizenIdAsync);
         group.MapPost("/", PostImageAsync).DisableAntiforgery(); // needed for us to sent a Form via Postman/bruno
         group.MapDelete("/{imageId}", DeleteImageAsync);
+        group.MapPost("/generated", PostGeneratedImageAsync).DisableAntiforgery();
+        group.MapGet("/done/{ticketId}", IsImageDoneAsync).RequireAuthorization();
     }
     // GET imagees by ID
     private static async Task<Results<Ok<Image>, NotFound>> GetImageByIdAsync(int imageId, ImageService imageService)
@@ -57,4 +59,27 @@ public static class ImageEndpoints
         return image == null ? TypedResults.BadRequest() : TypedResults.Created($"/images/{image.Id}", image);
     }
 
+    // This endpoint is similar to the "PostImage" yet there are some differences like this has to get a TicketId in the body
+    private static async Task<Results<Created<Image>, BadRequest<string>>> PostGeneratedImageAsync([FromForm] PostGeneratedImageRequestDTO imageRequest, ImageService imageService)
+    {
+        // An AI-generated image must belong to a ticket, otherwise the client can never find it
+        if (string.IsNullOrWhiteSpace(imageRequest.TicketId))
+        {
+            return TypedResults.BadRequest("TicketId is required");
+        }
+
+        // Call the service with the imageRequest (DTO)
+        var image = await imageService.CreateGeneratedImagesAsync(imageRequest);
+
+        return image is null
+            ? TypedResults.BadRequest("Could not find an organization for the image")
+            : TypedResults.Created($"/images/{image.Id}", image);
+    }
+
+    private static async Task<Ok<IsImageDoneResponseDTO>> IsImageDoneAsync(string ticketId, ImageService imageService)
+    {
+        var req = await imageService.IsImageDoneAsync(ticketId);
+
+        return TypedResults.Ok(req);
+    }
 }

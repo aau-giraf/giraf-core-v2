@@ -10,7 +10,10 @@ public class PostImageRequestDTO : IValidatableObject
 {
     [Required]
     [Length(3, 255)]
-    public required string Name { get; set; }
+    public string? TitleEn { get; set; }
+
+    [Length(3, 255)]
+    public string? TitleDa { get; set; }
 
     [Required]
     public required IFormFile File { get; set; }

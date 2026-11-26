@@ -37,11 +37,13 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
 
         return new Faker<Image>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
+            .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
             .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.OrganizationId, f => options.OrganizationId != null && options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.Path, f => f.System.FileName())
+            .RuleFor(i => i.CreatedAt, f => f.Date.Past(5))
+            .RuleFor(i => i.TicketId, f => f.Lorem.Word())
             .RuleFor(i => i.CreatedAt, f => f.Date.Past(5));
     }
 
@@ -56,9 +58,11 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
 
         return new Faker<PostImageRequestDTO>()
             .UseSeed(seed)
-            .RuleFor(i => i.Name, f => f.Lorem.Word())
-            .RuleFor(i => i.OrganizationId, f => options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
-            .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
+            .RuleFor(i => i.OrganizationId,
+                f => options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.CitizenId,
+                f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.File, f =>
             {
