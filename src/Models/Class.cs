@@ -12,7 +12,7 @@ public class Class
     public ICollection<Citizen> Citizens { get; } = [];
 
     //Navigational property: (class, non-citizen-role) pairs related to this class
-    public ICollection<ClassRole> ClassRoles { get; } = [];
+    public ICollection<ClassEmployeeRole> EmployeeRoles { get; } = [];
 
     //Navigational property: images related to this class
     public ICollection<Image> Images { get; } = [];

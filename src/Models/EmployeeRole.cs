@@ -18,7 +18,7 @@ public class EmployeeRole
     public required RoleType Role { get; init; }
 
     //Navigational property: class assignments involving this organizational role
-    public ICollection<ClassPersonnelRole> ClassPersonnelRoles { get; } = [];
+    public ICollection<ClassEmployeeRole> ClassRoles { get; } = [];
 }
 
 public enum RoleType
