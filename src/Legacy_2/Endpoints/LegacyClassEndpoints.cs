@@ -1,5 +1,7 @@
 using giraf_core_v2.Legacy_2.DTOs;
 
+using Microsoft.AspNetCore.Http.HttpResults;
+
 namespace giraf_core_v2.Legacy_2;
 
 public static class LegacyClassEndpoints
@@ -9,6 +11,7 @@ public static class LegacyClassEndpoints
         var group = app.MapGroup("/legacy/foodplanner/api/Classrooms");
 
         group.MapGet("/GetAll", GetAllClassrooms);
+        group.MapDelete("/Delete/{classId}", DeleteClassInOrganization);
     }
 
     private static async Task<List<ClassroomResponseDTO>> GetAllClassrooms(OrganizationService organizationService)
@@ -20,5 +23,14 @@ public static class LegacyClassEndpoints
             ClassId = c.ClassId,
             ClassName = c.Name
         }).ToList();
+    }
+
+    private static async Task<Results<Ok<int>, BadRequest>> DeleteClassInOrganization(OrganizationService organizationService, int ClassId)
+    {
+        int orgId = 1; // Currently only Egebakken
+
+        bool result = await organizationService.DeleteClassInOrganizationAsync(orgId, ClassId);
+        int response = (result == true ? 1 : 0); // Foodplanner returns repository delete method response as body: > 0 = success, <= 0 = failure
+        return result ? TypedResults.Ok(response) : TypedResults.BadRequest();
     }
 }
