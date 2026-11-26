@@ -1,6 +1,5 @@
 using System.Security.Claims;
 
-using giraf_core_v2.Auth;
 using giraf_core_v2.Utils;
 
 using Microsoft.AspNetCore.Http.HttpResults;
