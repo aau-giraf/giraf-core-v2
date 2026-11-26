@@ -30,5 +30,5 @@ public class RegisterUserRequestDTO
 
     [Required]
     [Length(4, 4)]
-    public required UserRole Role { get; set; }
+    public required EmployeeRole Role { get; set; }
 }

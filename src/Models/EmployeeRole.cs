@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace giraf_core_v2.Models;
 
-public class UserRole
+public class EmployeeRole
 {
     public int Id { get; init; }
 
@@ -18,7 +18,7 @@ public class UserRole
     public required RoleType Role { get; init; }
 
     //Navigational property: class assignments involving this organizational role
-    public ICollection<ClassRole> ClassRoles { get; } = [];
+    public ICollection<ClassPersonnelRole> ClassPersonnelRoles { get; } = [];
 }
 
 public enum RoleType
@@ -27,9 +27,9 @@ public enum RoleType
     Employee
 }
 
-public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
+public class UserRoleConfiguration : IEntityTypeConfiguration<EmployeeRole>
 {
-    public void Configure(EntityTypeBuilder<UserRole> builder)
+    public void Configure(EntityTypeBuilder<EmployeeRole> builder)
     {
         //Store RoleType enum as string, rather than the backing integer. Fragility if addition or reordering, e.g. Pedagogue added in the middle.
         builder.Property(userRole => userRole.Role)

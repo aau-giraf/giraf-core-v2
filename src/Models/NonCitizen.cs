@@ -11,5 +11,5 @@ public class NonCitizen : User
     public ICollection<Guardianship> Guardianships { get; } = [];
 
     //Navigational property: Roles of the Non-Citizen - possibly within different organizations
-    public ICollection<UserRole> Roles { get; } = [];
+    public ICollection<EmployeeRole> Roles { get; } = [];
 }

@@ -5,12 +5,12 @@ public class UserRoleSeeding : ISeeding
     public int SeedingPosition { get; init; } = 6;
     public void Seed(AppDbContext context)
     {
-        if (context.Set<UserRole>().Any()) return;
+        if (context.Set<EmployeeRole>().Any()) return;
 
         NonCitizen[] nonCitizens = context.Set<NonCitizen>().ToArray();
         Organization[] organizations = context.Set<Organization>().ToArray();
 
-        UserRole[] userRoles = [
+        EmployeeRole[] userRoles = [
             new()
             {
                 NonCitizenId = nonCitizens[0].Id, NonCitizen = nonCitizens[0],
@@ -31,7 +31,7 @@ public class UserRoleSeeding : ISeeding
             }
         ];
 
-        context.Set<UserRole>().AddRange(userRoles);
+        context.Set<EmployeeRole>().AddRange(userRoles);
         context.SaveChanges();
     }
 }

@@ -177,7 +177,7 @@ public class NonCitizenService(AppDbContext db)
         // Select only the needed from userRole or else it would eagerly fetch FK fields. 
         ICollection<string> roleOrganizationTuples = [];
 
-        foreach (UserRole userRole in userRoles)
+        foreach (EmployeeRole userRole in userRoles)
         {
             var roleString = userRole.Role.ToString();
             var organizationIdText = userRole.OrganizationId.ToString();
@@ -248,7 +248,7 @@ public class NonCitizenService(AppDbContext db)
             return (HttpResponseType.Conflict, null);
         }
 
-        var createdUserRole = new UserRole()
+        var createdUserRole = new EmployeeRole()
         {
             Role = nonCitizenUserRole.Role,
             NonCitizenId = nonCitizen.Id,

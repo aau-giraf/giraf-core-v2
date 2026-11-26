@@ -44,7 +44,7 @@ public class GirafApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         TRUNCATE TABLE
             "Guardianship",
             "Image",
-            "UserRole",
+            "EmployeeRole",
             "Citizen",
             "NonCitizen",
             "User",

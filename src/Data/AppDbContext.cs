@@ -17,7 +17,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Class> Classes => Set<Class>();
-    public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<EmployeeRole> UserRoles => Set<EmployeeRole>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

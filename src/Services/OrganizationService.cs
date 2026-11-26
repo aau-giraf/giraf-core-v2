@@ -262,8 +262,8 @@ public class OrganizationService(AppDbContext db)
     public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
         /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
-        * Be aware of composite key ordering of UserRole. */
-        if (await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId) is UserRole userRole)
+        * Be aware of composite key ordering of EmployeeRole. */
+        if (await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId) is EmployeeRole userRole)
         {
             _db.UserRoles.Remove(userRole);
             await _db.SaveChangesAsync();
@@ -274,17 +274,17 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<(int, UserRole?)> CreateOrUpdateUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
+    public async Task<(int, EmployeeRole?)> CreateOrUpdateUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
         //CASE 1: organization, non-citizen, role each exist seperately. (Assumed to minimize reads, most frequent case)
         bool createdUserRole = false;
         var userRole = await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId);
 
-        // 1.A: the UserRole tuple does not exist. Create it
+        // 1.A: the EmployeeRole tuple does not exist. Create it
         if (userRole is null)
         {
             //Create new object
-            userRole = new UserRole
+            userRole = new EmployeeRole
             {
                 NonCitizenId = nonCitizenId,
                 Role = role,

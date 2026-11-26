@@ -250,7 +250,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var userRoles = await _userRoleSeeder.SeedManyAsync(db, Seed, 3, urOpt);
 
         // Faker userRole
-        UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed)
+        EmployeeRole employeeRoleFaker = new Faker<EmployeeRole>().UseSeed(Seed)
                                     .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
                                     .RuleFor(urf => urf.OrganizationId, organization3.Id);
@@ -260,16 +260,16 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
         {
-            Role = userRoleFaker.Role,
-            OrganizationId = userRoleFaker.OrganizationId
+            Role = employeeRoleFaker.Role,
+            OrganizationId = employeeRoleFaker.OrganizationId
         });
 
         //----- ASSERT -----\\
         Assert.NotNull(fetchedUserRoles.Item2);
         Assert.Equal(3, fetchedUserRoles.Item2!.RoleOrganizationTuples.Count);
 
-        var roleString = userRoleFaker.Role.ToString();
-        var orgString = userRoleFaker.OrganizationId.ToString();
+        var roleString = employeeRoleFaker.Role.ToString();
+        var orgString = employeeRoleFaker.OrganizationId.ToString();
         var roleOrgString = roleString + "|" + orgString;
 
         Assert.Contains(roleOrgString, fetchedUserRoles.Item2.RoleOrganizationTuples);
@@ -491,7 +491,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         // No organizations yet -> So new userRole is forced to fail.
 
         // Faker userRole
-        UserRole userRoleFaker = new Faker<UserRole>().UseSeed(Seed)
+        EmployeeRole employeeRoleFaker = new Faker<EmployeeRole>().UseSeed(Seed)
                                     .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
                                     .RuleFor(urf => urf.OrganizationId, f => f.Random.Int(1, 1000));
@@ -501,8 +501,8 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
         {
-            Role = userRoleFaker.Role,
-            OrganizationId = userRoleFaker.OrganizationId
+            Role = employeeRoleFaker.Role,
+            OrganizationId = employeeRoleFaker.OrganizationId
         });
 
         //----- ASSERT -----\\

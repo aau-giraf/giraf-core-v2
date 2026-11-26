@@ -10,5 +10,5 @@ public class ClassRole
     public Class? Class { get; init; }
 
     public required int UserRoleId { get; init; }
-    public UserRole? UserRole { get; init; }
+    public PersonnelRole? UserRole { get; init; }
 }

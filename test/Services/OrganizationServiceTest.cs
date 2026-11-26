@@ -364,7 +364,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, UserRole? userRole) = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? userRole) = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(1, outcomeStatus); //creation outcome
@@ -395,8 +395,8 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, UserRole? userRole) initialResult = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
-        (int outcomeStatus, UserRole? userRole) secondResult = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? userRole) initialResult = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? userRole) secondResult = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(1, initialResult.outcomeStatus);
@@ -422,8 +422,8 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, UserRole? userRole) initialResult = await service.CreateOrUpdateUserRoleAsync(100000000, seededUser.User.Id, role1);
-        (int outcomeStatus, UserRole? userRole) secondResult = await service.CreateOrUpdateUserRoleAsync(1234567890, seededUser2.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? userRole) initialResult = await service.CreateOrUpdateUserRoleAsync(100000000, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? userRole) secondResult = await service.CreateOrUpdateUserRoleAsync(1234567890, seededUser2.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(-1, initialResult.outcomeStatus);

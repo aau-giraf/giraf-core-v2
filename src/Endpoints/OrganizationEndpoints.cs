@@ -97,12 +97,12 @@ public static class OrganizationEndpoints
 
     private static async Task<Results<NotFound, NoContent, Created<PutUserRoleResponseDTO>>> PutUserRoleAsync(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        (int, UserRole?) status = await organizationService.CreateOrUpdateUserRoleAsync(organizationId, nonCitizenId, role);
+        (int, EmployeeRole?) status = await organizationService.CreateOrUpdateUserRoleAsync(organizationId, nonCitizenId, role);
         return status switch
         {
             (-1, null) => TypedResults.NotFound(),
             (0, null) => TypedResults.NoContent(),
-            (1, UserRole ur) => TypedResults.Created(
+            (1, EmployeeRole ur) => TypedResults.Created(
                 $"/organizations/{organizationId}/members/{nonCitizenId}/{role}",
                 new PutUserRoleResponseDTO(ur.NonCitizenId, ur.OrganizationId, ur.Role)),
             _ => throw new UnreachableException()
