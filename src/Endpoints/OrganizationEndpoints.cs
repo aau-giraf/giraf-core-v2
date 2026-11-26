@@ -11,27 +11,27 @@ public static class OrganizationEndpoints
     {
         var group = application.MapGroup("/organizations");
 
-        group.MapGet("/", GetOrganizations);
+        group.MapGet("/", GetOrganizations).RequireAuthorization("SuperAdmin");
 
-        group.MapGet("/{orgId:int}", GetOrganizationById);
+        group.MapGet("/{orgId:int}", GetOrganizationById).RequireAuthorization("SuperAdmin");
 
-        group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization);
+        group.MapGet("/{orgId:int}/classes/{classId:int}", GetClassInOrganization).RequireAuthorization("Employee", "Admin", "SuperAdmin");
 
-        group.MapGet("/{orgId:int}/classes", GetClassesInOrganization);
+        group.MapGet("/{orgId:int}/classes", GetClassesInOrganization).RequireAuthorization("Employee", "Admin", "SuperAdmin");
 
-        group.MapPost("/{orgId:int}/classes", CreateClassInOrganization);
+        group.MapPost("/{orgId:int}/classes", CreateClassInOrganization).RequireAuthorization("Admin", "SuperAdmin");
 
-        group.MapPost("/", CreateOrganization);
+        group.MapPost("/", CreateOrganization).RequireAuthorization("SuperAdmin");
 
-        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole);
+        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRole).RequireAuthorization("Admin", "SuperAdmin");
 
-        group.MapPatch("/{orgId:int}", UpdateOrganization);
+        group.MapPatch("/{orgId:int}", UpdateOrganization).RequireAuthorization("Admin", "SuperAdmin");
 
-        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole);
+        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRole).RequireAuthorization("SuperAdmin");
 
-        group.MapDelete("/{orgId:int}", DeleteOrganization);
+        group.MapDelete("/{orgId:int}", DeleteOrganization).RequireAuthorization("SuperAdmin");
 
-        group.MapDelete("/{orgId:int}/classes/{classId:int}", DeleteClassInOrganization);
+        group.MapDelete("/{orgId:int}/classes/{classId:int}", DeleteClassInOrganization).RequireAuthorization("Admin", "SuperAdmin");
 
     }
 

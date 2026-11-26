@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 using System.Security.Claims;
 
+
+// https://stackoverflow.com/questions/60669157/requireauthorization-on-endpoints-mapcontrollerroute-not-working-and-every-r
+// RoleHandler - Enum burde gøre det i UserRole model og en rolehandler skal ikke bruges - Så slet SuperAdminHandler
+
 public static class Policies
 {
     public const string SuperAdmin = "SuperAdmin";
