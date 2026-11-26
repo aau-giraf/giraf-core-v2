@@ -78,7 +78,7 @@ public static class ImageEndpoints
 
     private static async Task<Ok<IsImageDoneResponseDTO>> IsImageDoneAsync(string ticketId, ImageService imageService)
     {
-        var req = await imageService.IsImageDone(ticketId);
+        var req = await imageService.IsImageDoneAsync(ticketId);
 
         return TypedResults.Ok(req);
     }

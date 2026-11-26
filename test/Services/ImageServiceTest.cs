@@ -450,7 +450,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var service = new ImageService(db);
 
         // Act - lookup the seeded image.ticketId to retrieve it from the database
-        var result = await service.IsImageDone(image.TicketId!);
+        var result = await service.IsImageDoneAsync(image.TicketId!);
         db.ChangeTracker.Clear();
 
         Assert.NotNull(result);
@@ -467,7 +467,7 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
         var service = new ImageService(db);
 
         // Act
-        var result = await service.IsImageDone(Guid.NewGuid().ToString());
+        var result = await service.IsImageDoneAsync(Guid.NewGuid().ToString());
 
         // Assert that the image status is pending due to no response from the AI backend
         Assert.Equal(ImageStatus.Pending, result.Status);

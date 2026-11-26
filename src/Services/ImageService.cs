@@ -119,7 +119,7 @@ public class ImageService(AppDbContext db)
     }
 
     // Service for foodplanner/vta to call after they have generated an image using the AI-backend
-    public async Task<IsImageDoneResponseDTO> IsImageDone(string ticketId)
+    public async Task<IsImageDoneResponseDTO> IsImageDoneAsync(string ticketId)
     {
         // Lookup the image in the db using the TicketId 
         var image = await _db.Images
