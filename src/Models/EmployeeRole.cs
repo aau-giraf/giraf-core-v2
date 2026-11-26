@@ -27,7 +27,7 @@ public enum RoleType
     Employee
 }
 
-public class UserRoleConfiguration : IEntityTypeConfiguration<EmployeeRole>
+public class EmployeeRoleConfiguration : IEntityTypeConfiguration<EmployeeRole>
 {
     public void Configure(EntityTypeBuilder<EmployeeRole> builder)
     {
