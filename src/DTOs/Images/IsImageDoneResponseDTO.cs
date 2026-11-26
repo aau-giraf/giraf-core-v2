@@ -2,7 +2,7 @@
 
 public enum ImageStatus { Pending, Done };
 
-public class IsImageDoneRequestDTO
+public class IsImageDoneResponseDTO
 {
     public required ImageStatus Status { get; set; }
     public required string TicketId { get; set; }

@@ -17,9 +17,7 @@ public class PostImageRequestDTO : IValidatableObject
 
     [Required]
     public required IFormFile File { get; set; }
-
-    public string? TicketId { get; set; }
-
+    
     public int? CitizenId { get; set; }
     public int? ClassId { get; set; }
     public int? OrganizationId { get; set; }

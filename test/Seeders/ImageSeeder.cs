@@ -59,8 +59,10 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
         return new Faker<PostImageRequestDTO>()
             .UseSeed(seed)
             .RuleFor(i => i.TitleEn, f => f.Lorem.Word())
-            .RuleFor(i => i.OrganizationId, f => options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
-            .RuleFor(i => i.CitizenId, f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.OrganizationId,
+                f => options.OrganizationId != 0 ? options.OrganizationId : f.Random.Int(1, Int32.MaxValue))
+            .RuleFor(i => i.CitizenId,
+                f => options.CitizenId != 0 ? options.CitizenId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.ClassId, f => options.ClassId != 0 ? options.ClassId : f.Random.Int(1, Int32.MaxValue))
             .RuleFor(i => i.File, f =>
             {
@@ -68,8 +70,7 @@ internal class ImageSeeder : Seeder<Image, ImageOptions>
                 var stream = new MemoryStream(bytes);
                 var chosen = options.FileExtension ?? RandomCommonFileExtension(f);
                 return new FormFile(stream, 0, bytes.Length, "file", $"{f.Lorem.Word()}.{chosen}");
-            })
-            .RuleFor(i => i.TicketId, f => f.Lorem.Word());
+            });
     }
 
     private static readonly HashSet<string> BlockedFileExtensions = new(StringComparer.OrdinalIgnoreCase)

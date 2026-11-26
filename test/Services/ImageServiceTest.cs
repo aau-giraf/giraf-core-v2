@@ -471,6 +471,5 @@ public class ImageServiceTest(ITestOutputHelper output) : TestBase(output)
 
         // Assert that the image status is pending due to no response from the AI backend
         Assert.Equal(ImageStatus.Pending, result.Status);
-        Assert.Equal(ImageStatus.Pending, result.Status);
     }
 }
