@@ -1,6 +1,6 @@
 namespace giraf_core_v2.Data.Seeding;
 
-public class UserRoleSeeding : ISeeding
+public class EmployeeRoleSeeding : ISeeding
 {
     public int SeedingPosition { get; init; } = 6;
     public void Seed(AppDbContext context)
@@ -20,14 +20,8 @@ public class UserRoleSeeding : ISeeding
             new()
             {
                 NonCitizenId = nonCitizens[1].Id, NonCitizen = nonCitizens[1],
-                Role = RoleType.Parent,
+                Role = RoleType.Employee,
                 OrganizationId = organizations[0].Id, Organization = organizations[0]
-            },
-            new()
-            {
-                NonCitizenId = nonCitizens[2].Id, NonCitizen = nonCitizens[2],
-                Role = RoleType.Parent,
-                OrganizationId = organizations[1].Id, Organization = organizations[1]
             }
         ];
 

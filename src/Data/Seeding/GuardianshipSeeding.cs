@@ -14,17 +14,21 @@ public class GuardianshipSeeding : ISeeding
             new()
             {
                 CitizenId = citizens[0].Id, Citizen = citizens[0],
-                GuardianId = guardians[0].Id, Guardian = guardians[0]
+                GuardianId = guardians[0].Id, Guardian = guardians[0],
+                GuardianType = GuardianType.Entrusted
             },
             new()
             {
                 CitizenId = citizens[1].Id, Citizen = citizens[1],
-                GuardianId = guardians[1].Id, Guardian = guardians[1]
+                GuardianId = guardians[1].Id, Guardian = guardians[1],
+                GuardianType = GuardianType.Primary
+                
             },
             new()
             {
                 CitizenId = citizens[2].Id, Citizen = citizens[2],
-                GuardianId = guardians[2].Id, Guardian = guardians[2]
+                GuardianId = guardians[2].Id, Guardian = guardians[2],
+                GuardianType = GuardianType.Primary
             }
         ];
 
