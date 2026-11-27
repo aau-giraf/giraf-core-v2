@@ -57,7 +57,7 @@
 
 ## Routes
 
-- Route segments are plural camelCase. Example: `/citizens`, `/nonCitizens`, `/userRoles`.
+- Route segments are plural camelCase. Example: `/citizens`, `/nonCitizens`, `/employeeRoles`.
 - Route parameters are camelCase, matching method parameters. Example: `{nonCitizenId}`.
 
 ## Abbreviations

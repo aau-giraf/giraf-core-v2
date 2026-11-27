@@ -6,7 +6,7 @@ global using giraf_core_v2.DTOs.Images;
 global using giraf_core_v2.DTOs.NonCitizens;
 global using giraf_core_v2.DTOs.Organizations;
 global using giraf_core_v2.DTOs.UserOrganization;
-global using giraf_core_v2.DTOs.UserRoles;
+global using giraf_core_v2.DTOs.EmployeeRoles;
 global using giraf_core_v2.DTOs.Users;
 global using giraf_core_v2.Endpoints;
 global using giraf_core_v2.Legacy_2;

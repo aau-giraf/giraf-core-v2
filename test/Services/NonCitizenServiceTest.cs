@@ -4,7 +4,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 {
     private readonly UserSeeder _userSeeder = new();
     private readonly OrganizationSeeder _organizationSeeder = new();
-    private readonly UserRoleSeeder _userRoleSeeder = new();
+    private readonly EmployeeRoleSeeder _employeeRoleSeeder = new();
     private readonly GuardianshipSeeder _guardianshipSeeder = new();
 
     // ---------- /nonCitizens ---------- \\
@@ -144,10 +144,10 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(nonCitizenFaker.Email, fetchedNonCitizen!.Item2!.Email);
     }
 
-    // ---------- /userRoles ---------- \\
+    // ---------- /employeeRoles ---------- \\
 
     [Fact]
-    public async Task GetUserRoles_NonCitizenExists_ReturnsUserRoles()
+    public async Task GetEmployeeRoles_NonCitizenExists_ReturnsEmployeeRoles()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -160,27 +160,27 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var organization1 = organizations[0];
         var organization2 = organizations[1];
 
-        List<UserRoleOptions> urOpt = [new(organization1.Id, nonCitizen.Id), new(organization2.Id, nonCitizen.Id)];
-        var userRoles = await _userRoleSeeder.SeedManyAsync(db, Seed, 2, urOpt);
+        List<EmployeeRoleOptions> employeeRoleOptions = [new(organization1.Id, nonCitizen.Id), new(organization2.Id, nonCitizen.Id)];
+        var employeeRoles = await _employeeRoleSeeder.SeedManyAsync(db, Seed, 2, employeeRoleOptions);
 
         var service = new NonCitizenService(db);
 
         //----- ACT -----\\
-        var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
+        var fetchedEmployeeRoles = await service.GetEmployeeRolesAsync(nonCitizen.Id);
 
         //----- ASSERT -----\\
-        Assert.Equal(nonCitizen.EmployeeRoles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
-        foreach (var userRole in nonCitizen.EmployeeRoles)
+        Assert.Equal(nonCitizen.EmployeeRoles.Count, fetchedEmployeeRoles!.RoleOrganizationTuples.Count);
+        foreach (var employeeRole in nonCitizen.EmployeeRoles)
         {
-            var roleString = userRole.Role.ToString();
-            var orgString = userRole.OrganizationId.ToString();
-            var roleOrgString = roleString + "|" + orgString;
-            Assert.Contains(roleOrgString, fetchedUserRoles.RoleOrganizationTuples);
+            var roleString = employeeRole.Role.ToString();
+            var orgString = employeeRole.OrganizationId.ToString();
+            var roleOrganizationString = roleString + "|" + orgString;
+            Assert.Contains(roleOrganizationString, fetchedEmployeeRoles.RoleOrganizationTuples);
         }
     }
 
     [Fact]
-    public async Task DeleteUserRole_UserRoleExists_DeletesUserRole()
+    public async Task DeleteEmployeeRole_EmployeeRoleExists_DeletesEmployeeRole()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -194,45 +194,45 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var organization2 = organizations[1];
         var organization3 = organizations[2];
 
-        List<UserRoleOptions> urOpt = [new(organization1.Id, nonCitizen.Id), new(organization2.Id, nonCitizen.Id), new(organization3.Id, nonCitizen.Id)];
-        var userRoles = await _userRoleSeeder.SeedManyAsync(db, Seed, 3, urOpt);
-        var userRole1 = userRoles[0];
-        var userRole2 = userRoles[1];
-        var userRole3 = userRoles[2];
+        List<EmployeeRoleOptions> employeeRoleOptions = [new(organization1.Id, nonCitizen.Id), new(organization2.Id, nonCitizen.Id), new(organization3.Id, nonCitizen.Id)];
+        var employeeRoles = await _employeeRoleSeeder.SeedManyAsync(db, Seed, 3, employeeRoleOptions);
+        var employeeRole1 = employeeRoles[0];
+        var employeeRole2 = employeeRoles[1];
+        var employeeRole3 = employeeRoles[2];
 
-        List<(RoleType, int)> ogUserRoles = [];
+        List<(RoleType, int)> originalEmployeeRoles = [];
 
-        foreach (var userRole in userRoles)
+        foreach (var employeeRole in employeeRoles)
         {
-            ogUserRoles.Add((userRole.Role, userRole.OrganizationId));
+            originalEmployeeRoles.Add((employeeRole.Role, employeeRole.OrganizationId));
         }
 
         var service = new NonCitizenService(db);
 
-        Assert.True(await service.DeleteUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
+        Assert.True(await service.DeleteEmployeeRoleAsync(nonCitizen.Id, new NonCitizenEmployeeRoleRequestDTO
         {
-            Role = userRole1.Role,
-            OrganizationId = userRole1.OrganizationId
+            Role = employeeRole1.Role,
+            OrganizationId = employeeRole1.OrganizationId
         }));
 
-        var deletedUserRole = await db.UserRoles
-            .SingleOrDefaultAsync(ur => ur.NonCitizenId == nonCitizen.Id && ur.Role == userRole1.Role && ur.OrganizationId == userRole1.OrganizationId);
+        var deletedEmployeeRole = await db.EmployeeRoles
+            .SingleOrDefaultAsync(employeeRole => employeeRole.NonCitizenId == nonCitizen.Id && employeeRole.Role == employeeRole1.Role && employeeRole.OrganizationId == employeeRole1.OrganizationId);
 
-        Assert.Null(deletedUserRole);
+        Assert.Null(deletedEmployeeRole);
 
-        // Make sure the other userRoles was not accidentally deleted
-        var remainingUserRoles = await db.UserRoles.ToListAsync();
-        Assert.Equal(2, remainingUserRoles.Count);
-        Assert.NotNull(remainingUserRoles);
-        foreach (var remainingUserRole in remainingUserRoles)
+        // Make sure the other employeeRoles was not accidentally deleted
+        var remainingEmployeeRoles = await db.EmployeeRoles.ToListAsync();
+        Assert.Equal(2, remainingEmployeeRoles.Count);
+        Assert.NotNull(remainingEmployeeRoles);
+        foreach (var remainingEmployeeRole in remainingEmployeeRoles)
         {
-            Assert.Contains((remainingUserRole.Role, remainingUserRole.OrganizationId), ogUserRoles);
+            Assert.Contains((remainingEmployeeRole.Role, remainingEmployeeRole.OrganizationId), originalEmployeeRoles);
         }
     }
 
 
     [Fact]
-    public async Task PostUserRole_UserRoleDoesNotExist_CreatesUserRole()
+    public async Task PostEmployeeRole_EmployeeRoleDoesNotExist_CreatesEmployeeRole()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -246,10 +246,10 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var organization2 = organizations[1];
         var organization3 = organizations[2];
 
-        List<UserRoleOptions> urOpt = [new(organization1.Id, nonCitizen.Id), new(organization2.Id, nonCitizen.Id)];
-        var userRoles = await _userRoleSeeder.SeedManyAsync(db, Seed, 3, urOpt);
+        List<EmployeeRoleOptions> employeeRoleOptions = [new(organization1.Id, nonCitizen.Id), new(organization2.Id, nonCitizen.Id)];
+        var employeeRoles = await _employeeRoleSeeder.SeedManyAsync(db, Seed, 3, employeeRoleOptions);
 
-        // Faker userRole
+        // Faker employeeRole
         EmployeeRole employeeRoleFaker = new Faker<EmployeeRole>().UseSeed(Seed)
                                     .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
@@ -258,27 +258,27 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var service = new NonCitizenService(db);
 
-        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
+        var fetchedEmployeeRoles = await service.PostEmployeeRoleAsync(nonCitizen.Id, new NonCitizenEmployeeRoleRequestDTO
         {
             Role = employeeRoleFaker.Role,
             OrganizationId = employeeRoleFaker.OrganizationId
         });
 
         //----- ASSERT -----\\
-        Assert.NotNull(fetchedUserRoles.Item2);
-        Assert.Equal(3, fetchedUserRoles.Item2!.RoleOrganizationTuples.Count);
+        Assert.NotNull(fetchedEmployeeRoles.Item2);
+        Assert.Equal(3, fetchedEmployeeRoles.Item2!.RoleOrganizationTuples.Count);
 
         var roleString = employeeRoleFaker.Role.ToString();
         var orgString = employeeRoleFaker.OrganizationId.ToString();
-        var roleOrgString = roleString + "|" + orgString;
+        var roleOrganizationString = roleString + "|" + orgString;
 
-        Assert.Contains(roleOrgString, fetchedUserRoles.Item2.RoleOrganizationTuples);
-        foreach (var userRole in userRoles)
+        Assert.Contains(roleOrganizationString, fetchedEmployeeRoles.Item2.RoleOrganizationTuples);
+        foreach (var employeeRole in employeeRoles)
         {
-            var roleString1 = userRole.Role.ToString();
-            var orgString1 = userRole.OrganizationId.ToString();
-            var roleOrgString1 = roleString + "|" + orgString;
-            Assert.Contains(roleOrgString1, fetchedUserRoles.Item2.RoleOrganizationTuples);
+            var roleString1 = employeeRole.Role.ToString();
+            var orgString1 = employeeRole.OrganizationId.ToString();
+            var roleOrganizationString1 = roleString + "|" + orgString;
+            Assert.Contains(roleOrganizationString1, fetchedEmployeeRoles.Item2.RoleOrganizationTuples);
         }
     }
 
@@ -357,7 +357,7 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
 
         Assert.Null(deletedGuardianship);
 
-        // Make sure the other userRoles was not accidentally deleted
+        // Make sure the other employeeRoles was not accidentally deleted
         var remainingGuardianships = await db.Guardianships.ToListAsync();
         Assert.Equal(2, remainingGuardianships.Count);
         Assert.NotNull(remainingGuardianships);
@@ -477,10 +477,10 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         Assert.Equal(HttpResponseType.Conflict.ToString(), fetchedNonCitizen.Item1.ToString());
     }
 
-    // ---------- /nonCitizens/userRoles on invalid inputs ---------- \\
+    // ---------- /nonCitizens/employeeRoles on invalid inputs ---------- \\
 
     [Fact]
-    public async Task PostUserRole_OrganizationDoesNotExist_ReturnsNotFound()
+    public async Task PostEmployeeRole_OrganizationDoesNotExist_ReturnsNotFound()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -488,9 +488,9 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var seededNoncitizen = await _userSeeder.SeedAsync(db, Seed, new(Type: UserType.NonCitizen));
         var nonCitizen = Assert.IsType<NonCitizen>(seededNoncitizen.User);
 
-        // No organizations yet -> So new userRole is forced to fail.
+        // No organizations yet -> So new employeeRole is forced to fail.
 
-        // Faker userRole
+        // Faker employeeRole
         EmployeeRole employeeRoleFaker = new Faker<EmployeeRole>().UseSeed(Seed)
                                     .RuleFor(urf => urf.NonCitizenId, f => nonCitizen.Id)
                                     .RuleFor(urf => urf.Role, f => f.PickRandom<RoleType>())
@@ -499,15 +499,15 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         //----- ACT -----\\
         var service = new NonCitizenService(db);
 
-        var fetchedUserRoles = await service.PostUserRoleAsync(nonCitizen.Id, new NonCitizenUserRoleRequestDTO
+        var fetchedEmployeeRoles = await service.PostEmployeeRoleAsync(nonCitizen.Id, new NonCitizenEmployeeRoleRequestDTO
         {
             Role = employeeRoleFaker.Role,
             OrganizationId = employeeRoleFaker.OrganizationId
         });
 
         //----- ASSERT -----\\
-        Assert.Null(fetchedUserRoles.Item2);
-        Assert.Equal(HttpResponseType.NotFound.ToString(), fetchedUserRoles.Item1.ToString());
+        Assert.Null(fetchedEmployeeRoles.Item2);
+        Assert.Equal(HttpResponseType.NotFound.ToString(), fetchedEmployeeRoles.Item1.ToString());
     }
 
     // ---------- /nonCitizens/guardianships on invalid inputs ---------- \\

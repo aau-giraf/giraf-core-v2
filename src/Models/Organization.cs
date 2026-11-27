@@ -11,7 +11,7 @@ public class Organization
     //Navigational property: the classes belonging to the organization
     public ICollection<Class> Classes { get; } = [];
 
-    //Navigational property: user roles related to the organization
+    //Navigational property: employee roles related to the organization
     public ICollection<EmployeeRole> EmployeeRoles { get; } = [];
 
     //Navigational property: The images belonging to this organization

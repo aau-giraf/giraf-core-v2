@@ -347,7 +347,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         }
     }
     [Fact]
-    public async Task CreateOrUpdateUserRole_UserRoleDoesNotExist_CreatesUserRole()
+    public async Task CreateOrUpdateEmployeeRole_EmployeeRoleDoesNotExist_CreatesEmployeeRole()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -364,19 +364,19 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, EmployeeRole? userRole) = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? employeeRole) = await service.CreateOrUpdateEmployeeRoleAsync(organization.Id, seededUser.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(1, outcomeStatus); //creation outcome
-        Assert.NotNull(userRole);
-        Assert.Equal(seededUser.User.Id, userRole.NonCitizenId);
-        Assert.Equal(organization.Id, userRole.OrganizationId);
-        Assert.Equal(role1, userRole.Role);
+        Assert.NotNull(employeeRole);
+        Assert.Equal(seededUser.User.Id, employeeRole.NonCitizenId);
+        Assert.Equal(organization.Id, employeeRole.OrganizationId);
+        Assert.Equal(role1, employeeRole.Role);
     }
 
     /* TODO: Fix
     [Fact]
-    public async Task CreateOrUpdateUserRole_UserRoleExists_ReturnsNoChange()
+    public async Task CreateOrUpdateEmployeeRole_EmployeeRoleExists_ReturnsNoChange()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -387,7 +387,7 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var seededUser = await _userSeeder.SeedAsync(db, Seed, userOptions);
 
         var role1 = RoleType.Employee;
-        //var role2 = RoleType.Parent;
+        // Parent roles are represented by Guardianship.GuardianType.
 
         Assert.NotNull(organization);
         Assert.NotNull(seededUser);
@@ -395,20 +395,20 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, EmployeeRole? userRole) initialResult = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
-        (int outcomeStatus, EmployeeRole? userRole) secondResult = await service.CreateOrUpdateUserRoleAsync(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? employeeRole) initialResult = await service.CreateOrUpdateEmployeeRoleAsync(organization.Id, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? employeeRole) secondResult = await service.CreateOrUpdateEmployeeRoleAsync(organization.Id, seededUser.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(1, initialResult.outcomeStatus);
 
         Assert.Equal(0, secondResult.outcomeStatus);
-        Assert.Null(secondResult.userRole);
+        Assert.Null(secondResult.employeeRole);
 
     }
      */
     /* TODO: Fix
     [Fact]
-    public async Task CreateOrUpdateUserRole_OrganizationDoesNotExist_ReturnsNotFound()
+    public async Task CreateOrUpdateEmployeeRole_OrganizationDoesNotExist_ReturnsNotFound()
     {
         //----- ARRANGE -----\\
         await using var db = CreateDbContext();
@@ -422,15 +422,15 @@ public class OrganizationServiceTest(ITestOutputHelper output) : TestBase(output
         var service = new OrganizationService(db);
 
         //----- ACT -----\\
-        (int outcomeStatus, EmployeeRole? userRole) initialResult = await service.CreateOrUpdateUserRoleAsync(100000000, seededUser.User.Id, role1);
-        (int outcomeStatus, EmployeeRole? userRole) secondResult = await service.CreateOrUpdateUserRoleAsync(1234567890, seededUser2.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? employeeRole) initialResult = await service.CreateOrUpdateEmployeeRoleAsync(100000000, seededUser.User.Id, role1);
+        (int outcomeStatus, EmployeeRole? employeeRole) secondResult = await service.CreateOrUpdateEmployeeRoleAsync(1234567890, seededUser2.User.Id, role1);
 
         //----- ASSERT -----\\
         Assert.Equal(-1, initialResult.outcomeStatus);
-        Assert.Null(initialResult.userRole);
+        Assert.Null(initialResult.employeeRole);
 
         Assert.Equal(-1, secondResult.outcomeStatus);
-        Assert.Null(secondResult.userRole);
+        Assert.Null(secondResult.employeeRole);
     }
     */
 }

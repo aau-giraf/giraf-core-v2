@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Validation;
 
-namespace giraf_core_v2.DTOs.UserRoles;
+namespace giraf_core_v2.DTOs.EmployeeRoles;
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 [ValidatableType]
-public class NonCitizenUserRoleRequestDTO
+public class NonCitizenEmployeeRoleRequestDTO
 {
     public required RoleType Role { get; set; }
 

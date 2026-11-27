@@ -1,8 +1,8 @@
 namespace giraf_core_v2.Tests.Seeders.Base;
 
 // Common seeder for general test seeders.
-// TEntity -> database model to seed. (ex: UserRole model used in the database)
-// TOption -> record containing all test specific parameters. (ex: UserRole seeding can optionally be supplied with a Citizen or NonCitizen ID)
+// TEntity -> database model to seed. (ex: EmployeeRole model used in the database)
+// TOption -> record containing all test specific parameters. (ex: EmployeeRole seeding can optionally be supplied with a Citizen or NonCitizen ID)
 // To add further options to an existing non-abstract seeder, simply expand the related record and make sure to account for possible cases (ex: something is null etc.) in CreateFaker()
 // Also include default case and handling for newly added option to prevent the need to change all previous tests.
 internal abstract class Seeder<TEntity, TOptions> where TEntity : class

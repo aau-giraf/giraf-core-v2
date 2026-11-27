@@ -14,13 +14,13 @@ public static class NonCitizenEndpoints
         group.MapDelete("/{nonCitizenId}", DeleteNonCitizenAsync);
         group.MapPost("/", PostNonCitizenAsync);
 
-        group.MapGet("/{nonCitizenId}/userRoles", GetUserRolesAsync);
-        // No patch - All fields of EmployeeRoles model are without setters. (Use PostUserRole instead)
-        group.MapDelete("/{nonCitizenId}/userRoles", DeleteUserRoleAsync);
-        group.MapPost("/{nonCitizenId}/userRoles", PostUserRoleAsync);
+        group.MapGet("/{nonCitizenId}/employeeRoles", GetEmployeeRolesAsync);
+        // No patch - All fields of EmployeeRole model are without setters. (Use PostEmployeeRole instead)
+        group.MapDelete("/{nonCitizenId}/employeeRoles", DeleteEmployeeRoleAsync);
+        group.MapPost("/{nonCitizenId}/employeeRoles", PostEmployeeRoleAsync);
 
         group.MapGet("/{nonCitizenId}/guardianships", GetGuardianshipsAsync);
-        // No patch - All fields of Guardianship model are without setters. (Use PostUserGuardianship instead)
+        // No patch - All fields of Guardianship model are without setters. (Use PostGuardianship instead)
         group.MapDelete("/{nonCitizenId}/guardianships", DeleteGuardianshipAsync);
         group.MapPost("/{nonCitizenId}/guardianships", PostGuardianshipAsync);
 
@@ -63,26 +63,26 @@ public static class NonCitizenEndpoints
         };
     }
 
-    private static async Task<Results<Ok<GetNonCitizenUserRolesResponseDTO>, NotFound>> GetUserRolesAsync(int nonCitizenId, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<GetNonCitizenEmployeeRolesResponseDTO>, NotFound>> GetEmployeeRolesAsync(int nonCitizenId, NonCitizenService nonCitizenService)
     {
-        var userRoles = await nonCitizenService.GetUserRolesAsync(nonCitizenId);
-        return userRoles == null ? TypedResults.NotFound() : TypedResults.Ok(userRoles);
+        var employeeRoles = await nonCitizenService.GetEmployeeRolesAsync(nonCitizenId);
+        return employeeRoles == null ? TypedResults.NotFound() : TypedResults.Ok(employeeRoles);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserRoleAsync(int nonCitizenId, [FromBody] NonCitizenUserRoleRequestDTO nonCitizenUserRole, NonCitizenService nonCitizenService)
+    private static async Task<Results<NoContent, NotFound>> DeleteEmployeeRoleAsync(int nonCitizenId, [FromBody] NonCitizenEmployeeRoleRequestDTO nonCitizenEmployeeRole, NonCitizenService nonCitizenService)
     {
-        var userRole = await nonCitizenService.DeleteUserRoleAsync(nonCitizenId, nonCitizenUserRole);
-        return userRole ? TypedResults.NoContent() : TypedResults.NotFound();
+        var employeeRoleDeleted = await nonCitizenService.DeleteEmployeeRoleAsync(nonCitizenId, nonCitizenEmployeeRole);
+        return employeeRoleDeleted ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<Ok<GetNonCitizenUserRolesResponseDTO>, NotFound, Conflict, BadRequest>> PostUserRoleAsync(int nonCitizenId, [FromBody] NonCitizenUserRoleRequestDTO nonCitizenUserRole, NonCitizenService nonCitizenService)
+    private static async Task<Results<Ok<GetNonCitizenEmployeeRolesResponseDTO>, NotFound, Conflict, BadRequest>> PostEmployeeRoleAsync(int nonCitizenId, [FromBody] NonCitizenEmployeeRoleRequestDTO nonCitizenEmployeeRole, NonCitizenService nonCitizenService)
     {
-        var userRole = await nonCitizenService.PostUserRoleAsync(nonCitizenId, nonCitizenUserRole);
-        return userRole.Item1 switch
+        var employeeRole = await nonCitizenService.PostEmployeeRoleAsync(nonCitizenId, nonCitizenEmployeeRole);
+        return employeeRole.Item1 switch
         {
             HttpResponseType.NotFound => TypedResults.NotFound(),
             HttpResponseType.Conflict => TypedResults.Conflict(),
-            HttpResponseType.Ok => TypedResults.Ok(userRole.Item2),
+            HttpResponseType.Ok => TypedResults.Ok(employeeRole.Item2),
             _ => TypedResults.BadRequest()
         };
     }

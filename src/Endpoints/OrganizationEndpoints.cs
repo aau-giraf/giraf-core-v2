@@ -23,11 +23,11 @@ public static class OrganizationEndpoints
 
         group.MapPost("/", CreateOrganizationAsync);
 
-        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutUserRoleAsync);
+        group.MapPut("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", PutEmployeeRoleAsync);
 
         group.MapPatch("/{organizationId:int}", UpdateOrganizationAsync);
 
-        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteUserRoleAsync);
+        group.MapDelete("/{organizationId:int}/members/{nonCitizenId:int}/{role:alpha}", DeleteEmployeeRoleAsync);
 
         group.MapDelete("/{organizationId:int}", DeleteOrganizationAsync);
 
@@ -89,22 +89,22 @@ public static class OrganizationEndpoints
         return updatedOrganization == null ? TypedResults.NotFound() : TypedResults.Ok(updatedOrganization);
     }
 
-    private static async Task<Results<NoContent, NotFound>> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
+    private static async Task<Results<NoContent, NotFound>> DeleteEmployeeRoleAsync(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        var deletionOccurred = await organizationService.DeleteUserRoleAsync(organizationId, nonCitizenId, role);
+        var deletionOccurred = await organizationService.DeleteEmployeeRoleAsync(organizationId, nonCitizenId, role);
         return deletionOccurred ? TypedResults.NoContent() : TypedResults.NotFound();
     }
 
-    private static async Task<Results<NotFound, NoContent, Created<PutUserRoleResponseDTO>>> PutUserRoleAsync(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
+    private static async Task<Results<NotFound, NoContent, Created<PutEmployeeRoleResponseDTO>>> PutEmployeeRoleAsync(int organizationId, int nonCitizenId, RoleType role, OrganizationService organizationService)
     {
-        (int, EmployeeRole?) status = await organizationService.CreateOrUpdateUserRoleAsync(organizationId, nonCitizenId, role);
+        (int, EmployeeRole?) status = await organizationService.CreateOrUpdateEmployeeRoleAsync(organizationId, nonCitizenId, role);
         return status switch
         {
             (-1, null) => TypedResults.NotFound(),
             (0, null) => TypedResults.NoContent(),
-            (1, EmployeeRole ur) => TypedResults.Created(
+            (1, EmployeeRole employeeRole) => TypedResults.Created(
                 $"/organizations/{organizationId}/members/{nonCitizenId}/{role}",
-                new PutUserRoleResponseDTO(ur.NonCitizenId, ur.OrganizationId, ur.Role)),
+                new PutEmployeeRoleResponseDTO(employeeRole.NonCitizenId, employeeRole.OrganizationId, employeeRole.Role)),
             _ => throw new UnreachableException()
         };
     }

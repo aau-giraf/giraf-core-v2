@@ -10,7 +10,7 @@ public class EmployeeRoleSeeding : ISeeding
         NonCitizen[] nonCitizens = context.Set<NonCitizen>().ToArray();
         Organization[] organizations = context.Set<Organization>().ToArray();
 
-        EmployeeRole[] userRoles = [
+        EmployeeRole[] employeeRoles = [
             new()
             {
                 NonCitizenId = nonCitizens[0].Id, NonCitizen = nonCitizens[0],
@@ -25,7 +25,7 @@ public class EmployeeRoleSeeding : ISeeding
             }
         ];
 
-        context.Set<EmployeeRole>().AddRange(userRoles);
+        context.Set<EmployeeRole>().AddRange(employeeRoles);
         context.SaveChanges();
     }
 }

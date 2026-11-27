@@ -259,13 +259,13 @@ public class OrganizationService(AppDbContext db)
         return responseOrganization;
     }
 
-    public async Task<bool> DeleteUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
+    public async Task<bool> DeleteEmployeeRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
         /*Consider direct deletion instead of 2 round trips. Implications of EF Core change tracking unknown.
         * Be aware of composite key ordering of EmployeeRole. */
-        if (await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId) is EmployeeRole userRole)
+        if (await _db.EmployeeRoles.FindAsync(nonCitizenId, role, organizationId) is EmployeeRole employeeRole)
         {
-            _db.UserRoles.Remove(userRole);
+            _db.EmployeeRoles.Remove(employeeRole);
             await _db.SaveChangesAsync();
             //Deletion occured, indicate for HTTP response
             return true;
@@ -274,17 +274,17 @@ public class OrganizationService(AppDbContext db)
         return false;
     }
 
-    public async Task<(int, EmployeeRole?)> CreateOrUpdateUserRoleAsync(int organizationId, int nonCitizenId, RoleType role)
+    public async Task<(int, EmployeeRole?)> CreateOrUpdateEmployeeRoleAsync(int organizationId, int nonCitizenId, RoleType role)
     {
         //CASE 1: organization, non-citizen, role each exist seperately. (Assumed to minimize reads, most frequent case)
-        bool createdUserRole = false;
-        var userRole = await _db.UserRoles.FindAsync(nonCitizenId, role, organizationId);
+        bool createdEmployeeRole = false;
+        var employeeRole = await _db.EmployeeRoles.FindAsync(nonCitizenId, role, organizationId);
 
         // 1.A: the EmployeeRole tuple does not exist. Create it
-        if (userRole is null)
+        if (employeeRole is null)
         {
             //Create new object
-            userRole = new EmployeeRole
+            employeeRole = new EmployeeRole
             {
                 NonCitizenId = nonCitizenId,
                 Role = role,
@@ -292,10 +292,10 @@ public class OrganizationService(AppDbContext db)
             };
 
             //Add it to change tracking
-            _db.UserRoles.Add(userRole);
+            _db.EmployeeRoles.Add(employeeRole);
 
             //Indicate Successfull(Created) case 1.A occurred
-            createdUserRole = true;
+            createdEmployeeRole = true;
         }
 
         // Whether 1.A(created) | 1.B(updated) - Future properties can be set here, before try-cactch block 
@@ -304,7 +304,7 @@ public class OrganizationService(AppDbContext db)
         {
             await _db.SaveChangesAsync();
         }
-        catch (DbUpdateException) when (createdUserRole)
+        catch (DbUpdateException) when (createdEmployeeRole)
         {
             /* Case 2:  Either organization, non-citizen or role did not exist. Client error response.
              * Potentially check wether organization or user failed to provide more detailed response */
@@ -312,6 +312,6 @@ public class OrganizationService(AppDbContext db)
         }
 
         //For successfull cases, distuinguish between creation & update
-        return createdUserRole ? (1, userRole) : (0, null);
+        return createdEmployeeRole ? (1, employeeRole) : (0, null);
     }
 }

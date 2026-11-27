@@ -161,9 +161,9 @@ public class NonCitizenService(AppDbContext db)
     }
 
 
-    // ---------- /userRoles ---------- \\
+    // ---------- /employeeRoles ---------- \\
 
-    public async Task<GetNonCitizenUserRolesResponseDTO?> GetUserRolesAsync(int nonCitizenId)
+    public async Task<GetNonCitizenEmployeeRolesResponseDTO?> GetEmployeeRolesAsync(int nonCitizenId)
     {
         var nonCitizen = await _db.NonCitizens.FindAsync(nonCitizenId);
 
@@ -172,45 +172,45 @@ public class NonCitizenService(AppDbContext db)
             return null;
         }
 
-        var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizenId).ToListAsync();
+        var employeeRoles = await _db.EmployeeRoles.Where(employeeRole => employeeRole.NonCitizenId == nonCitizenId).ToListAsync();
 
-        // Select only the needed from userRole or else it would eagerly fetch FK fields. 
+        // Select only the needed from employeeRole or else it would eagerly fetch FK fields.
         ICollection<string> roleOrganizationTuples = [];
 
-        foreach (EmployeeRole userRole in userRoles)
+        foreach (EmployeeRole employeeRole in employeeRoles)
         {
-            var roleString = userRole.Role.ToString();
-            var organizationIdText = userRole.OrganizationId.ToString();
+            var roleString = employeeRole.Role.ToString();
+            var organizationIdText = employeeRole.OrganizationId.ToString();
             var roleOrganizationText = roleString + "|" + organizationIdText;
             roleOrganizationTuples.Add(roleOrganizationText);
         }
 
-        return new GetNonCitizenUserRolesResponseDTO
+        return new GetNonCitizenEmployeeRolesResponseDTO
         {
             NonCitizenId = nonCitizen!.Id,
             RoleOrganizationTuples = roleOrganizationTuples
         };
     }
 
-    public async Task<bool> DeleteUserRoleAsync(int nonCitizenId, NonCitizenUserRoleRequestDTO nonCitizenUserRole)
+    public async Task<bool> DeleteEmployeeRoleAsync(int nonCitizenId, NonCitizenEmployeeRoleRequestDTO nonCitizenEmployeeRole)
     {
-        if (await _db.UserRoles.AnyAsync(ur =>
-             ur.NonCitizenId == nonCitizenId &&
-             ur.OrganizationId == nonCitizenUserRole.OrganizationId &&
-             ur.Role == nonCitizenUserRole.Role
+        if (await _db.EmployeeRoles.AnyAsync(employeeRole =>
+             employeeRole.NonCitizenId == nonCitizenId &&
+             employeeRole.OrganizationId == nonCitizenEmployeeRole.OrganizationId &&
+             employeeRole.Role == nonCitizenEmployeeRole.Role
              ))
         {
-            var userRole = await _db.UserRoles
-            .FindAsync(nonCitizenId, nonCitizenUserRole.Role, nonCitizenUserRole.OrganizationId);
+            var employeeRole = await _db.EmployeeRoles
+            .FindAsync(nonCitizenId, nonCitizenEmployeeRole.Role, nonCitizenEmployeeRole.OrganizationId);
 
             if (
-                userRole!.NonCitizenId == nonCitizenId &&
-                userRole.OrganizationId == nonCitizenUserRole.OrganizationId &&
-                userRole.Role == nonCitizenUserRole.Role &&
-                userRole is not null
+                employeeRole!.NonCitizenId == nonCitizenId &&
+                employeeRole.OrganizationId == nonCitizenEmployeeRole.OrganizationId &&
+                employeeRole.Role == nonCitizenEmployeeRole.Role &&
+                employeeRole is not null
                 )
             {
-                _db.UserRoles.Remove(userRole);
+                _db.EmployeeRoles.Remove(employeeRole);
                 await _db.SaveChangesAsync();
                 return true;
             }
@@ -218,7 +218,7 @@ public class NonCitizenService(AppDbContext db)
         return false;
     }
 
-    public async Task<(HttpResponseType, GetNonCitizenUserRolesResponseDTO?)> PostUserRoleAsync(int nonCitizenId, NonCitizenUserRoleRequestDTO nonCitizenUserRole)
+    public async Task<(HttpResponseType, GetNonCitizenEmployeeRolesResponseDTO?)> PostEmployeeRoleAsync(int nonCitizenId, NonCitizenEmployeeRoleRequestDTO nonCitizenEmployeeRole)
     {
 
         // Check nonCitizen exists
@@ -230,52 +230,52 @@ public class NonCitizenService(AppDbContext db)
         }
 
         // Check organization exists
-        var organization = await _db.Organizations.FindAsync(nonCitizenUserRole.OrganizationId);
+        var organization = await _db.Organizations.FindAsync(nonCitizenEmployeeRole.OrganizationId);
         if (organization is null)
         {
             return (HttpResponseType.NotFound, null);
         }
 
-        // Check if userRole exists
-        var userRoleExists = await _db.UserRoles.AnyAsync(ur =>
-             ur.NonCitizenId == nonCitizenId &&
-             ur.Role == nonCitizenUserRole.Role &&
-             ur.OrganizationId == nonCitizenUserRole.OrganizationId
+        // Check if employeeRole exists
+        var employeeRoleExists = await _db.EmployeeRoles.AnyAsync(employeeRole =>
+             employeeRole.NonCitizenId == nonCitizenId &&
+             employeeRole.Role == nonCitizenEmployeeRole.Role &&
+             employeeRole.OrganizationId == nonCitizenEmployeeRole.OrganizationId
             );
 
-        if (userRoleExists is true)
+        if (employeeRoleExists is true)
         {
             return (HttpResponseType.Conflict, null);
         }
 
-        var createdUserRole = new EmployeeRole()
+        var createdEmployeeRole = new EmployeeRole()
         {
-            Role = nonCitizenUserRole.Role,
+            Role = nonCitizenEmployeeRole.Role,
             NonCitizenId = nonCitizen.Id,
             NonCitizen = nonCitizen,
-            OrganizationId = nonCitizenUserRole.OrganizationId,
-            Organization = await _db.Organizations.FindAsync(nonCitizenUserRole.OrganizationId)
+            OrganizationId = nonCitizenEmployeeRole.OrganizationId,
+            Organization = await _db.Organizations.FindAsync(nonCitizenEmployeeRole.OrganizationId)
         };
 
-        _db.UserRoles.Add(createdUserRole);
+        _db.EmployeeRoles.Add(createdEmployeeRole);
         await _db.SaveChangesAsync();
 
-        // Find the updated list of userRoles
-        var userRoles = await _db.UserRoles.Where(ur => ur.NonCitizenId == nonCitizenId).ToListAsync();
+        // Find the updated list of employeeRoles
+        var employeeRoles = await _db.EmployeeRoles.Where(employeeRole => employeeRole.NonCitizenId == nonCitizenId).ToListAsync();
 
-        // Select only the needed from userRole
+        // Select only the needed from employeeRole
         List<string> roleOrganizationTuples = [];
 
-        foreach (var userRole in userRoles)
+        foreach (var employeeRole in employeeRoles)
         {
-            var roleString = userRole.Role.ToString();
-            var organizationIdText = userRole.OrganizationId.ToString();
+            var roleString = employeeRole.Role.ToString();
+            var organizationIdText = employeeRole.OrganizationId.ToString();
             var roleOrganizationText = roleString + "|" + organizationIdText;
             roleOrganizationTuples.Add(roleOrganizationText);
         }
 
         // Return in correct format
-        return (HttpResponseType.Ok, new GetNonCitizenUserRolesResponseDTO()
+        return (HttpResponseType.Ok, new GetNonCitizenEmployeeRolesResponseDTO()
         {
             NonCitizenId = nonCitizen.Id,
             RoleOrganizationTuples = roleOrganizationTuples
