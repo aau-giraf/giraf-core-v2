@@ -10,6 +10,6 @@ public class NonCitizen : User
     //Navigational property: The guardianships with this non-citizen as guardian. 
     public ICollection<Guardianship> Guardianships { get; } = [];
 
-    //Navigational property: Roles of the Non-Citizen - possibly within different organizations
-    public ICollection<EmployeeRole> Roles { get; } = [];
+    //Navigational property: EmployeeRoles of the Non-Citizen - possibly within different organizations
+    public ICollection<EmployeeRole> EmployeeRoles { get; } = [];
 }
