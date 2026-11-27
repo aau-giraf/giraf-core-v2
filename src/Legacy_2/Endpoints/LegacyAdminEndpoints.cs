@@ -1,4 +1,5 @@
 using giraf_core_v2.Legacy_2.DTOs.LegacyUserDTO;
+using giraf_core_v2.Legacy_2.DTOs.LegacyChildrenDTO;
 
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ public static class LegacyAdminEndpoints
         //group.MapGet("/GetAllChildren", ); //mangler fra core
 
         group.MapPut("/UpdateUser/{userId}", UpdateCurrentUser);
-        //group.MapPut("/UpdateChild/{id}",);
+        group.MapPut("/UpdateChild/{childId}", UpdateChild);
 
         group.MapDelete("/Delete/{nonCitizenId}", DeleteNonCitizen);
     }
@@ -68,6 +69,23 @@ public static class LegacyAdminEndpoints
             HttpReponseType.Ok => TypedResults.NoContent(),
             _ => TypedResults.BadRequest()
         };
+    }
+
+    private static async Task<Results<NoContent, NotFound>> UpdateChild(CitizenService citizenService, LegacyChildrenDTO childrenDTO)
+    {
+        GetCitizenDTO? citizen = await citizenService.GetCitizenAsync(childrenDTO.ChildId);
+        if(citizen == null) return TypedResults.NotFound(); // Though this a PUT request on FP's side, it acts as a patch: dont create new child
+
+        // FP also updates the child's id (for some reason). That feature has been omitted here
+        UpdateCitizenDTO updateCitizenDTO = new() {
+            Username = citizen.Username, // FP doesn't update username: here it gets set to same value to ensure compatability with Core service method
+            FirstName = childrenDTO.FirstName, 
+            LastName = childrenDTO.LastName, 
+            ClassId = childrenDTO.ClassId 
+        };
+        await citizenService.PatchCitizenAsync(childrenDTO.ChildId, updateCitizenDTO); // ignore return value as null case has already been handled above
+
+        return TypedResults.NoContent();
     }
 
     private static async Task<Results<NoContent, NotFound>> DeleteNonCitizen(NonCitizenService nonCitizenService, int nonCitizenId)
