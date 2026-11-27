@@ -15,7 +15,7 @@ public static class NonCitizenEndpoints
         group.MapPost("/", PostNonCitizenAsync);
 
         group.MapGet("/{nonCitizenId}/userRoles", GetUserRolesAsync);
-        // No patch - All fields of UserRoles model are without setters. (Use PostUserRole instead)
+        // No patch - All fields of EmployeeRoles model are without setters. (Use PostUserRole instead)
         group.MapDelete("/{nonCitizenId}/userRoles", DeleteUserRoleAsync);
         group.MapPost("/{nonCitizenId}/userRoles", PostUserRoleAsync);
 
