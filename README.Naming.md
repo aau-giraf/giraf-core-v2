@@ -41,12 +41,19 @@
 
 ## Models
 
-- Properties are PascalCase. Example: `ClassId`.
-- The primary key is `Id`.
-  - Unless the primary key is a composite key properties will be explicitly written. Example `CitizenID` and `GuardianId`
-- A foreign key is the navigation name plus `Id`. Example: `ClassId`, `OrganizationId`.
-- A navigation property uses the related type name. Example: `Class`, `Organization`.
-- Collections are plural. Example: `Classes`, `Images`, `Guardianships`.
+- Properties are PascalCase.
+- Single-property (simple) primary keys are named: `Id`.
+  - Potential *natural* keys may be considered an exception, but must be carefully evaluated before use - regarding stability, size/performance & security/privacy.
+
+- *Foreign-key* property names follow `<navigation property name>Id` (`GuardianId` for `Guardianship.Guardian`).
+  - If the referenced model's primary key falls under the above *natural*-key naming exception, or an alternate key is used as reference, use the generalized rule `<navigation property name><key property name>`.
+- *Reference navigation* property names should communicate the domain relationship.
+  - Use the related type name by default (`Citizen.Class`).
+  - If a domain-specific name makes the relationship more explicit, use it (`Guardianship.Guardian` refers to a `NonCitizen` in the guardian relationship).
+- *Collection navigation* property names are plural.
+  - Use the plural related type name by default (`Organization.Images`).
+  - For a clearer domain expression, name the collection from the declaring entity's perspective, especially for bridge entities (`Class.EmployeeRoles` and `EmployeeRole.ClassRoles` are collections of `ClassEmployeeRole`).
+- While these conventions guide names, not model configuration, names can affect EF Core relationship discovery by convention, so consult Microsoft’s [Create a model](https://learn.microsoft.com/en-us/ef/core/modeling/) and [Conventions for relationship discovery](https://learn.microsoft.com/en-us/ef/core/modeling/relationships/conventions) documentation when configuring the model.
 
 ## Routes
 
