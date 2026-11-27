@@ -12,7 +12,7 @@ public class Organization
     public ICollection<Class> Classes { get; } = [];
 
     //Navigational property: user roles related to the organization
-    public ICollection<EmployeeRole> UserRoles { get; } = [];
+    public ICollection<EmployeeRole> EmployeeRoles { get; } = [];
 
     //Navigational property: The images belonging to this organization
     public ICollection<Image> Images { get; } = [];

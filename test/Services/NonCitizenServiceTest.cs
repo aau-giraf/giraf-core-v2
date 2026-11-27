@@ -169,8 +169,8 @@ public class NonCitizenServiceTest(ITestOutputHelper output) : TestBase(output)
         var fetchedUserRoles = await service.GetUserRolesAsync(nonCitizen.Id);
 
         //----- ASSERT -----\\
-        Assert.Equal(nonCitizen.Roles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
-        foreach (var userRole in nonCitizen.Roles)
+        Assert.Equal(nonCitizen.EmployeeRoles.Count, fetchedUserRoles!.RoleOrganizationTuples.Count);
+        foreach (var userRole in nonCitizen.EmployeeRoles)
         {
             var roleString = userRole.Role.ToString();
             var orgString = userRole.OrganizationId.ToString();
